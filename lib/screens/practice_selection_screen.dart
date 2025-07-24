@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/customwigdets/settings_button.dart';
 
 import 'lesson_screen.dart';
 // import 'settings_screen.dart'; // Uncomment if you have a SettingsScreen
@@ -249,35 +251,9 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   // Return Button
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black54,
-                    ),
-                    child: const Icon(Icons.arrow_back, size: 28),
-                  ),
+                  ReturnButton(),
                   // Settings Button
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                      // );
-                      print('Settings button pressed');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black54,
-                    ),
-                    child: const Icon(Icons.settings_outlined, size: 28),
-                  ),
+                  SettingButton()
                 ],
               ),
             ),

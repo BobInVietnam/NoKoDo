@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/customwigdets/settings_button.dart';
 
 import 'reading_screen.dart'; // Optional: if you want consistent font like Galindo
 // import 'settings_screen.dart'; // Uncomment if you have a SettingsScreen
@@ -165,37 +167,8 @@ Không ngờ về  nhà bà thụ thai và mười hai tháng sau sinh một th�
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   // Return Button
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Go back to the previous screen
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black54,
-                    ),
-                    child: const Icon(Icons.arrow_back, size: 28),
-                  ),
-
-                  // Settings Button
-                  ElevatedButton(
-                    onPressed: () {
-                      // TODO: Navigate to Settings Screen
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                      // );
-                      print('Settings button pressed');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black54,
-                    ),
-                    child: const Icon(Icons.settings_outlined, size: 28),
-                  ),
+                  ReturnButton(),
+                  SettingButton()
                 ],
               ),
             ),

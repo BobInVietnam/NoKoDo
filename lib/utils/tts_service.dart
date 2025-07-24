@@ -62,7 +62,7 @@ class TtsService {
     // though some platforms might support higher rates for speak()
     // but setSpeechRate itself often expects 0.0 to 1.0.
     // Adjust if your testing shows different behavior on target devices.
-    _speechRate = rate.clamp(0.1, 1.5); // Example practical range for slider
+    _speechRate = rate.clamp(0.1, 2.0); // Example practical range for slider
     await _flutterTts.setSpeechRate(_speechRate);
   }
 

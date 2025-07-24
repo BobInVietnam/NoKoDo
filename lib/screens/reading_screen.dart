@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../utils/tts_service.dart'; // Import your TTS service
+import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/customwigdets/settings_button.dart';
+import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 // import 'settings_screen.dart'; // Uncomment if needed
 
 class TextResultScreen extends StatefulWidget {
@@ -221,13 +223,7 @@ class _TextResultScreenState extends State<TextResultScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       // Return Button
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(), padding: const EdgeInsets.all(12)),
-                        child: const Icon(Icons.arrow_back),
-                      ),
-
+                      ReturnButton(),
                       // Read All / Stop Button
                       ElevatedButton.icon(
                         icon: Icon(_ttsService.ttsState == TtsState.playing
@@ -244,17 +240,8 @@ class _TextResultScreenState extends State<TextResultScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                       ),
-
                       // Settings Button
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
-                          print('Settings button pressed');
-                        },
-                        style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(), padding: const EdgeInsets.all(12)),
-                        child: const Icon(Icons.settings_outlined),
-                      ),
+                      SettingButton()
                     ],
                   ),
                 ],

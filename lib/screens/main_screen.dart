@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/customwigdets/settings_button.dart';
 
 import 'practice_selection_screen.dart';
 import 'file_to_text_screen.dart';
@@ -145,13 +146,7 @@ class _MainScreenState extends State<MainScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  ElevatedButton(
-                      onPressed: _navigateToSettings,
-                      child: const Icon(
-                        Icons.settings,
-                        size: 28,
-                        color: Colors.black,
-                      )),
+                  SettingButton()
                 ],
               )
             )
