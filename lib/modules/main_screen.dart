@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 
-import 'practice_selection_screen.dart';
-import 'file_to_text_screen.dart';
-import 'settings_screen.dart';
+import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
+import 'package:nodyslexia/modules/file_to_text_screen.dart';
+import 'package:nodyslexia/modules/test/test_selection_screen.dart';
+import 'package:nodyslexia/modules/library_screen.dart';
+import 'package:nodyslexia/modules/statistics_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -48,13 +50,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _navigateToSettings() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SettingsScreen()),
     );
   }
 
@@ -108,10 +103,22 @@ class _MainScreenState extends State<MainScreen> {
                         _buildMenuButton(
                           icon: Icons.book_outlined, // Placeholder
                           label: 'Làm Bài Kiểm Tra',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const TestSelectionScreen()),
+                            );
+                          },
                         ),
                         _buildMenuButton(
                           icon: Icons.bar_chart_outlined, // Placeholder
                           label: 'Thư Viện',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LibraryScreen()),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -133,6 +140,12 @@ class _MainScreenState extends State<MainScreen> {
                         _buildMenuButton(
                           icon: Icons.help_outline, // Placeholder
                           label: 'Theo Dõi Tiến Độ',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const StatisticsScreen()),
+                            );
+                          },
                         ),
                       ],
                     ),

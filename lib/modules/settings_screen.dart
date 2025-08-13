@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:nodyslexia/customwigdets/return_button.dart';
-import 'package:nodyslexia/customwigdets/settings_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,15 +16,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: const Center(
         child: Column (
           children: <Widget>[
-            const Text("Hello settings"),
+            Expanded(
+              child: const Text("Hello settings"),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   // Return Button
-                  Expanded (child: ReturnButton()),
-                  SettingButton()
+                  ReturnButton(),
                 ],
               ),
             ),

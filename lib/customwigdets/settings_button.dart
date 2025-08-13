@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "../screens/settings_screen.dart";
+import "package:nodyslexia/modules/settings_screen.dart";
 
 class SettingButton extends StatelessWidget {
   const SettingButton({super.key});

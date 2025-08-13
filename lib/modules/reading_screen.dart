@@ -16,7 +16,7 @@ class TextResultScreen extends StatefulWidget {
 
 class _TextResultScreenState extends State<TextResultScreen> {
   final TtsService _ttsService = TtsService();
-  TextSelection _currentSelection = const TextSelection.collapsed(offset: -1);
+  // TextSelection _currentSelection = const TextSelection.collapsed(offset: -1);
   OverlayEntry? _selectionMenuOverlay;
   final GlobalKey _textKey = GlobalKey(); // To get position for overlay
 

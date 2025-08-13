@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'modules/login_screen.dart';
 
 void main() {
   runApp(const NokodoApp());
@@ -15,11 +16,31 @@ class NokodoApp extends StatelessWidget {
     return MaterialApp(
       title: 'Nokodo',
       theme: ThemeData(
-        primarySwatch: Colors.teal, // You can choose your app's theme color
-        // Example of setting a default font for the whole app if desired:
-        // textTheme: GoogleFonts.latoTextTheme(
-        //   Theme.of(context).textTheme,
-        // ),
+        primarySwatch: Colors.teal,
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.teal,
+            brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
+        textTheme: TextTheme(
+          titleLarge: GoogleFonts.galindo(
+            fontSize: 48,
+            fontWeight: FontWeight.bold,
+          ),
+          displayLarge: GoogleFonts.rowdies(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal[700],
+          ),
+          bodyMedium: GoogleFonts.poppins(
+            fontSize: 20,
+          ),
+          displayMedium: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          )
+        ),
+        tabBarTheme: TabBarThemeData(
+
+        ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: const LoginScreen(),

@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 
-import 'reading_screen.dart'; // Optional: if you want consistent font like Galindo
+import 'package:nodyslexia/modules/reading_screen.dart'; // Optional: if you want consistent font like Galindo
 // import 'settings_screen.dart'; // Uncomment if you have a SettingsScreen
 
 class FileToTextScreen extends StatelessWidget {
@@ -55,7 +55,6 @@ class FileToTextScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine text style - using Poppins as a fallback if Galindo isn't set globally
-    final TextTheme appTextTheme = Theme.of(context).textTheme;
     final TextStyle? titleStyle = GoogleFonts.galindo( // Consistent with MainScreen title
         fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[700]);
     final TextStyle? subtitleStyle = GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]);
@@ -86,41 +85,43 @@ class FileToTextScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             // Action Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  _buildActionButton(
-                    context: context,
-                    icon: Icons.camera_alt_outlined,
-                    label: 'Chụp ảnh',
-                    onPressed: () {
-                      // TODO: Implement camera functionality
-                      String ocrResult = """
-Chuyện kể rằng: vào đời Hùng Vương thứ 6, ở làng Gióng có hai vợ chồng ông lão chăm làm ăn và có tiếng là phúc đức. Hai ông bà ao ước có một đứa con. Một hôm bà ra đồng trông thấy  một vết chân to quá, liền đặt bàn chân mình lên ướm thử để xem thua kém  bao nhiêu.
-
-Không ngờ về  nhà bà thụ thai và mười hai tháng sau sinh một thằng bé mặt mũi rất khôi ngô. Hai vợ chồng mừng lắm. Nhưng lạ thay! Ðứa trẻ cho đến khi lên ba  vẫn không biết nói, biết cười, cũng chẳng biết đi, cứ đặt đâu thì nằm đấy.
-""";
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TextResultScreen(extractedText: ocrResult),
-                        ),
-                      );
-                      print('Chụp ảnh button pressed');
-                    },
-                  ),
-                  _buildActionButton(
-                    context: context,
-                    icon: Icons.folder_open_outlined,
-                    label: 'Nhập từ máy',
-                    onPressed: () {
-                      // TODO: Implement file picking functionality
-                      print('Nhập từ máy button pressed');
-                    },
-                  ),
-                ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    _buildActionButton(
+                      context: context,
+                      icon: Icons.camera_alt_outlined,
+                      label: 'Chụp ảnh',
+                      onPressed: () {
+                        // TODO: Implement camera functionality
+                        String ocrResult = """
+  Chuyện kể rằng: vào đời Hùng Vương thứ 6, ở làng Gióng có hai vợ chồng ông lão chăm làm ăn và có tiếng là phúc đức. Hai ông bà ao ước có một đứa con. Một hôm bà ra đồng trông thấy  một vết chân to quá, liền đặt bàn chân mình lên ướm thử để xem thua kém  bao nhiêu.
+  
+  Không ngờ về  nhà bà thụ thai và mười hai tháng sau sinh một thằng bé mặt mũi rất khôi ngô. Hai vợ chồng mừng lắm. Nhưng lạ thay! Ðứa trẻ cho đến khi lên ba  vẫn không biết nói, biết cười, cũng chẳng biết đi, cứ đặt đâu thì nằm đấy.
+  """;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TextResultScreen(extractedText: ocrResult),
+                          ),
+                        );
+                        print('Chụp ảnh button pressed');
+                      },
+                    ),
+                    _buildActionButton(
+                      context: context,
+                      icon: Icons.folder_open_outlined,
+                      label: 'Nhập từ máy',
+                      onPressed: () {
+                        // TODO: Implement file picking functionality
+                        print('Nhập từ máy button pressed');
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -165,7 +166,7 @@ Không ngờ về  nhà bà thụ thai và mười hai tháng sau sinh một th�
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
+                children: const <Widget>[
                   // Return Button
                   ReturnButton(),
                   SettingButton()
