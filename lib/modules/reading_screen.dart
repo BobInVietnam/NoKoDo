@@ -172,7 +172,7 @@ class _TextResultScreenState extends State<TextResultScreen> {
                           if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.tap) {
                             if (!selection.isCollapsed) {
                               setState(() {
-                                _currentSelection = selection;
+                              //  _currentSelection = selection;
                               });
                               // Get text widget position
                               final RenderBox? renderBox = _textKey.currentContext?.findRenderObject() as RenderBox?;

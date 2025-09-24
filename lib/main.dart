@@ -18,8 +18,10 @@ class NokodoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.teal,
-            brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
+          seedColor: Colors.teal,
+          brightness: Brightness.light,
+          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        ),
         textTheme: TextTheme(
           titleLarge: GoogleFonts.galindo(
             fontSize: 48,
@@ -30,16 +32,11 @@ class NokodoApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Colors.teal[700],
           ),
-          bodyMedium: GoogleFonts.poppins(
-            fontSize: 20,
-          ),
+          bodyMedium: GoogleFonts.poppins(fontSize: 20),
           displayMedium: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-          )
-        ),
-        tabBarTheme: TabBarThemeData(
-
+          ),
         ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
