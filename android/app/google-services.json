@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560073561053",
+    "project_id": "nokodo-8b4e0",
+    "storage_bucket": "nokodo-8b4e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560073561053:android:d2823711697dfec3e15c34",
+        "android_client_info": {
+          "package_name": "com.example.nodyslexia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCspLX5-BQlrJyOsLZUJ5Ia2LjHpkPPv1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
