@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
-// import 'settings_screen.dart'; // Uncomment if needed
 
 class TextResultScreen extends StatefulWidget {
   final String extractedText;
@@ -16,7 +15,7 @@ class TextResultScreen extends StatefulWidget {
 
 class _TextResultScreenState extends State<TextResultScreen> {
   final TtsService _ttsService = TtsService();
-  // TextSelection _currentSelection = const TextSelection.collapsed(offset: -1);
+  TextSelection _currentSelection = const TextSelection.collapsed(offset: -1);
   OverlayEntry? _selectionMenuOverlay;
   final GlobalKey _textKey = GlobalKey(); // To get position for overlay
 
