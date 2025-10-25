@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
 import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
     // For now, just navigate to the main screen
     try {
       _setSubmitDisabled(true);
-      await RepoManager.signIn(email: _usernameController.text, password: _passwordController.text);
+      final currentRepoManager = context.read<RepoManager>();
+      await currentRepoManager.signIn(
+          email: _usernameController.text,
+          password: _passwordController.text
+      );
       if (!mounted) return;
       Navigator.pushReplacement(
         context,

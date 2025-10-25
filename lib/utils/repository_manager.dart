@@ -1,11 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide Persistence;
+import 'package:flutter/cupertino.dart';
+import 'package:nodyslexia/models/student.dart';
+import 'package:nodyslexia/utils/persistence_TEST.dart';
 
-class RepoManager {
+class RepoManager extends ChangeNotifier {
   // Get the instance of Firebase Auth.
-  static final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  static String? uid;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  Student? currentStudent;
+  Persistence database = Persistence();
 
-  static Future<User?> signIn({
+  Future<void> signIn({
     required String email,
     required String password,
   }) async {
@@ -18,10 +22,9 @@ class RepoManager {
       );
 
       // If sign-in is successful, return the user object obtained from Firebase.
-      print('Sign-in successful! User: ${userCredential.user?.email}');
-      uid = userCredential.user?.uid;
-      return userCredential.user;
-
+      print('Sign-in successful! User: ${userCredential.user!.email}');
+      currentStudent = await database.getUser(userCredential.user!.uid);
+      notifyListeners();
     } on FirebaseAuthException catch (e) {
       // Handle Firebase-specific errors.
       String errorMessage;
@@ -41,12 +44,14 @@ class RepoManager {
       }
 
       // Print the Firebase authentication error to the debug console.
-      print('Firebase Auth Error [${e.code}]: $errorMessage');
+      debugPrint('Firebase Auth Error [${e.code}]: $errorMessage');
       rethrow;
     } catch (e) {
       // Handle other unexpected errors, such as network issues.
-      print('An unexpected error occurred: $e');
+      debugPrint('An unexpected error occurred: $e');
       rethrow;
     }
   }
+
+
 }

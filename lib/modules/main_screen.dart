@@ -7,6 +7,8 @@ import 'package:nodyslexia/modules/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/library_screen.dart';
 import 'package:nodyslexia/modules/statistics_screen.dart';
+import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -55,6 +57,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final username = context.watch<RepoManager>().currentStudent?.firstname;
     return Scaffold(
       // No AppBar here
       body: SafeArea( // Ensures content is not obscured by system UI (like notches)
@@ -159,6 +162,7 @@ class _MainScreenState extends State<MainScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
+                  Text(username != null? "Xin chào $username" : ""),
                   SettingButton()
                 ],
               )
