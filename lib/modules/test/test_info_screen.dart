@@ -5,9 +5,9 @@ import 'package:nodyslexia/customwigdets/settings_button.dart'; // Optional, for
 // import 'settings_screen.dart'; // Uncomment if you have a SettingsScreen
 
 class TestDetailScreen extends StatelessWidget {
-  final String? TestId; // Optional: To know which Test this is for
+  final int? testId; // Optional: To know which Test this is for
 
-  const TestDetailScreen({super.key, this.TestId});
+  const TestDetailScreen({super.key, this.testId});
 
   @override
   Widget build(BuildContext context) {

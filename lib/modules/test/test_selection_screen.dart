@@ -3,34 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 
+import '../../models/test.dart';
 import 'test_info_screen.dart';
 
 // Enum for sorting options
-enum SortOption { name, dateAdded, difficulty }
+enum SortOption { name, dateCreated, difficulty }
 
-// Enum for Test status
-enum TestStatus { notStarted, inProgress, completed }
-
-// Placeholder Test Data Model
-class Test {
-  final String id;
-  final String name;
-  final String difficulty;
-  final DateTime dateAdded;
-  final TestStatus status;
-  final double progress; // 0.0 to 1.0 for inProgress
-  final double result;
-
-  Test({
-    required this.id,
-    required this.name,
-    required this.difficulty,
-    required this.dateAdded,
-    this.status = TestStatus.notStarted,
-    this.progress = 0.0,
-    this.result = 0.0
-  });
-}
 
 class TestSelectionScreen extends StatefulWidget {
   const TestSelectionScreen({super.key});
@@ -42,38 +20,45 @@ class TestSelectionScreen extends StatefulWidget {
 
 class _TestSelectionScreenState extends State<TestSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
-  SortOption _currentSortOption = SortOption.dateAdded; // Default sort
+  SortOption _currentSortOption = SortOption.dateCreated; // Default sort
   bool _sortAscending = true; // Default sort order
 
   // --- Placeholder Data ---
   // In a real app, this would come from a database or API and be managed by a state solution
-  final List<Test> _allTests = [
-    Test(
-      id: '1',
+  final List<TestInfo> _allTests = [
+    TestInfo(
+      id: 1,
       name: 'Bài Kiểm Tra Đọc Hiểu Cơ Bản',
-      difficulty: 'Dễ',
-      dateAdded: DateTime.now().subtract(const Duration(days: 5)),
-      status: TestStatus.completed,
-      result: 9.0
+      difficulty: 0,
+      dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+      attempts: 0,
+      allowedAttempts: 1,
+      result: 0,
+      timeLimit: 300
     ),
-    Test(
-      id: '3',
-      name: 'Bài Kiểm Tra Nhận Biết Âm Vần',
-      difficulty: 'Trung Bình',
-      dateAdded: DateTime.now().subtract(const Duration(days: 10)),
-      status: TestStatus.notStarted,
+    TestInfo(
+        id: 1,
+        name: 'Bài Kiểm Tra Đọc Hiểu Nâng Cao',
+        difficulty: 1,
+        dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+        attempts: 0,
+        allowedAttempts: 3,
+        result: 0,
+        timeLimit: 500
     ),
-    Test(
-      id: '4',
-      name: 'Bài Kiểm Tra Chung 1',
-      difficulty: 'Khó',
-      dateAdded: DateTime.now().subtract(const Duration(days: 1)),
-      status: TestStatus.inProgress,
-      progress: 0.20,
+    TestInfo(
+        id: 1,
+        name: 'Bài Kiểm Tra Chung',
+        difficulty: 2,
+        dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+        attempts: 1,
+        allowedAttempts: 1,
+        result: 9.0,
+        timeLimit: 300
     ),
   ];
 
-  List<Test> _filteredTests = [];
+  List<TestInfo> _filteredTests = [];
 
   @override
   void initState() {
@@ -93,8 +78,8 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
   void _filterTests() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredTests = _allTests.where((Test) {
-        return Test.name.toLowerCase().contains(query);
+      _filteredTests = _allTests.where((TestInfo) {
+        return TestInfo.name.toLowerCase().contains(query);
       }).toList();
       _sortTests(); // Re-sort after filtering
     });
@@ -108,22 +93,17 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
           case SortOption.name:
             comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
             break;
-          case SortOption.dateAdded:
-            comparison = a.dateAdded.compareTo(b.dateAdded);
+          case SortOption.dateCreated:
+            comparison = a.dateCreated.compareTo(b.dateCreated);
             break;
           case SortOption.difficulty:
           // This requires a defined order for difficulty, e.g., Dễ < Trung Bình < Khó
-            comparison = _compareDifficulty(a.difficulty, b.difficulty);
+            comparison = a.difficulty.compareTo(b.difficulty);
             break;
         }
         return _sortAscending ? comparison : -comparison;
       });
     });
-  }
-
-  int _compareDifficulty(String d1, String d2) {
-    const difficultyOrder = {'Dễ': 1, 'Trung Bình': 2, 'Khó': 3};
-    return (difficultyOrder[d1] ?? 0).compareTo(difficultyOrder[d2] ?? 0);
   }
 
   void _setSortOption(SortOption option) {
@@ -210,7 +190,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       _buildSortButton(context, SortOption.name, 'Tên', Icons.sort_by_alpha),
-                      _buildSortButton(context, SortOption.dateAdded, 'Ngày', Icons.date_range),
+                      _buildSortButton(context, SortOption.dateCreated, 'Ngày', Icons.date_range),
                       _buildSortButton(context, SortOption.difficulty, 'Độ khó', Icons.stairs_outlined),
                     ],
                   ),
@@ -219,7 +199,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Test List
+            // TestInfo List
             Expanded(
               child: _filteredTests.isEmpty
                   ? Center(
@@ -231,8 +211,8 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 itemCount: _filteredTests.length,
                 itemBuilder: (context, index) {
-                  final Test = _filteredTests[index];
-                  return _buildTestCard(context, Test);
+                  final TestInfo = _filteredTests[index];
+                  return _buildTestCard(context, TestInfo);
                 },
               ),
             ),
@@ -257,47 +237,45 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
     );
   }
 
-  Widget _buildTestCard(BuildContext context, Test Test) {
+  Widget _buildTestCard(BuildContext context, TestInfo TestInfo) {
     String statusText;
+    String difficultyText;
     Color statusColor;
-    double scoreDisplay;
     Widget? progressIndicator;
 
-    switch (Test.status) {
-      case TestStatus.completed:
-        statusText = 'Đã hoàn thành';
-        statusColor = Colors.green.shade600;
-        progressIndicator = Row(
-            children: <Widget>[
-              Text(
-                'Điểm: ${Test.result} / 10',
-                style: TextStyle(fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(
-                width: 8,
-              ),
-              Icon(Icons.check_circle, color: statusColor, size: 20)
-            ],
-          );
-        break;
-      case TestStatus.inProgress:
-        statusText = 'Đang thực hiện (${(Test.progress * 100).toInt()}%)';
-        statusColor = Colors.orange.shade700;
-        progressIndicator = SizedBox(
-          width: 60, // Constrain width of the progress bar
-          child: LinearProgressIndicator(
-            value: Test.progress,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-            minHeight: 6, // Make it a bit thicker
+    if (TestInfo.attempts > 0) {
+      statusText = 'Đã hoàn thành';
+      statusColor = Colors.green.shade600;
+      progressIndicator = Row(
+        children: <Widget>[
+          Text(
+            'Điểm: ${TestInfo.result} / 10',
+            style: TextStyle(
+                fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
           ),
-        );
+          const SizedBox(
+            width: 8,
+          ),
+          Icon(Icons.check_circle, color: statusColor, size: 20)
+        ],
+      );
+    } else {
+      statusText = 'Chưa bắt đầu';
+      statusColor = Colors.grey.shade600;
+    }
+
+    switch (TestInfo.difficulty) {
+      case 0:
+        difficultyText = 'Dễ';
         break;
-      case TestStatus.notStarted:
+      case 1:
+        difficultyText = 'Trung Bình';
+        break;
+      case 2:
+        difficultyText = 'Khó';
+        break;
       default:
-        statusText = 'Chưa bắt đầu';
-        statusColor = Colors.grey.shade600;
-        break;
+        difficultyText = 'Không xác định';
     }
 
     return Card(
@@ -310,10 +288,10 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TestDetailScreen(TestId: Test.id), // Pass TestId if needed
+              builder: (context) => TestDetailScreen(testId: TestInfo.id), // Pass TestId if needed
             ),
           );
-          print('Tapped on Test: ${Test.name}');
+          debugPrint('Tapped on TestInfo: ${TestInfo.name}');
         },
         borderRadius: BorderRadius.circular(10.0),
         child: Padding(
@@ -322,7 +300,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                Test.name,
+                TestInfo.name,
                 style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.teal[800]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -335,12 +313,12 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Độ khó: ${Test.difficulty}',
+                        'Độ khó: $difficultyText',
                         style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ngày thêm: ${Test.dateAdded.day}/${Test.dateAdded.month}/${Test.dateAdded.year}',
+                        'Ngày thêm: ${TestInfo.dateCreated.day}/${TestInfo.dateCreated.month}/${TestInfo.dateCreated.year}',
                         style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                       ),
                     ],
@@ -352,14 +330,8 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                         statusText,
                         style: TextStyle(fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
                       ),
-                      if (progressIndicator != null && Test.status == TestStatus.inProgress) ...[
-                        const SizedBox(height: 4),
-                        progressIndicator,
-                      ] else if (Test.status == TestStatus.completed) ...[
-                        const SizedBox(height: 4), // Keep alignment
-                        progressIndicator!,
-                      ]
-
+                      const SizedBox(height: 4), // Keep alignment
+                      (progressIndicator != null) ? progressIndicator : Container()
                     ],
                   )
                 ],

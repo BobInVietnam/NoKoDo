@@ -6,15 +6,16 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:nodyslexia/models/student.dart';
 
-class Persistence {
-  static final Persistence _instance = Persistence._internal();
-  factory Persistence() => _instance;
-  Persistence._internal();
+import '../models/test.dart';
+
+class RemoteDatabase {
+  static final RemoteDatabase _instance = RemoteDatabase._internal();
+  factory RemoteDatabase() => _instance;
+  RemoteDatabase._internal();
 
   Database? _database;
 
   static const String _dbFileName = 'test_db.db';
-  static const String userStatsTable = 'user_stats';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -49,7 +50,7 @@ class Persistence {
       await File(path).writeAsBytes(bytes, flush: true);
       debugPrint("TESTING: Fresh database copied successfully.");
     } catch (e) {
-      debugPrint("Error copying database from assets: $e");
+      debugPrint("TESTING: Error copying database from assets: $e");
       throw Exception("Failed to copy bundled database. Error: $e");
     }
 
@@ -69,11 +70,28 @@ class Persistence {
 
     if (maps.isNotEmpty) {
       final userInfo = maps.first;
-      return Student(uid: userInfo['uid'] as String,
-          firstname: userInfo['firstname'] as String,
-          lastname: userInfo['lastname'] as String);
+      return Student.fromMap(userInfo);
     } else {
+      debugPrint('TESTING: No user found');
       return null;
+    }
+  }
+
+  Future<List<TestInfo>> getTestList(String uid, int classid) async {
+    final db = await database;
+
+    final List<Map<String, Object?>> maps = await db.rawQuery(
+      'SELECT Test.id, Test.name, Test.date_created, Test.time_limit, Test.allowed_attempts, Test.difficulty,  '
+      'FROM Test '
+      'INNER JOIN Class_Test ON Class_Test.testid = Test.id '
+      'WHERE Class_Test.classid = ?',
+      [classid]
+    );
+    if (maps.isNotEmpty) {
+      return maps.map((map) => TestInfo.fromMap(map)).toList();
+    } else {
+      debugPrint('TESTING: No test in class found.');
+      return [];
     }
   }
 }

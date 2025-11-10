@@ -163,6 +163,7 @@ class _MainScreenState extends State<MainScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Text(username != null? "Xin chào $username" : ""),
+                  SizedBox(width: 10),
                   SettingButton()
                 ],
               )

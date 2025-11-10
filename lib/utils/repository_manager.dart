@@ -1,13 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart' hide Persistence;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nodyslexia/models/student.dart';
-import 'package:nodyslexia/utils/persistence_TEST.dart';
+import 'package:nodyslexia/models/test.dart';
+import 'package:nodyslexia/utils/persistence.dart';
+import 'package:nodyslexia/utils/remote_database_TEST.dart';
 
 class RepoManager extends ChangeNotifier {
   // Get the instance of Firebase Auth.
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   Student? currentStudent;
-  Persistence database = Persistence();
+  RemoteDatabase onlineDatabase = RemoteDatabase();
+  LocalDatabase database = LocalDatabase();
 
   Future<void> signIn({
     required String email,
@@ -23,7 +26,8 @@ class RepoManager extends ChangeNotifier {
 
       // If sign-in is successful, return the user object obtained from Firebase.
       print('Sign-in successful! User: ${userCredential.user!.email}');
-      currentStudent = await database.getUser(userCredential.user!.uid);
+      currentStudent = await onlineDatabase.getUser(userCredential.user!.uid);
+      database.doSomething();
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       // Handle Firebase-specific errors.
@@ -53,5 +57,9 @@ class RepoManager extends ChangeNotifier {
     }
   }
 
+  Future<List<TestInfo>> getTestList() async {
+    final List<TestInfo> testList = await onlineDatabase.getTestList(currentStudent!.uid!, currentStudent!.classid!);
+    return testList;
+  }
 
 }
