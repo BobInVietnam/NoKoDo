@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/utils/repository_manager.dart';
 import 'modules/login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,10 +13,15 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => RepoManager(),
-      child: const NokodoApp(),
-    ));
+    MultiProvider(providers: [
+      ChangeNotifierProvider(
+      create: (context) => RepoManager()
+    ),
+      ChangeNotifierProvider(
+      create: (context) => TextStyleSettings()
+      )
+    ],
+    child: const NokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {
