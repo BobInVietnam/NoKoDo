@@ -58,7 +58,7 @@ class RemoteDatabase {
     return await openDatabase(path);
   }
 
-  Future<Student?> getUser(String uid) async {
+  Future<Map<String, Object?>?> getUser(String uid) async {
     final db = await database;
 
     final List<Map<String, Object?>> maps = await db.query(
@@ -70,28 +70,74 @@ class RemoteDatabase {
 
     if (maps.isNotEmpty) {
       final userInfo = maps.first;
-      return Student.fromMap(userInfo);
+      return userInfo;
     } else {
       debugPrint('TESTING: No user found');
       return null;
     }
   }
 
-  Future<List<TestInfo>> getTestList(String uid, int classid) async {
+  Future<List<Map<String, Object?>>> getTestList(String uid) async {
     final db = await database;
 
-    final List<Map<String, Object?>> maps = await db.rawQuery(
-      'SELECT Test.id, Test.name, Test.date_created, Test.time_limit, Test.allowed_attempts, Test.difficulty,  '
-      'FROM Test '
-      'INNER JOIN Class_Test ON Class_Test.testid = Test.id '
-      'WHERE Class_Test.classid = ?',
-      [classid]
+    debugPrint("TESTING: Querying database for TestInfo...");
+    final List<Map<String, Object?>> maps = await db.rawQuery('''
+SELECT 
+      T.id, 
+      T.name, 
+      T.date_created, 
+      T.time_limit,
+      T.allowed_attempts, 
+      T.difficulty,
+      -- 4. Get the best score from the attached sessions
+      MAX(SessionStats.session_score) as result, 
+      -- 5. Count how many sessions exist (ignores NULLs automatically)
+      COUNT(SessionStats.sessionid) as attempts
+  FROM 
+      Student S
+  -- 1. Link Student to Class and Class to Tests (The "Master List")
+  JOIN Class_Test CT ON S.classid = CT.classid
+  JOIN Test T ON CT.testid = T.id
+  
+  -- 2. Create a subquery that calculates the score for every session
+  LEFT JOIN (
+      SELECT 
+          STS.sessionid,
+          STS.testid,
+          STS.studentid,
+          SUM(SA.is_correct) as session_score
+      FROM Student_Test_Status STS
+      JOIN Student_Answer SA ON STS.sessionid = SA.sessionid
+      GROUP BY STS.sessionid
+  ) AS SessionStats 
+  -- 3. Attach the scores to the tests (Matching Student AND Test)
+  ON T.id = SessionStats.testid AND S.uid = SessionStats.studentid
+  
+  WHERE S.uid = ?
+  GROUP BY T.id;
+  ''',
+      [uid]
     );
+    debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
-      return maps.map((map) => TestInfo.fromMap(map)).toList();
+      return maps;
     } else {
       debugPrint('TESTING: No test in class found.');
       return [];
     }
   }
 }
+
+// select *, max(sum_correct) as result, count() as attempts from (
+// select T.id as id, T.name as name,
+// T.date_created as date_created, T.time_limit as time_limit,
+// T.allowed_attempts as allowed_attempts, T.difficulty as difficulty,
+// sum(SA.is_correct) as sum_correct
+// from Student S
+// join Class_Test CT on S.classid = CT.classid
+// join Test T on CT.testid = T.id
+// left join Student_Test_Status STS on STS.testid = T.id and S.uid = STS.studentid
+// left join Student_Answer SA on SA.sessionid = STS.sessionid
+// where S.uid = "ZgDTxfh7uWgYIdxcX0zEK2acvuD2"
+// group by STS.sessionid)
+// group by id;

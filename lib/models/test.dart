@@ -37,12 +37,12 @@ enum QuestState {UNANSWERED, CORRECT, INCORRECT}
 class TestInfo {
   final int id;
   final String name;
-  final DateTime dateCreated;
+  final int dateCreated;
   final int timeLimit;
   final int attempts;
   final int allowedAttempts;
   final int difficulty;
-  final double result;
+  final int? result;
 
   TestInfo({required this.id, required this.name, required this.dateCreated, required this.timeLimit, required this.attempts,
     required this.allowedAttempts, required this.difficulty, required this.result});
@@ -50,12 +50,13 @@ class TestInfo {
   factory TestInfo.fromMap(Map<String, Object?> map) {
     return TestInfo(id: map['id'] as int,
         name: map['name'] as String,
-        dateCreated: map['date_created'] as DateTime,
+        dateCreated: map['date_created'] as int,
         timeLimit: map['time_limit'] as int,
         attempts: map['attempts'] as int,
         allowedAttempts: map['allowed_attempts'] as int,
         difficulty: map['difficulty'] as int,
-        result: map['result'] as double);
+        result: map['result'] as int?
+    );
   }
 }
 

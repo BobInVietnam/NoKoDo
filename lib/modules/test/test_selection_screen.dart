@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 
-import '../../models/test.dart';
+import 'package:nodyslexia/models/test.dart';
+import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:provider/provider.dart';
 import 'test_info_screen.dart';
 
 // Enum for sorting options
@@ -25,46 +27,61 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
 
   // --- Placeholder Data ---
   // In a real app, this would come from a database or API and be managed by a state solution
-  final List<TestInfo> _allTests = [
-    TestInfo(
-      id: 1,
-      name: 'Bài Kiểm Tra Đọc Hiểu Cơ Bản',
-      difficulty: 0,
-      dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-      attempts: 0,
-      allowedAttempts: 1,
-      result: 0,
-      timeLimit: 300
-    ),
-    TestInfo(
-        id: 1,
-        name: 'Bài Kiểm Tra Đọc Hiểu Nâng Cao',
-        difficulty: 1,
-        dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-        attempts: 0,
-        allowedAttempts: 3,
-        result: 0,
-        timeLimit: 500
-    ),
-    TestInfo(
-        id: 1,
-        name: 'Bài Kiểm Tra Chung',
-        difficulty: 2,
-        dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-        attempts: 1,
-        allowedAttempts: 1,
-        result: 9.0,
-        timeLimit: 300
-    ),
-  ];
+  late Future<List<TestInfo>> _allTests;
+    // TestInfo(
+    //   id: 1,
+    //   name: 'Bài Kiểm Tra Đọc Hiểu Cơ Bản',
+    //   difficulty: 0,
+    //   dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+    //   attempts: 0,
+    //   allowedAttempts: 1,
+    //   result: 0,
+    //   timeLimit: 300
+    // ),
+    // TestInfo(
+    //     id: 1,
+    //     name: 'Bài Kiểm Tra Đọc Hiểu Nâng Cao',
+    //     difficulty: 1,
+    //     dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+    //     attempts: 0,
+    //     allowedAttempts: 3,
+    //     result: 0,
+    //     timeLimit: 500
+    // ),
+    // TestInfo(
+    //     id: 1,
+    //     name: 'Bài Kiểm Tra Chung',
+    //     difficulty: 2,
+    //     dateCreated: DateTime.now().subtract(const Duration(days: 5)),
+    //     attempts: 1,
+    //     allowedAttempts: 1,
+    //     result: 9.0,
+    //     timeLimit: 300
+    // ),
 
   List<TestInfo> _filteredTests = [];
+
+  Future<List<TestInfo>> _fetchData() async {
+    Future.delayed(Duration(seconds: 5));
+    debugPrint("TESTING: Pulling data...");
+    return context.read<RepoManager>().getTestList();
+  }
 
   @override
   void initState() {
     super.initState();
-    _filteredTests = List.from(_allTests); // Initialize with all Tests
-    _sortTests(); // Apply initial sort
+    debugPrint("TESTING: Inside initState");
+    _allTests = _fetchData();
+    _allTests.then((data) {
+      if (mounted) { // Check if screen is still on display
+        setState(() {
+          // Populate the list used by the UI
+          _filteredTests = data;
+          // Apply your default sorting immediately
+          _sortTests();
+        });
+      }
+    });
     _searchController.addListener(_filterTests);
   }
 
@@ -77,11 +94,17 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
 
   void _filterTests() {
     final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredTests = _allTests.where((TestInfo) {
-        return TestInfo.name.toLowerCase().contains(query);
-      }).toList();
-      _sortTests(); // Re-sort after filtering
+    // Get the full list first
+    _allTests.then((fullList) {
+      setState(() {
+        // Filter the list
+        _filteredTests = fullList.where((testInfo) {
+          return testInfo.name.toLowerCase().contains(query);
+        }).toList();
+
+        // Re-apply sort
+        _sortTests();
+      });
     });
   }
 
@@ -201,20 +224,36 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
 
             // TestInfo List
             Expanded(
-              child: _filteredTests.isEmpty
-                  ? Center(
-                  child: Text(
-                    'Không tìm thấy bài học nào.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ))
-                  : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                itemCount: _filteredTests.length,
-                itemBuilder: (context, index) {
-                  final TestInfo = _filteredTests[index];
-                  return _buildTestCard(context, TestInfo);
-                },
-              ),
+              child: FutureBuilder<List<TestInfo>>(
+                  future: _allTests,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      debugPrint("TESTING: _allTests: ${snapshot.data}");
+                      return _filteredTests.isEmpty // If there are no test
+                          ? Center(
+                          child: Text(
+                            'Không tìm thấy bài học nào.',
+                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          ))
+
+                          // If there is
+                          : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        itemCount: _filteredTests.length,
+                        itemBuilder: (context, index) {
+                          final testInfo = _filteredTests[index];
+                          return _buildTestCard(context, testInfo);});
+                    } else if (snapshot.hasError) {
+                      debugPrint('TESTING: Error: ${snapshot.error}');
+                      return Center(
+                          child: Text(
+                            'Có lỗi đã xảy ra. ${snapshot.error}',
+                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          ));
+                    } else{
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                  })
             ),
             const SizedBox(height: 10), // Spacer before bottom bar
 
@@ -318,7 +357,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ngày thêm: ${TestInfo.dateCreated.day}/${TestInfo.dateCreated.month}/${TestInfo.dateCreated.year}',
+                        'Ngày thêm: ${TestInfo.dateCreated}',
                         style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                       ),
                     ],

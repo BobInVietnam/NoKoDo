@@ -26,7 +26,8 @@ class RepoManager extends ChangeNotifier {
 
       // If sign-in is successful, return the user object obtained from Firebase.
       print('Sign-in successful! User: ${userCredential.user!.email}');
-      currentStudent = await onlineDatabase.getUser(userCredential.user!.uid);
+      final Map<String, Object?>? currentUserMap = await onlineDatabase.getUser(userCredential.user!.uid);
+      currentStudent = Student.fromMap(currentUserMap!);
       database.doSomething();
       notifyListeners();
     } on FirebaseAuthException catch (e) {
@@ -58,8 +59,10 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<List<TestInfo>> getTestList() async {
-    final List<TestInfo> testList = await onlineDatabase.getTestList(currentStudent!.uid!, currentStudent!.classid!);
-    return testList;
+    debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
+    final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid!);
+    debugPrint("TESTING: RepoMan got data");
+    return testList.map((map) => TestInfo.fromMap(map)).toList();
   }
 
 }
