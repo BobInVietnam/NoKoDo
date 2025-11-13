@@ -18,14 +18,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settings = context.watch<TextStyleSettings>();
 
     return Scaffold(
-      body: Center(
+      body: SafeArea(
         child: Column (
           children: <Widget>[
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  const Text("Font Size", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Cỡ chữ", style: TextStyle(fontWeight: FontWeight.bold)),
                   Slider(
                     min: 20,
                     max: 60,
@@ -34,23 +34,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context.read<TextStyleSettings>().setFontSize(value);
                     },
                   ),
-                  Text("Current: ${settings.fontSize.toStringAsFixed(1)}"),
+                  Text("Hiện tại: ${settings.fontSize.toStringAsFixed(1)}"),
+                  const Text("Dãn cách chữ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Slider(
+                    min: 1,
+                    max: 20,
+                    value: settings.letterSpacing,
+                    onChanged: (value) {
+                      context.read<TextStyleSettings>().setLetterSpacing(value);
+                    },
+                  ),
+                  Text("Hiện tại: ${settings.letterSpacing.toStringAsFixed(1)}"),
+                  const Text("Dãn cách từ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Slider(
+                    min: 1,
+                    max: 20,
+                    value: settings.wordSpacing,
+                    onChanged: (value) {
+                      context.read<TextStyleSettings>().setWordSpacing(value);
+                    },
+                  ),
+                  Text("Hiện tại: ${settings.wordSpacing.toStringAsFixed(1)}"),
                   const Divider(height: 30),
-                  Text("Color", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Màu chữ", style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
                     children: [
-                      _ColorButton(color: Colors.black, label: "Black"),
-                      _ColorButton(color: Colors.blue, label: "Blue"),
-                      _ColorButton(color: Colors.red, label: "Red"),
-                      _ColorButton(color: Colors.teal, label: "Teal"),
+                      _ColorButton(color: Colors.black, label: "Đen"),
+                      _ColorButton(color: Colors.blue, label: "Xanh"),
+                      _ColorButton(color: Colors.red, label: "Đỏ"),
+                      _ColorButton(color: Colors.teal, label: "Tía"),
                     ],
                   ),
 
                   const Divider(height: 30),
 
-                  const Text("Font Family", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Phông chữ", style: TextStyle(fontWeight: FontWeight.bold)),
                   DropdownButton<String>(
                     value: settings.fontFamily,
                     isExpanded: true,
@@ -65,17 +85,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                   ),
-                  const AdjustableText("The quick, brown fox jumps over the lazy dog!? Wow.")
+                  // const AdjustableText("The quick, brown fox jumps over the lazy dog!? Wow.")
                 ],
               ),
             ),
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: const AdjustableText(
+                  "The quick, brown fox jumps over the lazy dog!? Wow.",
+                  maxLines: 2)),
             const Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   // Return Button
-                  ReturnButton(),
+                  ReturnButton()
+
                 ],
               ),
             ),

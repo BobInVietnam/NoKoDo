@@ -6,11 +6,15 @@ class TextStyleSettings extends ChangeNotifier {
   double _fontSize = 20.0;
   Color _color = Colors.black;
   String _fontFamily = 'Roboto';
+  double _letterSpacing = 1.5;
+  double _wordSpacing = 1.0;
 
   // Getters
   double get fontSize => _fontSize;
   Color get color => _color;
   String get fontFamily => _fontFamily;
+  double get letterSpacing => _letterSpacing;
+  double get wordSpacing => _wordSpacing;
 
   // Constructor: Triggers loading immediately when the provider is created
   TextStyleSettings() {
@@ -25,6 +29,8 @@ class TextStyleSettings extends ChangeNotifier {
 
     // Load values, or use defaults if they don't exist
     _fontSize = prefs.getDouble('fontSize') ?? 20.0;
+    _letterSpacing = prefs.getDouble('letterSpacing') ?? 1.5;
+    _wordSpacing = prefs.getDouble('wordSpacing') ?? 1.0;
     _fontFamily = prefs.getString('fontFamily') ?? 'Roboto';
 
     // Load Color (stored as an integer)
@@ -40,6 +46,8 @@ class TextStyleSettings extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     prefs.setDouble('fontSize', _fontSize);
+    prefs.setDouble('letterSpacing', _letterSpacing);
+    prefs.setDouble('wordSpacing', _wordSpacing);
     prefs.setString('fontFamily', _fontFamily);
     prefs.setInt('colorValue', _color.toARGB32()); // Save color as int
   }
@@ -60,6 +68,18 @@ class TextStyleSettings extends ChangeNotifier {
 
   void setFontFamily(String newFont) {
     _fontFamily = newFont;
+    _saveToPrefs(); // Auto-save
+    notifyListeners();
+  }
+
+  void setLetterSpacing(double newSpacing) {
+    _letterSpacing = newSpacing;
+    _saveToPrefs(); // Auto-save
+    notifyListeners();
+  }
+
+  void setWordSpacing(double newSpacing) {
+    _wordSpacing = newSpacing;
     _saveToPrefs(); // Auto-save
     notifyListeners();
   }

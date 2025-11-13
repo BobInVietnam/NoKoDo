@@ -33,6 +33,8 @@ class AdjustableText extends StatelessWidget {
         fontSize: settings.fontSize,
         color: settings.color,
         fontFamily: settings.fontFamily,
+        letterSpacing: settings.letterSpacing,
+        wordSpacing: settings.wordSpacing
       ),
     );
   }
