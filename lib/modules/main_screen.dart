@@ -24,14 +24,18 @@ class _MainScreenState extends State<MainScreen> {
     required String label,
     VoidCallback? onPressed,
   }) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton.icon(
-          icon: Icon(icon, size: 28),
+          icon: Icon(icon, size: 36),
           label: Padding(
             padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 20.0), // Add padding to make button taller
-            child: Text(label, textAlign: TextAlign.center),
+            child: Text(label,
+                style: textTheme.displayMedium,
+                textAlign: TextAlign.center),
           ),
           onPressed: onPressed ?? () {
             // Placeholder action
@@ -57,6 +61,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final username = context.watch<RepoManager>().currentStudent?.firstname;
     return Scaffold(
       // No AppBar here
@@ -68,11 +73,7 @@ class _MainScreenState extends State<MainScreen> {
               padding: const EdgeInsets.only(top: 40.0, bottom: 30.0), // Added more top padding
               child: Text(
                 'Nokodo',
-                style: GoogleFonts.galindo( // Using Galindo font
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[700],
-                ),
+                style: textTheme.titleLarge
               ),
             ),
 
@@ -162,7 +163,8 @@ class _MainScreenState extends State<MainScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  Text(username != null? "Xin chào $username" : ""),
+                  Text(username != null? "Xin chào $username" : "",
+                  style: textTheme.bodyMedium),
                   SizedBox(width: 10),
                   SettingButton()
                 ],

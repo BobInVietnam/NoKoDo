@@ -42,6 +42,7 @@ class NokodoApp extends StatelessWidget {
           titleLarge: GoogleFonts.galindo(
             fontSize: 48,
             fontWeight: FontWeight.bold,
+            color: Colors.teal[700]
           ),
           displayLarge: GoogleFonts.rowdies(
             fontSize: 36,
@@ -49,11 +50,13 @@ class NokodoApp extends StatelessWidget {
             color: Colors.teal[700],
           ),
           bodyMedium: GoogleFonts.poppins(
-            fontSize: 20,
+            fontSize: 16,
+            color: Colors.grey[800]
           ),
           displayMedium: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.teal[800],
           )
         ),
         tabBarTheme: TabBarThemeData(

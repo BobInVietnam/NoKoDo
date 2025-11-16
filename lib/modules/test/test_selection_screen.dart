@@ -147,11 +147,12 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       icon: Icon(
         isActive ? (_sortAscending ? Icons.arrow_downward : Icons.arrow_upward) : icon,
         color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
-        size: 18,
+        size: 20,
       ),
       label: Text(
         label,
         style: TextStyle(
+          fontSize: 16,
           color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
           fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
         ),
@@ -167,9 +168,8 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? screenTitleStyle = GoogleFonts.galindo(
-        fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[700]);
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: SafeArea(
@@ -178,7 +178,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
             // Screen Title
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 16.0),
-              child: Text('Luyện tập', style: screenTitleStyle),
+              child: Text('Luyện tập', style: textTheme.displayLarge),
             ),
 
             // Search and Sort Area
@@ -202,7 +202,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25.0),
-                        borderSide: BorderSide(color: primaryColor, width: 1.5),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                     ),
@@ -281,6 +281,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
     String difficultyText;
     Color statusColor;
     Widget? progressIndicator;
+    final textTheme = Theme.of(context).textTheme;
 
     if (TestInfo.attempts > 0) {
       statusText = 'Đã hoàn thành';
@@ -289,8 +290,9 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
         children: <Widget>[
           Text(
             'Điểm: ${TestInfo.result} / 10',
-            style: TextStyle(
-                fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
+            style: textTheme.bodyMedium?.copyWith(
+              color: statusColor
+            ),
           ),
           const SizedBox(
             width: 8,
@@ -340,7 +342,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
             children: <Widget>[
               Text(
                 TestInfo.name,
-                style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.teal[800]),
+                style: textTheme.displayMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -353,12 +355,12 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                     children: [
                       Text(
                         'Độ khó: $difficultyText',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        style: textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Ngày thêm: ${TestInfo.dateCreated}',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        style: textTheme.bodyMedium,
                       ),
                     ],
                   ),
@@ -367,7 +369,9 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                     children: [
                       Text(
                         statusText,
-                        style: TextStyle(fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: statusColor
+                        ),
                       ),
                       const SizedBox(height: 4), // Keep alignment
                       (progressIndicator != null) ? progressIndicator : Container()

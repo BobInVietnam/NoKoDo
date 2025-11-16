@@ -15,6 +15,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final settings = context.watch<TextStyleSettings>();
 
     return Scaffold(
@@ -25,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  const Text("Cỡ chữ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Cỡ chữ", style: textTheme.displayMedium),
                   Slider(
                     min: 20,
                     max: 60,
@@ -35,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
                   Text("Hiện tại: ${settings.fontSize.toStringAsFixed(1)}"),
-                  const Text("Dãn cách chữ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Dãn cách chữ", style: textTheme.displayMedium),
                   Slider(
                     min: 1,
                     max: 20,
@@ -45,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
                   Text("Hiện tại: ${settings.letterSpacing.toStringAsFixed(1)}"),
-                  const Text("Dãn cách từ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Dãn cách từ", style: textTheme.displayMedium),
                   Slider(
                     min: 1,
                     max: 20,
@@ -56,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   Text("Hiện tại: ${settings.wordSpacing.toStringAsFixed(1)}"),
                   const Divider(height: 30),
-                  Text("Màu chữ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Màu chữ", style: textTheme.displayMedium),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
@@ -70,7 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   const Divider(height: 30),
 
-                  const Text("Phông chữ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text("Phông chữ", style: textTheme.displayMedium),
                   DropdownButton<String>(
                     value: settings.fontFamily,
                     isExpanded: true,

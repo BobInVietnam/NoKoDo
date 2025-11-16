@@ -76,6 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       // No AppBar here
       body: Center(
@@ -89,11 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 'Welcome to Nokodo', // Added a title to login screen
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[700],
-                ),
+                style: textTheme.displayLarge
               ),
               const SizedBox(height: 40),
               TextField(
