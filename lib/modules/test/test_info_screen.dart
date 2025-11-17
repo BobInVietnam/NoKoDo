@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/practice/lesson_screen.dart'; // Optional, for consistent font
-// import 'settings_screen.dart'; // Uncomment if you have a SettingsScreen
+import 'package:nodyslexia/modules/test/test_screen.dart';
 
 class TestDetailScreen extends StatelessWidget {
   final int? testId; // Optional: To know which Test this is for
@@ -61,7 +59,7 @@ class TestDetailScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const LessonDetailScreen()),
+                              MaterialPageRoute(builder: (context) => TestScreen()),
                             );
                           },
                           child: Text("BẮT ĐẦU")

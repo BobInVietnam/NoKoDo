@@ -40,24 +40,32 @@ class NokodoApp extends StatelessWidget {
             brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
         textTheme: TextTheme(
           titleLarge: GoogleFonts.galindo(
-            fontSize: 48,
+            fontSize: 52,
             fontWeight: FontWeight.bold,
             color: Colors.teal[700]
           ),
           displayLarge: GoogleFonts.rowdies(
-            fontSize: 36,
+            fontSize: 40,
             fontWeight: FontWeight.bold,
             color: Colors.teal[700],
           ),
+          displayMedium: GoogleFonts.poppins(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal[800],
+          ),
+          bodyLarge: GoogleFonts.poppins(
+            fontSize: 30,
+            color: Colors.grey[700]
+          ),
           bodyMedium: GoogleFonts.poppins(
+              fontSize: 22,
+              color: Colors.grey[800]
+          ),
+          bodySmall: GoogleFonts.poppins(
             fontSize: 16,
             color: Colors.grey[800]
           ),
-          displayMedium: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.teal[800],
-          )
         ),
         tabBarTheme: TabBarThemeData(
 
