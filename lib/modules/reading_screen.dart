@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
@@ -130,11 +131,6 @@ class _TextResultScreenState extends State<TextResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? contentStyle = GoogleFonts.notoSans( // A good font for readability
-      fontSize: 18, // Adjust as per theme or settings
-      height: 1.6,    // Line spacing
-      color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
-    );
 
     return Scaffold(
       body: SafeArea(
@@ -162,10 +158,9 @@ class _TextResultScreenState extends State<TextResultScreen> {
                       ],
                     ),
                     child: SingleChildScrollView(
-                      child: SelectableText(
+                      child: SelectableAdjustableText(
                         key: _textKey,
                         widget.extractedText,
-                        style: contentStyle,
                         textAlign: TextAlign.justify,
                         onSelectionChanged: (selection, cause) {
                           if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.tap) {

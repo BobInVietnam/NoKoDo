@@ -39,3 +39,40 @@ class AdjustableText extends StatelessWidget {
     );
   }
 }
+
+class SelectableAdjustableText extends StatelessWidget {
+  final String data;
+  final TextAlign? textAlign;
+  final int? maxLines;
+  final void Function(TextSelection, SelectionChangedCause?)? onSelectionChanged;
+
+  const SelectableAdjustableText(
+      this.data, {
+        super.key,
+        this.textAlign,
+        this.maxLines,
+        this.onSelectionChanged,
+      });
+
+  @override
+  Widget build(BuildContext context) {
+    // 1. Listen to the global settings
+    final settings = context.watch<TextStyleSettings>();
+
+    // 2. Return a SelectableText widget
+    return SelectableText(
+      data,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      // 3. Apply the global style
+      style: TextStyle(
+        fontSize: settings.fontSize,
+        color: settings.color,
+        fontFamily: settings.fontFamily,
+        letterSpacing: settings.letterSpacing,
+        wordSpacing: settings.wordSpacing,
+      ),
+      onSelectionChanged: onSelectionChanged,
+    );
+  }
+}
