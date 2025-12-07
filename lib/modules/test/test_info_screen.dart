@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/test/test_screen.dart';
+import 'package:nodyslexia/models/test.dart';
+import 'package:nodyslexia/modules/test/test_screen.dart'  hide Test;
 
 class TestDetailScreen extends StatelessWidget {
-  final int? testId; // Optional: To know which Test this is for
+  final Test test;
 
-  const TestDetailScreen({super.key, this.testId});
+  const TestDetailScreen({super.key, required this.test});
 
   @override
   Widget build(BuildContext context) {

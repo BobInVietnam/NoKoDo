@@ -2,6 +2,24 @@ abstract class Question {
   final int id;
 
   Question(this.id);
+  factory Question.fromMap(Map<String, Object?> map) {
+    if (map['is_multiple_choice'] as int == 0) {
+      return FillBlankQuestion(
+          map['id'] as int,
+          map['question'] as String,
+          map['answer'] as String);
+    } else {
+      return MultipleChoiceQuestion(
+          map['id'] as int,
+          map['question'] as String,
+          (map['choices'] as String).replaceAll('{', '') // Remove start brace
+              .replaceAll('}', '') // Remove end brace
+              .split(',')          // Split by comma
+              .map((e) => e.trim().replaceAll("'", "").replaceAll('"', "")) // Remove whitespace and quotes
+              .toList(), //String manip inline
+          map['answer'] as String);
+    }
+  }
 
   bool isAnswerCorrect(String answer);
 }
@@ -68,8 +86,18 @@ class Test {
   double score = 0;
   late List<QuestState> questionsState;
 
-  Test(this.id, this.questions, this.timeLimit, this.allowedAttempts) {
+  Test({required this.id, required this.questions,
+    required this.timeLimit, required this.allowedAttempts}) {
     questionsState = List.filled(questions.length, QuestState.UNANSWERED);
+  }
+
+  factory Test.fromMap(Map<String, Object?> map) {
+    return Test(
+      id: map['id'] as int,
+      questions: map['questions'] as List<Question>,
+      timeLimit: map['time_limit'] as int,
+      allowedAttempts: map['allowed_attempts'] as int,
+    );
   }
 
   void clearTestState() {
@@ -93,6 +121,5 @@ class Test {
     }
     score = currentScore / questions.length;
   }
-
 
 }

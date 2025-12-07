@@ -82,7 +82,7 @@ class RemoteDatabase {
 
     debugPrint("TESTING: Querying database for TestInfo...");
     final List<Map<String, Object?>> maps = await db.rawQuery('''
-SELECT 
+  SELECT 
       T.id, 
       T.name, 
       T.date_created, 
@@ -117,18 +117,46 @@ SELECT
       return [];
     }
   }
-}
 
-// select *, max(sum_correct) as result, count() as attempts from (
-// select T.id as id, T.name as name,
-// T.date_created as date_created, T.time_limit as time_limit,
-// T.allowed_attempts as allowed_attempts, T.difficulty as difficulty,
-// sum(SA.is_correct) as sum_correct
-// from Student S
-// join Class_Test CT on S.classid = CT.classid
-// join Test T on CT.testid = T.id
-// left join Student_Test_Status STS on STS.testid = T.id and S.uid = STS.studentid
-// left join Student_Answer SA on SA.sessionid = STS.sessionid
-// where S.uid = "ZgDTxfh7uWgYIdxcX0zEK2acvuD2"
-// group by STS.sessionid)
-// group by id;
+  Future<Map<String, Object?>> getTestDetails(int testId) async {
+    final db = await database;
+
+    debugPrint("TESTING: Querying database for Test...");
+    final List<Map<String, Object?>> maps = await db.rawQuery('''
+   SELECT * FROM Test WHERE Test.id = ?;
+      ''',
+        [testId]
+    );
+    debugPrint("TESTING: Map pulled : $maps");
+    if (maps.isNotEmpty) {
+      return maps.first;
+    } else {
+      debugPrint('TESTING: No test found.');
+      return {}; //TODO: need to handle no test case (UNLIKELY exception)
+    }
+  }
+
+  Future<List<Map<String, Object?>>> getTestQuestions(int testId) async {
+    final db = await database;
+
+    debugPrint("TESTING: Querying database for Questions...");
+    final List<Map<String, Object?>> maps = await db.rawQuery('''
+  SELECT 
+    id,
+    question,
+    answer,
+    is_multiple_choice,
+    choices
+  FROM Question WHERE Question.testid = ?;
+    ''',
+      [testId]
+    );
+    debugPrint("TESTING: Map pulled : $maps");
+    if (maps.isNotEmpty) {
+      return maps;
+    } else {
+      debugPrint('TESTING: No question in test???');
+      return []; //TODO: deal with this too (UNLIKELY exception)
+    }
+  }
+}

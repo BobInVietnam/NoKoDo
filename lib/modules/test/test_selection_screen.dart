@@ -62,7 +62,6 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
   List<TestInfo> _filteredTests = [];
 
   Future<List<TestInfo>> _fetchData() async {
-    Future.delayed(Duration(seconds: 5));
     debugPrint("TESTING: Pulling data...");
     return context.read<RepoManager>().getTestList();
   }
@@ -325,14 +324,19 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       child: InkWell(
         onTap: () {
+          final test = RepoManager().getTestDetailsAndQuestions(TestInfo.id);
           // In TestSelectionScreen, inside the _buildTestCard's onTap:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TestDetailScreen(testId: TestInfo.id), // Pass TestId if needed
-            ),
-          );
-          debugPrint('Tapped on TestInfo: ${TestInfo.name}');
+          test.then((data) {
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TestDetailScreen(test: data), // Pass TestId if needed
+                ),
+              );
+              debugPrint('Tapped on TestInfo: ${TestInfo.name}');
+            }
+          });
         },
         borderRadius: BorderRadius.circular(10.0),
         child: Padding(

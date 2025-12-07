@@ -65,4 +65,14 @@ class RepoManager extends ChangeNotifier {
     return testList.map((map) => TestInfo.fromMap(map)).toList();
   }
 
+  Future<Test> getTestDetailsAndQuestions(int testId) async {
+    debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
+    final Map<String, Object?> test = await onlineDatabase.getTestDetails(testId);
+    debugPrint("TESTING: RepoMan got test data");
+    final List<Map<String, Object?>> questionsList = await onlineDatabase.getTestQuestions(testId);
+    debugPrint("TESTING: RepoMan got questions data");
+    final mutableTest = Map<String, Object?>.from(test);
+    mutableTest['questions'] = questionsList.map((map) => Question.fromMap(map)).toList();
+    return Test.fromMap(mutableTest);
+  }
 }
