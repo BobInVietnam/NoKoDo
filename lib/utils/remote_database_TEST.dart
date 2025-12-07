@@ -90,7 +90,7 @@ SELECT
       T.allowed_attempts, 
       T.difficulty,
       -- 4. Get the best score from the attached sessions
-      MAX(SessionStats.session_score) as result, 
+      MAX(SessionStats.result) as result, 
       -- 5. Count how many sessions exist (ignores NULLs automatically)
       COUNT(SessionStats.sessionid) as attempts
   FROM 
@@ -100,16 +100,7 @@ SELECT
   JOIN Test T ON CT.testid = T.id
   
   -- 2. Create a subquery that calculates the score for every session
-  LEFT JOIN (
-      SELECT 
-          STS.sessionid,
-          STS.testid,
-          STS.studentid,
-          SUM(SA.is_correct) as session_score
-      FROM Student_Test_Status STS
-      JOIN Student_Answer SA ON STS.sessionid = SA.sessionid
-      GROUP BY STS.sessionid
-  ) AS SessionStats 
+  LEFT JOIN Student_Test_Status SessionStats 
   -- 3. Attach the scores to the tests (Matching Student AND Test)
   ON T.id = SessionStats.testid AND S.uid = SessionStats.studentid
   

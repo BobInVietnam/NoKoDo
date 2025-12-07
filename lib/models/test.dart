@@ -42,7 +42,7 @@ class TestInfo {
   final int attempts;
   final int allowedAttempts;
   final int difficulty;
-  final int? result;
+  final double? result;
 
   TestInfo({required this.id, required this.name, required this.dateCreated, required this.timeLimit, required this.attempts,
     required this.allowedAttempts, required this.difficulty, required this.result});
@@ -55,7 +55,7 @@ class TestInfo {
         attempts: map['attempts'] as int,
         allowedAttempts: map['allowed_attempts'] as int,
         difficulty: map['difficulty'] as int,
-        result: map['result'] as int?
+        result: map['result'] as double?
     );
   }
 }
