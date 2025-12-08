@@ -1,14 +1,14 @@
 class Student {
-  final String? uid;
-  final String? firstname;
-  final String? lastname;
-  final int? classid;
+  final String uid;
+  final String firstname;
+  final String lastname;
+  final int classid;
 
   Student({
-    this.uid,
-    this.firstname,
-    this.lastname,
-    this.classid
+    required this.uid,
+    required this.firstname,
+    required this.lastname,
+    required this.classid
   });
 
   Map<String, Object?> toMap() {

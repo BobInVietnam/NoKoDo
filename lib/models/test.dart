@@ -1,7 +1,9 @@
 abstract class Question {
   final int id;
+  final String content;
+  final String correctAnswer;
 
-  Question(this.id);
+  Question(this.id, this.content, this.correctAnswer);
   factory Question.fromMap(Map<String, Object?> map) {
     if (map['is_multiple_choice'] as int == 0) {
       return FillBlankQuestion(
@@ -12,25 +14,38 @@ abstract class Question {
       return MultipleChoiceQuestion(
           map['id'] as int,
           map['question'] as String,
-          (map['choices'] as String).replaceAll('{', '') // Remove start brace
-              .replaceAll('}', '') // Remove end brace
+          (map['choices'] as String).replaceAll('[', '') // Remove start brace
+              .replaceAll(']', '') // Remove end brace
               .split(',')          // Split by comma
-              .map((e) => e.trim().replaceAll("'", "").replaceAll('"', "")) // Remove whitespace and quotes
+              .map((e) => e.trim().replaceAll('"', "")) // Remove whitespace and quotes
               .toList(), //String manip inline
           map['answer'] as String);
     }
   }
 
   bool isAnswerCorrect(String answer);
+
+  static double calculateScore(
+      List<Question> questionList,
+      Map<int, dynamic> answerList)
+  {
+    int length = questionList.length;
+    int correctAnswerCount = 0;
+    for (final question in questionList) {
+      if (answerList[question.id] != null
+          && answerList[question.id] == question.correctAnswer) {
+        correctAnswerCount++;
+      }
+    };
+    return 10 * correctAnswerCount / length;
+  }
 }
 
 class MultipleChoiceQuestion extends Question{
 
-  final String content;
   final List<String> options;
-  final String correctAnswerIndex;
 
-  MultipleChoiceQuestion(super.id, this.content, this.options, this.correctAnswerIndex);
+  MultipleChoiceQuestion(super.id, super.content, this.options, super.correctAnswer);
 
   @override
   bool isAnswerCorrect(String answer) {
@@ -39,10 +54,8 @@ class MultipleChoiceQuestion extends Question{
 }
 
 class FillBlankQuestion extends Question{
-  final String content;
-  final String correctAnswer;
 
-  FillBlankQuestion(super.id, this.content, this.correctAnswer);
+  FillBlankQuestion(super.id, super.content, super.correctAnswer);
 
   @override
   bool isAnswerCorrect(String answer) {
@@ -78,6 +91,28 @@ class TestInfo {
   }
 }
 
+class TestSession {
+  int id;
+  final int testId;
+  final String studentId;
+  final int startTime;
+  final int endTime;
+  final double score;
+
+  TestSession({required this.id, required this.testId,
+    required this.studentId, required this.startTime,
+    required this.endTime, required this.score});
+
+  factory TestSession.fromMap(Map<String, Object?> map) {
+    return TestSession(id: map['id'] as int,
+        testId: map['testid'] as int,
+        studentId: map['studentid'] as String,
+        startTime: map['starttime'] as int,
+        endTime: map['endtime'] as int,
+        score: map['score'] as double);
+  }
+}
+
 class Test {
   final int id;
   final List<Question> questions;
@@ -102,24 +137,6 @@ class Test {
 
   void clearTestState() {
     questionsState = List.filled(questions.length, QuestState.UNANSWERED);
-  }
-
-  void answerQuestion(int questionIndex, String answer) {
-    if (questions[questionIndex].isAnswerCorrect(answer)) {
-      questionsState[questionIndex] = QuestState.CORRECT;
-    } else {
-      questionsState[questionIndex] = QuestState.INCORRECT;
-    }
-  }
-
-  void calculateScore() {
-    int currentScore = 0;
-    for (QuestState s in questionsState) {
-      if (s == QuestState.CORRECT) {
-        currentScore++;
-      }
-    }
-    score = currentScore / questions.length;
   }
 
 }

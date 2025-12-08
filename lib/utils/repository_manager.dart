@@ -59,6 +59,7 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<List<TestInfo>> getTestList() async {
+    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
     final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid!);
     debugPrint("TESTING: RepoMan got data");
@@ -66,7 +67,8 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<Test> getTestDetailsAndQuestions(int testId) async {
-    debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
+    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
+    debugPrint("TESTING: RepoMan getting test data...$testId");
     final Map<String, Object?> test = await onlineDatabase.getTestDetails(testId);
     debugPrint("TESTING: RepoMan got test data");
     final List<Map<String, Object?>> questionsList = await onlineDatabase.getTestQuestions(testId);
@@ -74,5 +76,33 @@ class RepoManager extends ChangeNotifier {
     final mutableTest = Map<String, Object?>.from(test);
     mutableTest['questions'] = questionsList.map((map) => Question.fromMap(map)).toList();
     return Test.fromMap(mutableTest);
+  }
+
+  Future<int> sendTestSessionStatus(TestSession testSession) async {
+    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
+    debugPrint("TESTING: RepoMan sending test session data...");
+    final int sessionId = await onlineDatabase.sendTestSessionStatus(testSession);
+    return sessionId;
+  }
+
+  Future<void> updateTestSessionStatus(TestSession testSession) async {
+    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
+    debugPrint("TESTING: RepoMan sending test session data...");
+    await onlineDatabase.updateTestSessionStatus(testSession);
+  }
+
+  Future<void> sendTestAnswers(TestSession testSession, Map<int, dynamic> answersList) async {
+    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
+    debugPrint("TESTING: RepoMan sending test answers data...");
+    final List<Map<String, Object?>> answersMapList = [];
+    for (final entry in answersList.entries) {
+      final Map<String, Object?> answerMap = {
+        'sessionid': testSession.id,
+        'questionid': entry.key,
+        'answer': entry.value
+      };
+      answersMapList.add(answerMap);
+    }
+    await onlineDatabase.sendTestAnswers(answersMapList);
   }
 }

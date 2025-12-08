@@ -159,4 +159,63 @@ class RemoteDatabase {
       return []; //TODO: deal with this too (UNLIKELY exception)
     }
   }
+
+  Future<Map<String, Object?>> getTestSessionId(TestSession testSession) async {
+    final db = await database;
+
+    debugPrint("TESTING: Querying database for TestSession...");
+    final List<Map<String, Object?>> maps = await db.query(
+      'Student_Test_Status',
+      where: 'studentid = ? AND date_created = ?',
+      whereArgs: [testSession.studentId, testSession.startTime]
+    );
+    debugPrint("TESTING: Map pulled : $maps");
+    if (maps.isNotEmpty) {
+      return maps.first;
+    } else {
+      debugPrint('TESTING: No test session found.');
+      return {}; //TODO: need to handle no test session case (UNLIKELY exception)
+    }
+  }
+
+  Future<int> sendTestSessionStatus(TestSession testSession) async {
+    final db = await database;
+
+    debugPrint("TESTING: Posting test session data...");
+    final int sessionId = await db.insert('Student_Test_Status',
+        {
+          'studentid': testSession.studentId,
+          'testid': testSession.testId,
+          'date_created': testSession.startTime
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    debugPrint("TESTING: Test session posted.");
+    return sessionId;
+  }
+
+  Future<void> updateTestSessionStatus(TestSession testSession) async {
+    final db = await database;
+
+    debugPrint("TESTING: Posting test session data...");
+    await db.update('Student_Test_Status',
+        {
+          'date_finished': testSession.endTime,
+          'duration': testSession.endTime - testSession.startTime,
+          'result': testSession.score
+        },
+        where: 'sessionid = ?',
+        whereArgs: [testSession.id]);
+    debugPrint("TESTING: Test session posted.");
+  }
+
+  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList) async {
+    final db = await database;
+
+    debugPrint("TESTING: Posting test answers data...");
+    for (final answer in answersList) {
+      await db.insert('Student_Answer', answer,
+          conflictAlgorithm: ConflictAlgorithm.replace);
+    }
+    debugPrint("TESTING: Test answers posted.");
+  }
 }

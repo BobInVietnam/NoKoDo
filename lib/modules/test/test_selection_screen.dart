@@ -327,7 +327,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
           final test = RepoManager().getTestDetailsAndQuestions(TestInfo.id);
           // In TestSelectionScreen, inside the _buildTestCard's onTap:
           test.then((data) {
-            if (mounted) {
+            if (context.mounted) {
               Navigator.push(
                 context,
                 MaterialPageRoute(

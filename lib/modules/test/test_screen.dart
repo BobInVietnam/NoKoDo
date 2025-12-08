@@ -5,88 +5,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 
-// --- 1. DATA MODELS & MOCK DATA ---
+import 'package:nodyslexia/models/test.dart';
 
-enum QuestionType { multipleChoice, textInput }
-
-class Question {
-  final String id;
-  final QuestionType type;
-  final String text;
-  final List<String>? options;
-  final dynamic correctAnswer;
-
-  Question({
-    required this.id,
-    required this.type,
-    required this.text,
-    this.options,
-    this.correctAnswer,
-  });
-}
-
-class Test {
-  final String id;
-  final String name;
-  final List<Question> questions;
-
-  Test({required this.id, required this.name, required this.questions});
-}
-
-// A global mock test object for this example.
-// In your real app, you would pass this from the TestSelectionScreen.
-final Test mockTest = Test(
-  id: "test_101",
-  name: "Bài Kiểm Tra Ngữ Nghĩa",
-  questions: [
-    Question(
-      id: "q1",
-      type: QuestionType.multipleChoice,
-      text: "Từ nào sau đây đồng nghĩa với 'hạnh phúc'?",
-      options: ["Vui vẻ", "Buồn bã", "Giận dữ", "Lo lắng"],
-      correctAnswer: "Vui vẻ",
-    ),
-    Question(
-      id: "q2",
-      type: QuestionType.textInput,
-      text: "Điền vào chỗ trống: '... che mắt thánh'",
-      correctAnswer: "Một đồng",
-    ),
-    Question(
-      id: "q3",
-      type: QuestionType.multipleChoice,
-      text: "Câu nào sau đây là câu đơn?",
-      options: [
-        "Trời mưa và tôi ngủ.",
-        "Mẹ đi làm.",
-        "Nếu bạn cố gắng, bạn sẽ thành công.",
-        "Tất cả đều sai."
-      ],
-      correctAnswer: "Mẹ đi làm.",
-    ),
-    Question(
-      id: "q4",
-      type: QuestionType.textInput,
-      text: "Viết 1 từ trái nghĩa với 'yêu thương'",
-      correctAnswer: "Căm ghét",
-    ),
-    // Add more questions to see the tray scroll
-    for (int i = 5; i <= 25; i++)
-      Question(
-        id: "q$i",
-        type: i % 3 == 0 ? QuestionType.textInput : QuestionType.multipleChoice,
-        text: "Đây là câu hỏi $i?",
-        options: ["Option A", "Option B", "Option C", "Option D"],
-        correctAnswer: "Option A",
-      ),
-  ],
-);
+import 'package:nodyslexia/utils/repository_manager.dart';
 
 // --- 2. THE TEST SCREEN WIDGET ---
 
 class TestScreen extends StatefulWidget {
-  final Test test = mockTest; // The screen is built based on this test object
-  TestScreen({super.key});
+  final Test test; // The screen is built based on this test object
+  final TestSession testSession;
+  TestScreen({super.key, required this.test, required this.testSession});
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -99,7 +27,7 @@ class _TestScreenState extends State<TestScreen> {
   // State variables
   int _currentPage = 0;
   bool _isTrayExpanded = false;
-  final Map<String, dynamic> _answers = {}; // Stores {questionId: answer}
+  final Map<int, dynamic> _answers = {}; // Stores {questionId: answer}
   final Map<int, TextEditingController> _textControllers = {}; // To manage text fields
 
   @override
@@ -110,7 +38,8 @@ class _TestScreenState extends State<TestScreen> {
 
     // Initialize text controllers for text input questions
     for (int i = 0; i < _questions.length; i++) {
-      if (_questions[i].type == QuestionType.textInput) {
+      _answers[_questions[i].id] = null;
+      if (_questions[i] is FillBlankQuestion) {
         _textControllers[i] = TextEditingController();
       }
     }
@@ -126,7 +55,7 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   /// Registers an answer and automatically moves to the next page
-  void _registerAnswer(String questionId, dynamic answer) {
+  void _registerAnswer(int questionId, dynamic answer) {
     setState(() {
       _answers[questionId] = answer;
     });
@@ -161,26 +90,74 @@ class _TestScreenState extends State<TestScreen> {
 
   /// Submits the test
   void _submitTest() {
-
-    // 1. Show a confirmation dialog
+    // 1. Show the initial confirmation dialog
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (confirmContext) => AlertDialog( // Rename context to avoid confusion
         title: const Text('Nộp bài?'),
         content: const Text('Bạn có chắc chắn muốn nộp bài không?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            // Just close the confirmation dialog
+            onPressed: () => Navigator.pop(confirmContext),
             child: const Text('Huỷ'),
           ),
           TextButton(
-            onPressed: () {
-              // Pop dialog
-              Navigator.pop(context);
-              // Pop test screen
-              Navigator.pop(context);
-              debugPrint("Bài đã nộp: $_answers");
-              // TODO: Navigate to a Results Screen
+            onPressed: () async {
+              // A. Close the "Are you sure?" dialog first
+              Navigator.pop(confirmContext);
+
+              // B. Show a non-dismissible Loading Dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false, // Prevents clicking outside to close
+                builder: (loadingContext) => const Center(
+                  child: CircularProgressIndicator(), // Or a custom loading widget
+                ),
+              );
+
+              try {
+                // C. Prepare the data
+                TestSession submitTestSession = TestSession(
+                    id: widget.testSession.id,
+                    testId: widget.testSession.testId,
+                    studentId: widget.testSession.studentId,
+                    startTime: widget.testSession.startTime,
+                    endTime: DateTime.now().millisecondsSinceEpoch,
+                    score: Question.calculateScore(_questions, _answers)
+                );
+
+                // D. Run the async operation (The Waiting Part)
+                await RepoManager().updateTestSessionStatus(submitTestSession);
+                await RepoManager().sendTestAnswers(widget.testSession, _answers);
+
+                debugPrint("Bài đã nộp: $_answers");
+
+                // E. Close the Loading Dialog
+                // We check 'mounted' to ensure the widget tree is still valid
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+
+                // F. Close the Test Screen (Go back to menu)
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+
+                // Optional: If you want to go to results instead of popping:
+                // if (context.mounted) {
+                //    Navigator.pushReplacement(context, MaterialPageRoute(...));
+                // }
+
+              } catch (e) {
+                // Handle error: Close loader and show error
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loader
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
+              }
             },
             child: const Text('Nộp bài'),
           ),
@@ -263,7 +240,7 @@ class _TestScreenState extends State<TestScreen> {
             ),
             child: Center(
               child: Text(
-                question.text,
+                question.content,
                 style: textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -272,9 +249,9 @@ class _TestScreenState extends State<TestScreen> {
           const SizedBox(height: 24),
 
           // Answer Area (Dynamic)
-          if (question.type == QuestionType.multipleChoice)
+          if (question is MultipleChoiceQuestion)
             _buildMultipleChoiceOptions(question),
-          if (question.type == QuestionType.textInput)
+          if (question is FillBlankQuestion)
             _buildTextInput(question, index),
         ],
       ),
@@ -282,7 +259,7 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   /// Builds the 4-grid for Multiple Choice
-  Widget _buildMultipleChoiceOptions(Question question) {
+  Widget _buildMultipleChoiceOptions(MultipleChoiceQuestion question) {
     final textTheme = Theme.of(context).textTheme;
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -291,11 +268,11 @@ class _TestScreenState extends State<TestScreen> {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: question.options?.length ?? 0,
+      itemCount: question.options.length ?? 0,
       shrinkWrap: true, // Important for GridView in a Column
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        final option = question.options![index];
+        final option = question.options[index];
         return InkWell(
           onTap: () => _registerAnswer(question.id, option),
           child: Container(
@@ -318,7 +295,7 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   /// Builds the Text Field and "ENTER" button
-  Widget _buildTextInput(Question question, int index) {
+  Widget _buildTextInput(FillBlankQuestion question, int index) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
@@ -469,7 +446,7 @@ class _TestScreenState extends State<TestScreen> {
   /// Builds one single question indicator square
   Widget _buildQuestionIndicator(int index, ColorScheme colorScheme) {
     final questionId = _questions[index].id;
-    final bool isAnswered = _answers.containsKey(questionId);
+    final bool isAnswered = (_answers[questionId] != null);
     final bool isCurrent = _currentPage == index;
 
     Color color = Colors.grey[100]!;
@@ -502,3 +479,4 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 }
+

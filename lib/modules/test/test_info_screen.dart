@@ -3,6 +3,8 @@ import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/modules/test/test_screen.dart'  hide Test;
+import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:provider/provider.dart';
 
 class TestDetailScreen extends StatelessWidget {
   final Test test;
@@ -13,6 +15,7 @@ class TestDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorTheme = Theme.of(context).colorScheme;
+    final currentStudent = context.watch<RepoManager>().currentStudent;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -57,11 +60,25 @@ class TestDetailScreen extends StatelessWidget {
                           )
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => TestScreen()),
+                          onPressed: () async {
+                            final TestSession testSession = TestSession(id: 0,
+                              testId: test.id,
+                              studentId: currentStudent!.uid,
+                              startTime: DateTime.now().millisecondsSinceEpoch,
+                              endTime: 0,
+                              score: 0
                             );
+                            final sessionId = await RepoManager().sendTestSessionStatus(testSession);
+                            testSession.id = sessionId;
+                            if (context.mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => TestScreen(
+                                    test: test,
+                                    testSession: testSession
+                                )),
+                              );
+                            }
                           },
                           child: Text("BẮT ĐẦU")
                         )
