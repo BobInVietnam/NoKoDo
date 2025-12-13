@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text
       );
       if (!mounted) return;
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
       );

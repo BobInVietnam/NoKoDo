@@ -144,10 +144,6 @@ class _TestScreenState extends State<TestScreen> {
                   Navigator.pop(context);
                 }
 
-                // Optional: If you want to go to results instead of popping:
-                // if (context.mounted) {
-                //    Navigator.pushReplacement(context, MaterialPageRoute(...));
-                // }
 
               } catch (e) {
                 // Handle error: Close loader and show error

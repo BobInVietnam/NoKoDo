@@ -98,14 +98,14 @@ class _TextResultScreenState extends State<TextResultScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   TextButton(
-                    child: const Text('Read', style: TextStyle(color: Colors.white)),
+                    child: const Text('Đọc phần đã chọn', style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       _handleReadSelected(selectedText);
                       _removeSelectionMenu();
                     },
                   ),
                   TextButton(
-                    child: const Text('Highlight', style: TextStyle(color: Colors.white)),
+                    child: const Text('Đánh dấu', style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       // Placeholder for highlighting logic
                       print('Highlight: "$selectedText"');

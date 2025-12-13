@@ -58,6 +58,11 @@ class RepoManager extends ChangeNotifier {
     }
   }
 
+  void signOut() async {
+    await _firebaseAuth.signOut();
+    currentStudent = null;
+  }
+
   Future<List<TestInfo>> getTestList() async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");

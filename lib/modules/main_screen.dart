@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
+import 'package:nodyslexia/modules/login/login_screen.dart';
 
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/file_to_text_screen.dart';
@@ -163,6 +164,18 @@ class _MainScreenState extends State<MainScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      _logOut(); // Go back to the previous screen
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(12),
+                      backgroundColor: Colors.grey[300],
+                      foregroundColor: Colors.black54,
+                    ),
+                    child: const Icon(Icons.arrow_back, size: 28),
+                  ),
                   Text(username != null? "Xin chào $username" : "",
                   style: textTheme.bodyMedium),
                   SizedBox(width: 10),
@@ -172,6 +185,58 @@ class _MainScreenState extends State<MainScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  void _logOut() {
+    showDialog(
+      context: context,
+      builder: (confirmContext) => AlertDialog( // Rename context to avoid confusion
+        title: const Text('Đăng xuất?'),
+        content: const Text('Bạn có chắc chắn muốn đăng xuất không? Bạn sẽ phải đăng nhập lại.'),
+        actions: [
+          TextButton(
+            // Just close the confirmation dialog
+            onPressed: () => Navigator.pop(confirmContext),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () async {
+              // A. Close the "Are you sure?" dialog first
+              Navigator.pop(confirmContext);
+
+              // B. Show a non-dismissible Loading Dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false, // Prevents clicking outside to close
+                builder: (loadingContext) => const Center(
+                  child: CircularProgressIndicator(), // Or a custom loading widget
+                ),
+              );
+
+              try {
+                final currentRepoManager = context.read<RepoManager>();
+                currentRepoManager.signOut();
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              } catch (e) {
+                // Handle error: Close loader and show error
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loader
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Đăng xuất'),
+          ),
+        ],
       ),
     );
   }
