@@ -176,6 +176,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     child: const Icon(Icons.arrow_back, size: 28),
                   ),
+                  Expanded(child: Container()),
                   Text(username != null? "Xin chào $username" : "",
                   style: textTheme.bodyMedium),
                   SizedBox(width: 10),

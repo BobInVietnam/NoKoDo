@@ -89,15 +89,15 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Text(
-                'Welcome to Nokodo', // Added a title to login screen
+                'Chào mừng đến với Nokodo', // Added a title to login screen
                 textAlign: TextAlign.center,
-                style: textTheme.displayLarge
+                style: textTheme.titleLarge
               ),
               const SizedBox(height: 40),
               TextField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Địa chỉ e-mail',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: 'Mật khẩu',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   textStyle: const TextStyle(fontSize: 18),
                 ),
-                child: _submitDisabled ? const Text('Submitting...') : const Text('Submit'),
+                child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
               ),
             ],
           ),

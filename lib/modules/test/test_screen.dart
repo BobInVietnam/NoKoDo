@@ -219,13 +219,14 @@ class _TestScreenState extends State<TestScreen> {
 
   /// Builds the widget for a single question page
   Widget _buildQuestionPage(Question question, int index) {
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           // Question Box
-          Container(
+          isKeyboardOpen ? const SizedBox(height: 0) : Container(
             width: double.infinity,
             height: 200,
             padding: const EdgeInsets.all(16),
