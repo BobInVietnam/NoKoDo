@@ -27,7 +27,7 @@ class _TestScreenState extends State<TestScreen> {
   // State variables
   int _currentPage = 0;
   bool _isTrayExpanded = false;
-  final Map<int, dynamic> _answers = {}; // Stores {questionId: answer}
+  final Map<int, String?> _answers = {}; // Stores {questionId: answer}
   final Map<int, TextEditingController> _textControllers = {}; // To manage text fields
 
   @override
@@ -55,7 +55,7 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   /// Registers an answer and automatically moves to the next page
-  void _registerAnswer(int questionId, dynamic answer) {
+  void _registerAnswer(int questionId, String answer) {
     setState(() {
       _answers[questionId] = answer;
     });
@@ -328,7 +328,7 @@ class _TestScreenState extends State<TestScreen> {
               _registerAnswer(question.id, answer);
             }
           },
-          child: const Text("ENTER"),
+          child: const Text("XÁC NHẬN"),
         ),
       ],
     );
@@ -431,7 +431,7 @@ class _TestScreenState extends State<TestScreen> {
                   foregroundColor: Colors.green,
                 ),
                 onPressed: _submitTest,
-                child: const Text("Submit")
+                child: const Text("Nộp bài")
               ),
             ],
           )

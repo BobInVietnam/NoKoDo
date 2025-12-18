@@ -28,36 +28,6 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
   // --- Placeholder Data ---
   // In a real app, this would come from a database or API and be managed by a state solution
   late Future<List<TestInfo>> _allTests;
-    // TestInfo(
-    //   id: 1,
-    //   name: 'Bài Kiểm Tra Đọc Hiểu Cơ Bản',
-    //   difficulty: 0,
-    //   dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-    //   attempts: 0,
-    //   allowedAttempts: 1,
-    //   result: 0,
-    //   timeLimit: 300
-    // ),
-    // TestInfo(
-    //     id: 1,
-    //     name: 'Bài Kiểm Tra Đọc Hiểu Nâng Cao',
-    //     difficulty: 1,
-    //     dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-    //     attempts: 0,
-    //     allowedAttempts: 3,
-    //     result: 0,
-    //     timeLimit: 500
-    // ),
-    // TestInfo(
-    //     id: 1,
-    //     name: 'Bài Kiểm Tra Chung',
-    //     difficulty: 2,
-    //     dateCreated: DateTime.now().subtract(const Duration(days: 5)),
-    //     attempts: 1,
-    //     allowedAttempts: 1,
-    //     result: 9.0,
-    //     timeLimit: 300
-    // ),
 
   List<TestInfo> _filteredTests = [];
 
@@ -70,6 +40,11 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
   void initState() {
     super.initState();
     debugPrint("TESTING: Inside initState");
+    _updateTestList();
+    _searchController.addListener(_filterTests);
+  }
+
+  void _updateTestList() {
     _allTests = _fetchData();
     _allTests.then((data) {
       if (mounted) { // Check if screen is still on display
@@ -81,7 +56,6 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
         });
       }
     });
-    _searchController.addListener(_filterTests);
   }
 
   @override
@@ -326,15 +300,16 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
         onTap: () {
           final test = RepoManager().getTestDetailsAndQuestions(TestInfo.id);
           // In TestSelectionScreen, inside the _buildTestCard's onTap:
-          test.then((data) {
+          test.then((data) async {
             if (context.mounted) {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TestDetailScreen(test: data), // Pass TestId if needed
                 ),
               );
               debugPrint('Tapped on TestInfo: ${TestInfo.name}');
+              _updateTestList();
             }
           });
         },

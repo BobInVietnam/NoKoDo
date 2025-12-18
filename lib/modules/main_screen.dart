@@ -7,7 +7,7 @@ import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/library_screen.dart';
-import 'package:nodyslexia/modules/statistics_screen.dart';
+import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/utils/repository_manager.dart';
 import 'package:provider/provider.dart';
 

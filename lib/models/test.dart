@@ -27,13 +27,13 @@ abstract class Question {
 
   static double calculateScore(
       List<Question> questionList,
-      Map<int, dynamic> answerList)
+      Map<int, String?> answerList)
   {
     int length = questionList.length;
     int correctAnswerCount = 0;
     for (final question in questionList) {
       if (answerList[question.id] != null
-          && answerList[question.id] == question.correctAnswer) {
+          && answerList[question.id]!.toLowerCase() == question.correctAnswer.toLowerCase()) {
         correctAnswerCount++;
       }
     };
