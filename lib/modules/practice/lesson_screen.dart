@@ -11,12 +11,8 @@ class LessonDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Using Poppins as an example, adjust if you have a global theme
-    final TextStyle? lessonTitleStyle = GoogleFonts.poppins(
-      fontSize: 36,
-      fontWeight: FontWeight.w600,
-      color: Colors.teal[700],
-    );
+
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -24,11 +20,42 @@ class LessonDetailScreen extends StatelessWidget {
           children: <Widget>[
             // Expanded widget to push the content to the center and bottom
             Expanded(
-              child: Center(
-                child: Text(
-                  'Bài tập',
-                  style: lessonTitleStyle,
-                ),
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 48),
+                  Text(
+                    'Bài tập',
+                    style: textTheme.displayLarge,
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 16.0),
+                      margin: EdgeInsets.symmetric(vertical: 30.0),
+                      child: Text(
+                          "Hãy trả lời những câu hỏi sau nhé!"
+                      )
+                    )
+                  ),
+                  ElevatedButton(
+                    onPressed: () => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LessonPracticeScreen())
+                      )
+                    },
+                    child: Text(
+                      'Bắt đầu',
+                      style: textTheme.displayMedium,
+                    )
+                  )
+                ]
               ),
             ),
 
@@ -49,4 +76,42 @@ class LessonDetailScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class LessonPracticeScreen extends StatefulWidget {
+  const LessonPracticeScreen({super.key});
+
+  @override
+  State<LessonPracticeScreen> createState() => _LessonPracticeScreenState();
+}
+
+class _LessonPracticeScreenState extends State<LessonPracticeScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                "Bài tập ở đây"
+              )
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  // Return Button
+                  ReturnButton(),
+                  SettingButton(),
+                ],
+              ),
+            ),
+          ]
+        )
+      )
+    );
+  }
+  
 }

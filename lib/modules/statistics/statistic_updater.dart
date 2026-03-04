@@ -8,12 +8,10 @@ class StatisticsUpdater extends ChangeNotifier {
   int _lessonFinishedNumber = 0;
   List<int> _activityCounts = [];
 
-  StatisticsUpdater() {
-
-  }
+  StatisticsUpdater();
 
   Future<void> gatherStatisticData() async {
-
+    
   }
 
 }
