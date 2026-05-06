@@ -298,7 +298,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       child: InkWell(
         onTap: () {
-          final test = RepoManager().getTestDetailsAndQuestions(TestInfo.id);
+          final test = context.read<RepoManager>().getTestDetailsAndQuestions(TestInfo.id);
           // In TestSelectionScreen, inside the _buildTestCard's onTap:
           test.then((data) async {
             if (context.mounted) {

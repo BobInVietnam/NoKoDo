@@ -68,7 +68,7 @@ class TestDetailScreen extends StatelessWidget {
                               endTime: 0,
                               score: 0
                             );
-                            final sessionId = await RepoManager().sendTestSessionStatus(testSession);
+                            final sessionId = await context.read<RepoManager>().sendTestSessionStatus(testSession);
                             testSession.id = sessionId;
                             if (context.mounted) {
                               Navigator.push(

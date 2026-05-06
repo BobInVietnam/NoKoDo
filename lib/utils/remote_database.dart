@@ -8,10 +8,20 @@ import 'package:nodyslexia/models/student.dart';
 
 import '../models/test.dart';
 
-class RemoteDatabase {
-  static final RemoteDatabase _instance = RemoteDatabase._internal();
-  factory RemoteDatabase() => _instance;
-  RemoteDatabase._internal();
+abstract class RemoteDatabase {
+  Future<Map<String, Object?>?> getUser(String uid);
+  Future<List<Map<String, Object?>>> getTestList(String uid);
+  Future<Map<String, Object?>> getTestDetails(int testId);
+  Future<List<Map<String, Object?>>> getTestQuestions(int testId);
+  Future<int> sendTestSessionStatus(TestSession testSession);
+  Future<void> updateTestSessionStatus(TestSession testSession);
+  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList);
+}
+
+class TestRemoteDatabase extends RemoteDatabase {
+  static final TestRemoteDatabase _instance = TestRemoteDatabase._internal();
+  factory TestRemoteDatabase() => _instance;
+  TestRemoteDatabase._internal();
 
   Database? _database;
 

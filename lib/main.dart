@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
+import 'package:nodyslexia/utils/persistence.dart';
+import 'package:nodyslexia/utils/remote_database.dart';
 import 'package:nodyslexia/utils/repository_manager.dart';
 import 'modules/login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,7 +17,9 @@ Future<void> main() async {
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(
-      create: (context) => RepoManager()
+      create: (context) => RepoManager(
+          onlineDatabase: TestRemoteDatabase(),
+          database: TestLocalDatabase())
     ),
       ChangeNotifierProvider(
       create: (context) => TextStyleSettings()

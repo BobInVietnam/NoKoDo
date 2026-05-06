@@ -8,6 +8,7 @@ import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/test.dart';
 
 import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:provider/provider.dart';
 
 // --- 2. THE TEST SCREEN WIDGET ---
 
@@ -128,31 +129,25 @@ class _TestScreenState extends State<TestScreen> {
                 );
 
                 // D. Run the async operation (The Waiting Part)
-                await RepoManager().updateTestSessionStatus(submitTestSession);
-                await RepoManager().sendTestAnswers(widget.testSession, _answers);
+                await context.read<RepoManager>().updateTestSessionStatus(submitTestSession);
+                if (!mounted) return;
+                await context.read<RepoManager>().sendTestAnswers(widget.testSession, _answers);
 
                 debugPrint("Bài đã nộp: $_answers");
-
+                if (!mounted) return;
                 // E. Close the Loading Dialog
                 // We check 'mounted' to ensure the widget tree is still valid
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-
+                Navigator.pop(context);
                 // F. Close the Test Screen (Go back to menu)
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-
-
+                Navigator.pop(context);
               } catch (e) {
                 // Handle error: Close loader and show error
-                if (context.mounted) {
-                  Navigator.pop(context); // Close loader
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context); // Close loader
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
+
               }
             },
             child: const Text('Nộp bài'),

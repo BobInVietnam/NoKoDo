@@ -3,14 +3,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/utils/persistence.dart';
-import 'package:nodyslexia/utils/remote_database_TEST.dart';
+import 'package:nodyslexia/utils/remote_database.dart';
 
 class RepoManager extends ChangeNotifier {
   // Get the instance of Firebase Auth.
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  final RemoteDatabase onlineDatabase;
+  final LocalDatabase database;
+
   Student? currentStudent;
-  RemoteDatabase onlineDatabase = RemoteDatabase();
-  LocalDatabase database = LocalDatabase();
+
+  // Constructor Injection: Pass the dependencies here[cite: 1]
+  RepoManager({
+    required this.onlineDatabase,
+    required this.database,
+  });
 
   Future<void> signIn({
     required String email,

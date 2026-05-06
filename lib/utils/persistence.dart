@@ -4,10 +4,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class LocalDatabase{
-  static final LocalDatabase _instance = LocalDatabase._internal();
-  factory LocalDatabase() => _instance;
-  LocalDatabase._internal();
+abstract class LocalDatabase {
+  Future<void> doSomething();
+}
+
+class TestLocalDatabase extends LocalDatabase {
+  static final TestLocalDatabase _instance = TestLocalDatabase._internal();
+  factory TestLocalDatabase() => _instance;
+  TestLocalDatabase._internal();
 
   Database? _database;
   static const String _dbFileName = 'userdata.db';
