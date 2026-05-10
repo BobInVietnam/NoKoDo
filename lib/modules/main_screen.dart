@@ -9,6 +9,7 @@ import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
@@ -139,7 +140,9 @@ class _MainScreenState extends State<MainScreen> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
-                                  create: (context) => FileToTextViewModel(),
+                                  create: (context) => FileToTextViewModel(
+                                      ocrService: LocalOCRService()
+                                  ),
                                   child: const FileToTextScreen(),
                                 )
                                 )

@@ -30,7 +30,7 @@ class FileToTextScreen extends StatelessWidget {
       );
     } else if (context.mounted && result == null && !viewModel.isLoading) {
       // Optional: Show an error or cancellation message
-      // scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
+      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
     }
   }
 
