@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/login/login_screen.dart';
 
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
-import 'package:nodyslexia/modules/file_to_text_screen.dart';
+import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
-import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:provider/provider.dart';
+
+import 'file_to_text/file_to_text_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -137,8 +137,12 @@ class _MainScreenState extends State<MainScreen> {
                           label: 'Chuyển File Sang Văn Bản',
                           onPressed: () {
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const FileToTextScreen()),
+                                context,
+                                MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+                                  create: (context) => FileToTextViewModel(),
+                                  child: const FileToTextScreen(),
+                                )
+                                )
                             );
                           },
                         ),

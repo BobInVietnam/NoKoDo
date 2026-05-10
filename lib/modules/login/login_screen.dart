@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
-import 'package:nodyslexia/utils/repository_manager.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {

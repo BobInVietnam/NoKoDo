@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
-import 'package:nodyslexia/utils/persistence.dart';
-import 'package:nodyslexia/utils/remote_database.dart';
+import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/data/remote_database.dart';
 
 class RepoManager extends ChangeNotifier {
   // Get the instance of Firebase Auth.
@@ -74,7 +74,7 @@ class RepoManager extends ChangeNotifier {
   Future<List<TestInfo>> getTestList() async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
-    final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid!);
+    final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid);
     debugPrint("TESTING: RepoMan got data");
     return testList.map((map) => TestInfo.fromMap(map)).toList();
   }

@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:nodyslexia/models/student.dart';
-
 import '../models/test.dart';
 
 abstract class RemoteDatabase {
