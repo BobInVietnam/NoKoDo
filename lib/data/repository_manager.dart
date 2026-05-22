@@ -71,6 +71,14 @@ class RepoManager extends ChangeNotifier {
     currentStudent = null;
   }
 
+  Future<Map<String, dynamic>> getRawStatistics() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    debugPrint("Fetching statistics for student: ${currentStudent!.uid}");
+    // Assuming onlineDatabase or local database handles the heavy query aggregation
+    return await onlineDatabase.getStudentStatistics(currentStudent!.uid);
+  }
+
   Future<List<TestInfo>> getTestList() async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");

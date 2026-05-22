@@ -14,6 +14,8 @@ abstract class RemoteDatabase {
   Future<int> sendTestSessionStatus(TestSession testSession);
   Future<void> updateTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(List<Map<String, Object?>> answersList);
+
+  Future<Future<Map<String, dynamic>>> getStudentStatistics(String uid);
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -66,6 +68,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     return await openDatabase(path);
   }
 
+  @override
   Future<Map<String, Object?>?> getUser(String uid) async {
     final db = await database;
 
@@ -85,6 +88,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     }
   }
 
+  @override
   Future<List<Map<String, Object?>>> getTestList(String uid) async {
     final db = await database;
 
@@ -126,6 +130,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     }
   }
 
+  @override
   Future<Map<String, Object?>> getTestDetails(int testId) async {
     final db = await database;
 
@@ -144,6 +149,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     }
   }
 
+  @override
   Future<List<Map<String, Object?>>> getTestQuestions(int testId) async {
     final db = await database;
 
@@ -186,6 +192,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     }
   }
 
+  @override
   Future<int> sendTestSessionStatus(TestSession testSession) async {
     final db = await database;
 
@@ -201,6 +208,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     return sessionId;
   }
 
+  @override
   Future<void> updateTestSessionStatus(TestSession testSession) async {
     final db = await database;
 
@@ -216,6 +224,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     debugPrint("TESTING: Test session posted.");
   }
 
+  @override
   Future<void> sendTestAnswers(List<Map<String, Object?>> answersList) async {
     final db = await database;
 
@@ -225,5 +234,11 @@ class TestRemoteDatabase extends RemoteDatabase {
           conflictAlgorithm: ConflictAlgorithm.replace);
     }
     debugPrint("TESTING: Test answers posted.");
+  }
+
+  @override
+  Future<Future<Map<String, dynamic>>> getStudentStatistics(String uid) {
+    // TODO: implement getStudentStatistics
+    throw UnimplementedError();
   }
 }

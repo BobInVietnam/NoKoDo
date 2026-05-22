@@ -3,6 +3,7 @@ import 'package:nodyslexia/customwigdets/settings_button.dart';
 
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
+import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
@@ -155,7 +156,13 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const StatisticsScreen()),
+                                MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+                                  create: (context) => StatisticsViewmodel(
+                                      repoManager: context.read<RepoManager>()
+                                  )..gatherStatisticData(),
+                                  child: const StatisticsScreen(),
+                                )
+                                )
                             );
                           },
                         ),

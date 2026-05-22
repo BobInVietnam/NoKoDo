@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:percent_indicator/percent_indicator.dart'; // For circular progress
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
+import 'package:provider/provider.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
@@ -16,7 +18,6 @@ class StatisticsScreen extends StatelessWidget {
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    // String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
     return "${twoDigits(duration.inHours)} giờ ${twoDigitMinutes} phút";
   }
 
@@ -104,10 +105,53 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildLoadingScreen(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            strokeWidth: 5.0,
+            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+          ),
+          const SizedBox(height: 24.0),
+          Text(
+            'Đang tải dữ liệu tiến độ...',
+            style: textTheme.titleMedium?.copyWith(
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+            child: Text(
+              'Hệ thống đang đồng bộ kết quả bài tập của bạn.',
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     // final colorScheme = Theme.of(context).colorScheme; // Not directly used here, but good to have
+    final viewModel = context.watch<StatisticsViewmodel>();
+
+    final double practiceCompletionRatio = viewModel.lessonNumber > 0
+        ? viewModel.lessonFinishedNumber / viewModel.lessonNumber
+        : 0.0;
+
+    final double testCompletionRatio = viewModel.testNumber > 0
+        ? viewModel.testFinishedNumber / viewModel.testNumber
+        : 0.0;
 
     return Scaffold(
       body: SafeArea(
@@ -123,37 +167,39 @@ class StatisticsScreen extends StatelessWidget {
             ),
 
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                children: <Widget>[
-                  _buildCircularProgressCard(
-                    context: context,
-                    title: 'Hoàn thành Bài luyện tập',
-                    percent: practiceCompletion,
-                    icon: Icons.model_training, // Example icon
-                  ),
-                  _buildCircularProgressCard(
-                    context: context,
-                    title: 'Hoàn thành Bài kiểm tra',
-                    percent: testCompletion,
-                    icon: Icons.assignment_turned_in_outlined, // Example icon
-                  ),
-                  _buildStatisticCard(
-                    context: context,
-                    title: 'Điểm trung bình Kiểm tra',
-                    value: '${averageTestScore.toStringAsFixed(1)} điểm',
-                    icon: Icons.star_border_outlined,
-                    iconColor: Colors.amber[700],
-                  ),
-                  _buildStatisticCard(
-                    context: context,
-                    title: 'Thời gian sử dụng',
-                    value: _formatDuration(totalUsageTime),
-                    icon: Icons.timer_outlined,
-                  ),
-                  // You can add more statistics cards here
-                ],
-              ),
+              child: viewModel.isLoading ?
+                _buildLoadingScreen(context) :
+                ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  children: <Widget>[
+                    _buildCircularProgressCard(
+                      context: context,
+                      title: 'Hoàn thành Bài luyện tập',
+                      percent: practiceCompletionRatio,
+                      icon: Icons.model_training, // Example icon
+                    ),
+                    _buildCircularProgressCard(
+                      context: context,
+                      title: 'Hoàn thành Bài kiểm tra',
+                      percent: testCompletionRatio,
+                      icon: Icons.assignment_turned_in_outlined, // Example icon
+                    ),
+                    _buildStatisticCard(
+                      context: context,
+                      title: 'Điểm trung bình Kiểm tra',
+                      value: '${viewModel.averageTestScore} điểm',
+                      icon: Icons.star_border_outlined,
+                      iconColor: Colors.amber[700],
+                    ),
+                    _buildStatisticCard(
+                      context: context,
+                      title: 'Thời gian sử dụng',
+                      value: _formatDuration(viewModel.totalUsageTimer),
+                      icon: Icons.timer_outlined,
+                    ),
+                    // You can add more statistics cards here
+                  ],
+                ),
             ),
 
             // Bottom Navigation Bar
