@@ -1,5 +1,9 @@
 import "package:flutter/material.dart";
 import "package:nodyslexia/modules/settings/settings_screen.dart";
+import "package:provider/provider.dart";
+
+import "../modules/settings/settings_viewmodel.dart";
+import "../modules/settings/text_settings.dart";
 
 class SettingButton extends StatelessWidget {
   const SettingButton({super.key});
@@ -10,7 +14,14 @@ class SettingButton extends StatelessWidget {
       onPressed: () => {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (context) => SettingsViewModel(
+                settings: context.read<TextStyleSettings>(),
+              ),
+              child: const SettingsScreen(),
+            ),
+          ),
         )
       },
       style: ElevatedButton.styleFrom(

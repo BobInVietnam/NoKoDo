@@ -65,3 +65,41 @@ class LocalOCRService implements OCRService {
     }
   }
 }
+
+class MockOCRService implements OCRService {
+  /// Simulates network or processing latency (e.g., waiting for heavy ML inference)
+  final Duration simulationDelay;
+
+  /// Allows you to force a simulated network or server failure for testing error states
+  final bool shouldFail;
+
+  MockOCRService({
+    this.simulationDelay = const Duration(seconds: 2),
+    this.shouldFail = false,
+  });
+
+  @override
+  Future<String?> extractText(File imageFile) async {
+    debugPrint("⚡ [MockOCRService]: Processing file: ${imageFile.path}");
+
+    // 1. Simulate the time it takes to upload and run PaddleX/VietOCR pipeline
+    await Future.delayed(simulationDelay);
+
+    // 2. Simulate server/network error if configured
+    if (shouldFail) {
+      debugPrint("❌ [MockOCRService]: Simulated server failure (500 internal error)");
+      return null;
+    }
+
+    // 3. Return a realistic, multi-line Vietnamese sample string matching your production dataset
+    final String mockExtractedText =
+        "Chuyện kể rằng: vào đời Hùng Vương thứ 6, ở làng Gióng có hai vợ chồng ông lão chăm làm ăn và có tiếng là phúc đức. "
+        "Hai ông bà ao ước có một đứa con. Một hôm bà ra đồng trông thấy một vết chân to quá, liền đặt bàn chân mình lên ướm thử để xem thua kém bao nhiêu.\n"
+        "Không ngờ về nhà bà thụ thai và mười hai tháng sau sinh một thằng bé mặt mũi rất khôi ngô. Hai vợ chồng mừng lắm. "
+        "Nhưng lạ thay! Ðứa trẻ cho đến khi lên ba vẫn không biết nói, biết cười, cũng chẳng biết đi, cứ đặt đâu thì nằm đấy.";
+
+    debugPrint("✅ [MockOCRService]: Successfully returned mock text parsing matrix.");
+    return mockExtractedText;
+  }
+}
+

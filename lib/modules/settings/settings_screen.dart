@@ -1,26 +1,24 @@
+// screens/settings_screen.dart
 import 'package:flutter/material.dart';
-import 'package:nodyslexia/customwigdets/adjustable_text.dart';
-import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:provider/provider.dart';
-
+import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 
-class SettingsScreen extends StatefulWidget {
+// Import your new ViewModel
+import 'package:nodyslexia/modules/settings/settings_viewmodel.dart';
+
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final settings = context.watch<TextStyleSettings>();
+    // Watch the view model for adjustments instead of the raw data class
+    final viewModel = context.watch<SettingsViewModel>();
 
     return Scaffold(
       body: SafeArea(
-        child: Column (
+        child: Column(
           children: <Widget>[
             Expanded(
               child: ListView(
@@ -30,38 +28,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Slider(
                     min: 20,
                     max: 60,
-                    value: settings.fontSize,
-                    onChanged: (value) {
-                      context.read<TextStyleSettings>().setFontSize(value);
-                    },
+                    value: viewModel.fontSize,
+                    onChanged: viewModel.updateFontSize,
+                    activeColor: Colors.teal,
                   ),
-                  Text("Hiện tại: ${settings.fontSize.toStringAsFixed(1)}"),
+                  Text("Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}"),
+
+                  const SizedBox(height: 15),
                   Text("Dãn cách chữ", style: textTheme.displayMedium),
                   Slider(
                     min: 1,
                     max: 20,
-                    value: settings.letterSpacing,
-                    onChanged: (value) {
-                      context.read<TextStyleSettings>().setLetterSpacing(value);
-                    },
+                    value: viewModel.letterSpacing,
+                    onChanged: viewModel.updateLetterSpacing,
+                    activeColor: Colors.teal,
                   ),
-                  Text("Hiện tại: ${settings.letterSpacing.toStringAsFixed(1)}"),
+                  Text("Hiện tại: ${viewModel.letterSpacing.toStringAsFixed(1)}"),
+
+                  const SizedBox(height: 15),
                   Text("Dãn cách từ", style: textTheme.displayMedium),
                   Slider(
                     min: 1,
                     max: 20,
-                    value: settings.wordSpacing,
-                    onChanged: (value) {
-                      context.read<TextStyleSettings>().setWordSpacing(value);
-                    },
+                    value: viewModel.wordSpacing,
+                    onChanged: viewModel.updateWordSpacing,
+                    activeColor: Colors.teal,
                   ),
-                  Text("Hiện tại: ${settings.wordSpacing.toStringAsFixed(1)}"),
+                  Text("Hiện tại: ${viewModel.wordSpacing.toStringAsFixed(1)}"),
+
                   const Divider(height: 30),
                   Text("Màu chữ", style: textTheme.displayMedium),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
-                    children: [
+                    children: const [
                       _ColorButton(color: Colors.black, label: "Đen"),
                       _ColorButton(color: Colors.blue, label: "Xanh"),
                       _ColorButton(color: Colors.red, label: "Đỏ"),
@@ -70,10 +70,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
 
                   const Divider(height: 30),
-
                   Text("Phông chữ", style: textTheme.displayMedium),
                   DropdownButton<String>(
-                    value: settings.fontFamily,
+                    value: viewModel.fontFamily,
                     isExpanded: true,
                     items: const [
                       DropdownMenuItem(value: 'Roboto', child: Text("Standard (Roboto)")),
@@ -82,33 +81,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
-                        context.read<TextStyleSettings>().setFontFamily(newValue);
+                        viewModel.updateFontFamily(newValue);
                       }
                     },
                   ),
-                  // const AdjustableText("The quick, brown fox jumps over the lazy dog!? Wow.")
                 ],
               ),
             ),
+
+            // Live Preview Card
             const Padding(
               padding: EdgeInsets.all(20),
-              child: const AdjustableText(
-                  "The quick, brown fox jumps over the lazy dog!? Wow.",
-                  maxLines: 2)),
-            const Padding(
+              child: AdjustableText(
+                "The quick, brown fox jumps over the lazy dog!? Wow.",
+                maxLines: 2,
+              ),
+            ),
+
+            // Footer Navigation Bar
+            Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  // Return Button
-                  ReturnButton()
-
+                children: const <Widget>[
+                  ReturnButton(),
                 ],
               ),
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }
@@ -121,17 +123,15 @@ class _ColorButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<TextStyleSettings>();
-    bool isSelected = settings.color == color;
+    final viewModel = context.watch<SettingsViewModel>();
+    final bool isSelected = viewModel.color == color;
 
     return ActionChip(
       avatar: CircleAvatar(backgroundColor: color),
       label: Text(label),
       backgroundColor: isSelected ? color.withOpacity(0.2) : null,
       side: isSelected ? BorderSide(color: color, width: 2) : null,
-      onPressed: () {
-        context.read<TextStyleSettings>().setColor(color);
-      },
+      onPressed: () => viewModel.updateColor(color),
     );
   }
 }

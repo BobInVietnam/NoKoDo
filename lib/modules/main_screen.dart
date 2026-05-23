@@ -142,7 +142,7 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: LocalOCRService()
+                                      ocrService: MockOCRService()
                                   ),
                                   child: const FileToTextScreen(),
                                 )
