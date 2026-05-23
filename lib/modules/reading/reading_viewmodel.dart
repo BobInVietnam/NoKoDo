@@ -7,6 +7,7 @@ class ReadingViewModel extends ChangeNotifier {
   final TtsService _ttsService;
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
+  int _currentOffset = 0;
   String? _currentSelection;
   OverlayEntry? _selectionMenuOverlay;
   double _currentReadingSpeed = 0.5;
@@ -30,8 +31,8 @@ class ReadingViewModel extends ChangeNotifier {
       // Ensure the engine is fully awake before configuring
       await _ttsService.setSpeechRate(_currentReadingSpeed);
       _ttsService.onWordProgress = (text, start, end, word) {
-        _currentWordStart = start;
-        _currentWordEnd = end;
+        _currentWordStart = start + _currentOffset;
+        _currentWordEnd = end + _currentOffset;
         notifyListeners(); // Force UI to highlight the active indexes
       };
     } catch (e) {
@@ -77,7 +78,7 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   //TODO: Remove unnecessary menu stuff or change this
-  void updateSelection(String? selection, BuildContext context, GlobalKey textKey) {
+  void updateSelection(String? selection, int offset) {
     if (selection == null) {
       // removeSelectionMenu();
       if (ttsState == TtsState.playing) {
@@ -86,72 +87,9 @@ class ReadingViewModel extends ChangeNotifier {
       debugPrint("READING: Removed selection");
     }
     _currentSelection = selection;
+    _currentOffset = offset;
     debugPrint("READING: Current selection: $currentSelection");
     notifyListeners();
-    // _showSelectionMenu(context, textKey);
-  }
-
-  // void _showSelectionMenu(BuildContext context, GlobalKey textKey) {
-  //   removeSelectionMenu(); // Clear previous overlays
-  //
-  //   if (textKey.currentContext == null) return;
-  //   final RenderBox renderBox = textKey.currentContext!.findRenderObject() as RenderBox;
-  //
-  //   // Rough approximate bounding calculations for selection toolbar placement
-  //   final Offset menuPosition = renderBox.localToGlobal(
-  //       Offset(
-  //           (_currentSelection.start + (_currentSelection.end - _currentSelection.start) / 2) * (Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16) * 0.5,
-  //           _currentSelection.baseOffset * (Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16) * 1.5 - 100
-  //       )
-  //   );
-  //
-  //   _selectionMenuOverlay = OverlayEntry(
-  //     builder: (overlayContext) {
-  //       final selectedText = extractedText.substring(_currentSelection.start, _currentSelection.end);
-  //       return Positioned(
-  //         left: menuPosition.dx - 50,
-  //         top: menuPosition.dy - 50,
-  //         child: Material(
-  //           elevation: 4.0,
-  //           borderRadius: BorderRadius.circular(8),
-  //           child: Container(
-  //             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-  //             decoration: BoxDecoration(
-  //               color: Colors.grey[800],
-  //               borderRadius: BorderRadius.circular(8),
-  //             ),
-  //             child: Row(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: <Widget>[
-  //                 TextButton(
-  //                   child: const Text('Đọc phần đã chọn', style: TextStyle(color: Colors.white)),
-  //                   onPressed: () => handleReadSelected(selectedText),
-  //                 ),
-  //                 TextButton(
-  //                   child: const Text('Đánh dấu', style: TextStyle(color: Colors.white)),
-  //                   onPressed: () {
-  //                     debugPrint('Highlight: "$selectedText"');
-  //                     removeSelectionMenu();
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  //
-  //   Overlay.of(context).insert(_selectionMenuOverlay!);
-  //   notifyListeners();
-  // }
-
-  void removeSelectionMenu() {
-    if (_selectionMenuOverlay != null) {
-      _selectionMenuOverlay!.remove();
-      _selectionMenuOverlay = null;
-      notifyListeners();
-    }
   }
 
   @override

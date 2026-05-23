@@ -45,42 +45,87 @@ class SelectableAdjustableText extends StatelessWidget {
   final String data;
   final TextAlign? textAlign;
   final int? maxLines;
-  final void Function(String?)? onTextSelected;
+  final void Function(String?, int)? onTextSelected;
+  final int start;
+  final int end;
 
   const SelectableAdjustableText(
-      this.data, {
+      this.data,
+      this.start,
+      this.end,
+      {
         super.key,
         this.textAlign,
         this.maxLines,
         this.onTextSelected,
       });
 
+  List<TextSpan> _buildHighlightSpans(
+      String fullText,
+      int start,
+      int end,
+      TextStyle baseStyle,
+      Color highlightColor,
+      ) {
+    // If no word is actively processing, return the text frame un-highlighted
+    if (start == -1 || end == -1 || start >= fullText.length || end > fullText.length) {
+      return [TextSpan(text: fullText, style: baseStyle)];
+    }
+
+    return [
+      // 1. Strings before the highlighted keyword token
+      TextSpan(
+        text: fullText.substring(0, start),
+        style: baseStyle,
+      ),
+      // 2. The active matching keyword token painted with custom background properties
+      TextSpan(
+        text: fullText.substring(start, end),
+        style: baseStyle.copyWith(
+          backgroundColor: highlightColor,
+          fontWeight: FontWeight.bold
+        ),
+      ),
+      // 3. Trailing strings remaining after the highlighted keyword token
+      TextSpan(
+        text: fullText.substring(end),
+        style: baseStyle,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     // 1. Listen to the global settings
     final settings = context.watch<TextStyleSettings>();
 
-    // 2. Return a SelectableText widget
-    return SelectionArea(
-        onSelectionChanged: (SelectedContent? content) {
-          if (content == null || content.plainText.isEmpty) {
-            // Collects the plaintext representation of the highlighted matrices
-            onTextSelected!(null);
-          } else {
-            onTextSelected!(content.plainText);
-          }
-        },
-        child: Text(
+    // 2. Return a SelectableText.rich widget
+    return SelectableText.rich(
+      TextSpan(
+        children: _buildHighlightSpans(
           data,
-          textAlign: textAlign,
-          style: TextStyle(
+          start, // tracked by progress indices
+          end,   // tracked by progress indices
+          TextStyle(
             fontSize: settings.fontSize,
             color: settings.color,
             fontFamily: settings.fontFamily,
             letterSpacing: settings.letterSpacing,
             wordSpacing: settings.wordSpacing,
-          )
-        )
+          ),
+          Colors.yellow[400]!, // Custom marker tint
+        ),
+      ),
+      textAlign: textAlign ?? TextAlign.justify,
+      onSelectionChanged: (TextSelection selection, SelectionChangedCause? cause) {
+        if (selection.isCollapsed || selection.start == -1 || selection.end == -1) {
+          onTextSelected!(null, 0);
+        } else {
+          // Safely extract the slice directly from the source text using indices
+          final String selectedString = data.substring(selection.start, selection.end);
+          onTextSelected!(selectedString, selection.start);
+        }
+      },
     );
   }
 }

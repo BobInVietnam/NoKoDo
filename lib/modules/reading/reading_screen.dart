@@ -29,7 +29,7 @@ class ReadingScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GestureDetector(
-                  onTap: viewModel.removeSelectionMenu,
+                  // onTap: viewModel.removeSelectionMenu,
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
@@ -49,9 +49,11 @@ class ReadingScreen extends StatelessWidget {
                       child: SelectableAdjustableText(
                         key: _textKey,
                         viewModel.extractedText,
+                        viewModel.currentWordStart,
+                        viewModel.currentWordEnd,
                         textAlign: TextAlign.justify,
-                        onTextSelected: (selection) {
-                            viewModel.updateSelection(selection, context, _textKey);
+                        onTextSelected: (selection, offset) {
+                            viewModel.updateSelection(selection, offset);
                         },
                       ),
                     ),

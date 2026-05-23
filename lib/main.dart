@@ -14,6 +14,7 @@ import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 import 'modules/reading/reading_screen.dart';
+import 'modules/testing_screen.dart';
 
 
 Future<void> main() async {
@@ -36,7 +37,7 @@ Future<void> main() async {
       //   create: (context) => ReadingViewModel(extractedText: "NIỀM VUI CỦA BI VÀ BỐNG\nKhi cơn mưa vừa dứt, hai anh em Bi và Bống chợt thấy cầu vồng.\n– Cầu vồng kìa! Em nhìn xem. Đẹp quá!\nBi chỉ lên bầu trời và nói tiếp:\n– Anh nghe nói dưới chân cầu vồng có bảy hũ vàng đấy.\nBống hưởng ứng:\n– Lát nữa, mình sẽ đi lấy về nhé! Có vàng rồi, em sẽ mua nhiều búp bê\nvà quần áo đẹp.\n– Còn anh sẽ mua một con ngựa hồng và một cái ô tô.\nBỗng nhiên, cầu vồng biến mất. Bi cười:\n– Em ơi! Anh đùa đấy! Ở đó không có vàng đâu.\nBống vui vẻ:", ttsService: TtsService())
       // )
     ],
-    child: const NokodoApp()));
+    child: const TestNokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {
@@ -140,7 +141,13 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: ReadingScreen(),
+      home: ChangeNotifierProvider<ReadingViewModel>(
+        create: (context) => ReadingViewModel(
+          extractedText: "NIỀM VUI CỦA BI VÀ BỐNG\nKhi cơn mưa vừa dứt, hai anh em Bi và Bống chợt thấy cầu vồng.\n– Cầu vồng kìa! Em nhìn xem. Đẹp quá!\nBi chỉ lên bầu trời và nói tiếp:\n– Anh nghe nói dưới chân cầu vồng có bảy hũ vàng đấy.\nBống hưởng ứng:\n– Lát nữa, mình sẽ đi lấy về nhé! Có vàng rồi, em sẽ mua nhiều búp bê\nvà quần áo đẹp.\n– Còn anh sẽ mua một con ngựa hồng và một cái ô tô.\nBỗng nhiên, cầu vồng biến mất. Bi cười:\n– Em ơi! Anh đùa đấy! Ở đó không có vàng đâu.\nBống vui vẻ:",
+          ttsService: TtsService(), // Calls the singleton factory instance
+        ),
+        child: ReadingScreen(),
+      )
     );
   }
 }
