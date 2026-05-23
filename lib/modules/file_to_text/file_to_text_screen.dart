@@ -1,13 +1,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/reading_screen.dart';
+import 'package:nodyslexia/modules/reading/reading_screen.dart';
 
 // Import your ViewModel
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
+
+import '../reading/reading_viewmodel.dart';
 
 class FileToTextScreen extends StatelessWidget {
   const FileToTextScreen({super.key});
@@ -23,9 +26,15 @@ class FileToTextScreen extends StatelessWidget {
 
     // If context is still valid and we got a result, navigate to the next screen
     if (context.mounted && result != null) {
-      navigator.push(
+      Navigator.push(
+        context,
         MaterialPageRoute(
-          builder: (context) => TextResultScreen(extractedText: result),
+          builder: (context) => ChangeNotifierProvider(
+            create: (context) => ReadingViewModel(
+                extractedText: result,
+                ttsService: TtsService()),
+            child: ReadingScreen(),
+          ),
         ),
       );
     } else if (context.mounted && result == null && !viewModel.isLoading) {
@@ -147,7 +156,14 @@ class FileToTextScreen extends StatelessWidget {
                           // Re-open a past result
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TextResultScreen(extractedText: item.extractedText)),
+                            MaterialPageRoute(
+                              builder: (context) => ChangeNotifierProvider(
+                                create: (context) => ReadingViewModel(
+                                    extractedText: item.extractedText,
+                                    ttsService: TtsService()),
+                                child: ReadingScreen(),
+                              ),
+                            ),
                           );
                         },
                       );

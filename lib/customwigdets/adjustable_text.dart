@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:provider/provider.dart';
 
@@ -44,14 +45,14 @@ class SelectableAdjustableText extends StatelessWidget {
   final String data;
   final TextAlign? textAlign;
   final int? maxLines;
-  final void Function(TextSelection, SelectionChangedCause?)? onSelectionChanged;
+  final void Function(String?)? onTextSelected;
 
   const SelectableAdjustableText(
       this.data, {
         super.key,
         this.textAlign,
         this.maxLines,
-        this.onSelectionChanged,
+        this.onTextSelected,
       });
 
   @override
@@ -60,19 +61,26 @@ class SelectableAdjustableText extends StatelessWidget {
     final settings = context.watch<TextStyleSettings>();
 
     // 2. Return a SelectableText widget
-    return SelectableText(
-      data,
-      textAlign: textAlign,
-      maxLines: maxLines,
-      // 3. Apply the global style
-      style: TextStyle(
-        fontSize: settings.fontSize,
-        color: settings.color,
-        fontFamily: settings.fontFamily,
-        letterSpacing: settings.letterSpacing,
-        wordSpacing: settings.wordSpacing,
-      ),
-      onSelectionChanged: onSelectionChanged,
+    return SelectionArea(
+        onSelectionChanged: (SelectedContent? content) {
+          if (content == null || content.plainText.isEmpty) {
+            // Collects the plaintext representation of the highlighted matrices
+            onTextSelected!(null);
+          } else {
+            onTextSelected!(content.plainText);
+          }
+        },
+        child: Text(
+          data,
+          textAlign: textAlign,
+          style: TextStyle(
+            fontSize: settings.fontSize,
+            color: settings.color,
+            fontFamily: settings.fontFamily,
+            letterSpacing: settings.letterSpacing,
+            wordSpacing: settings.wordSpacing,
+          )
+        )
     );
   }
 }

@@ -4,22 +4,30 @@ import 'package:flutter_tts/flutter_tts.dart';
 enum TtsState { playing, stopped, paused }
 
 class TtsService {
+  static final TtsService _instance = TtsService._internal();
+
+  // 2. Expose a public factory constructor that always returns the same instance
+  factory TtsService() => _instance;
+
   late FlutterTts _flutterTts;
   TtsState _ttsState = TtsState.stopped;
-  double _speechRate = 0.5; // Normal speed is 0.5 for flutter_tts
-  // Range is 0.0 to 1.0 (some platforms might allow higher)
+  TtsState get ttsState => _ttsState;
+  double _speechRate = 0.5;
 
-  Function? _onComplete; // Callback for when speaking finishes
-
-  TtsService() {
+  Function? _onComplete;
+  void Function(String, int, int, String)? onWordProgress;
+  // 3. Convert the original constructor into a private internal named constructor (_internal)
+  // This guarantees no other file can accidentally call 'TtsService()' to create duplicate engines
+  TtsService._internal() {
     _flutterTts = FlutterTts();
     _setTtsEventHandlers();
-    // You might want to set language or voice here if needed
-    _flutterTts.setLanguage("vi-VN"); // Example for Vietnamese
+    _initializeDefaultSettings();
   }
 
-  TtsState get ttsState => _ttsState;
-  double get speechRate => _speechRate;
+  Future<void> _initializeDefaultSettings() async {
+    await _flutterTts.setLanguage("vi-VN");
+    await _flutterTts.setSpeechRate(_speechRate);
+  }
 
   void _setTtsEventHandlers() {
     _flutterTts.setStartHandler(() {
@@ -37,6 +45,10 @@ class TtsService {
       _ttsState = TtsState.stopped;
       print("TTS Error: $msg");
       // Notify listeners
+    });
+
+    _flutterTts.setProgressHandler((String text, int start, int end, String word) {
+      onWordProgress?.call(text, start, end, word);
     });
 
     // Optional: setCancelHandler, setPauseHandler, setContinueHandler
