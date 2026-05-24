@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nodyslexia/modules/editting/editting_screen.dart';
-import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
+import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'data/repository_manager.dart';
+import 'modules/editing/editing_screen.dart';
+import 'modules/editing/editing_viewmodel.dart';
 import 'modules/login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -141,12 +142,15 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: ChangeNotifierProvider<ReadingViewModel>(
-        create: (context) => ReadingViewModel(
-          extractedText: "NIỀM VUI CỦA BI VÀ BỐNG\nKhi cơn mưa vừa dứt, hai anh em Bi và Bống chợt thấy cầu vồng.\n– Cầu vồng kìa! Em nhìn xem. Đẹp quá!\nBi chỉ lên bầu trời và nói tiếp:\n– Anh nghe nói dưới chân cầu vồng có bảy hũ vàng đấy.\nBống hưởng ứng:\n– Lát nữa, mình sẽ đi lấy về nhé! Có vàng rồi, em sẽ mua nhiều búp bê\nvà quần áo đẹp.\n– Còn anh sẽ mua một con ngựa hồng và một cái ô tô.\nBỗng nhiên, cầu vồng biến mất. Bi cười:\n– Em ơi! Anh đùa đấy! Ở đó không có vàng đâu.\nBống vui vẻ:",
-          ttsService: TtsService(), // Calls the singleton factory instance
+      home: ChangeNotifierProvider(
+        create: (context) => EditingViewModel(
+          file: ConvertedFile(
+              id: "0",
+              fileName: "testing",
+              extractedText: "This is a test file. Xin chào bạn, đây là một file thử.",
+              dateConverted: DateTime(2026, 10, 10))
         ),
-        child: ReadingScreen(),
+        child: EditingScreen(),
       )
     );
   }
