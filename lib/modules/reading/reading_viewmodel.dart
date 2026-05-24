@@ -77,10 +77,8 @@ class ReadingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  //TODO: Remove unnecessary menu stuff or change this
   void updateSelection(String? selection, int offset) {
     if (selection == null) {
-      // removeSelectionMenu();
       if (ttsState == TtsState.playing) {
         handleStopReading();
       }

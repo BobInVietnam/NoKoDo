@@ -55,6 +55,17 @@ class ReadingScreen extends StatelessWidget {
                         onTextSelected: (selection, offset) {
                             viewModel.updateSelection(selection, offset);
                         },
+                        onReadPressed: () {
+                          viewModel.toggleTts();
+                        },
+                        onDefinePressed: () {
+                          //TODO Implement this
+                          debugPrint("READING: Define function pressed");
+                        },
+                        onHighlightPressed: () {
+                          //TODO Implement this
+                          debugPrint("READING: Highlight function pressed");
+                        },
                       ),
                     ),
                   ),

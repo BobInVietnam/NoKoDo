@@ -49,6 +49,11 @@ class SelectableAdjustableText extends StatelessWidget {
   final int start;
   final int end;
 
+  // --- New Callback Function Dependencies ---
+  final void Function()? onReadPressed;
+  final void Function()? onDefinePressed; // Giải nghĩa
+  final void Function()? onHighlightPressed;
+
   const SelectableAdjustableText(
       this.data,
       this.start,
@@ -58,6 +63,9 @@ class SelectableAdjustableText extends StatelessWidget {
         this.textAlign,
         this.maxLines,
         this.onTextSelected,
+        this.onReadPressed,
+        this.onDefinePressed,
+        this.onHighlightPressed,
       });
 
   List<TextSpan> _buildHighlightSpans(
@@ -125,6 +133,66 @@ class SelectableAdjustableText extends StatelessWidget {
           final String selectedString = data.substring(selection.start, selection.end);
           onTextSelected!(selectedString, selection.start);
         }
+      },
+
+      // --- Custom Context Menu Builder Pipeline ---
+      contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+        final TextSelection selection = editableTextState.textEditingValue.selection;
+
+        // Build our 5 explicit custom ContextMenuButtonItems
+        final List<ContextMenuButtonItem> buttonItems =
+            editableTextState.contextMenuButtonItems;
+        buttonItems.clear();
+
+        buttonItems.addAll([
+            ContextMenuButtonItem(
+              label: 'Sao chép',
+              onPressed: () {
+                editableTextState.copySelection(SelectionChangedCause.toolbar);
+                editableTextState.hideToolbar();
+              },
+            ),
+            ContextMenuButtonItem(
+              label: 'Chọn tất cả',
+              onPressed: () {
+                editableTextState.selectAll(SelectionChangedCause.toolbar);
+              },
+            ),
+            ContextMenuButtonItem(
+              label: 'Đọc',
+              onPressed: () {
+                if (!selection.isCollapsed) {
+                  onReadPressed?.call();
+                }
+                editableTextState.hideToolbar();
+              },
+            ),
+            ContextMenuButtonItem(
+              label: 'Giải nghĩa',
+              onPressed: () {
+                if (!selection.isCollapsed) {
+                  onDefinePressed?.call();
+                }
+                editableTextState.hideToolbar();
+              },
+            ),
+            ContextMenuButtonItem(
+              label: 'Đánh dấu',
+              onPressed: () {
+                if (!selection.isCollapsed) {
+                  onHighlightPressed?.call();
+                }
+                editableTextState.hideToolbar();
+              },
+            ),
+          ]
+        );
+
+        // Return a completely rewritten, platform-adaptive toolbar container
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: editableTextState.contextMenuAnchors,
+          buttonItems: buttonItems,
+        );
       },
     );
   }
