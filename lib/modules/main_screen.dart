@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
+import 'package:nodyslexia/data/persistence.dart';
 
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
@@ -142,7 +143,8 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: MockOCRService()
+                                      ocrService: MockOCRService(),
+                                      localDatabase: context.read<LocalDatabase>()
                                   ),
                                   child: const FileToTextScreen(),
                                 )

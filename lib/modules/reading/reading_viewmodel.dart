@@ -1,9 +1,12 @@
 // viewmodels/reading_viewmodel.dart
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
 class ReadingViewModel extends ChangeNotifier {
-  final String extractedText;
+  ConvertedFile _file;
+  String _extractedText = "";
+  int _fileId = 0;
   final TtsService _ttsService;
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
@@ -13,17 +16,28 @@ class ReadingViewModel extends ChangeNotifier {
   double _currentReadingSpeed = 0.5;
 
   // Getters
+  ConvertedFile get file => _file;
   String? get currentSelection => _currentSelection;
   double get currentReadingSpeed => _currentReadingSpeed;
   int get currentWordStart => _currentWordStart;
   int get currentWordEnd => _currentWordEnd;
   TtsState get ttsState => _ttsService.ttsState;
   bool get isMenuOpen => _selectionMenuOverlay != null;
+  String get extractedText => _extractedText;
+  int get fileId => _fileId;
 
   ReadingViewModel({
-    required this.extractedText,
-    required TtsService ttsService,}) : _ttsService = ttsService {
+    required ConvertedFile file,
+    required TtsService ttsService,}) : _ttsService = ttsService, _file = file {
+    _extractedText = _file.extractedText;
+    _fileId = _file.id!;
     _initializeTts();
+  }
+
+  void refreshContent(ConvertedFile file) {
+    _extractedText = file.extractedText;
+    _file = file;
+    notifyListeners();
   }
 
   Future<void> _initializeTts() async {

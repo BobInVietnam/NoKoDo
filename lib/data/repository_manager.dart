@@ -14,7 +14,7 @@ class RepoManager extends ChangeNotifier {
 
   Student? currentStudent;
 
-  // Constructor Injection: Pass the dependencies here[cite: 1]
+  // Constructor Injection: Pass the dependencies here
   RepoManager({
     required this.onlineDatabase,
     required this.database,
@@ -36,7 +36,6 @@ class RepoManager extends ChangeNotifier {
       print('Sign-in successful! User: ${userCredential.user!.email}');
       final Map<String, Object?>? currentUserMap = await onlineDatabase.getUser(userCredential.user!.uid);
       currentStudent = Student.fromMap(currentUserMap!);
-      database.doSomething();
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       // Handle Firebase-specific errors.

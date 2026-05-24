@@ -1,5 +1,6 @@
 // modules/editing/editing_screen.dart
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
@@ -62,6 +63,7 @@ class EditingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<EditingViewModel>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     return Scaffold(
       // Matching the clean layout background of ReadingScreen
@@ -150,7 +152,16 @@ class EditingScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      const ReturnButton(),
+                      ReturnButton(
+                        onReturn: (context) async {
+                          final updatedFile = await viewModel.getUpdatedFile();
+                          if (context.mounted) {
+                            Navigator.pop(context, updatedFile);
+                          } else {
+                            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
+                          }
+                        },
+                      ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.save_as_outlined),
                         label: const Text('Trở về ban đầu'),

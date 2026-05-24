@@ -9,6 +9,11 @@ import 'package:nodyslexia/utils/tts_service.dart';
 // Import your ViewModel
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 
+import '../../data/persistence.dart';
+import '../../models/converted_file.dart';
+import '../editing/editing_screen.dart';
+import '../editing/editing_viewmodel.dart';
+
 class ReadingScreen extends StatelessWidget {
   // Use a local key reference inside the context hierarchy to calculate placement targets
   final GlobalKey _textKey = GlobalKey();
@@ -103,7 +108,11 @@ class ReadingScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      const ReturnButton(),
+                      ReturnButton(
+                        onReturn: (context) {
+                          Navigator.pop(context, viewModel.file);
+                        },
+                      ),
                       ElevatedButton.icon(
                         icon: Icon(viewModel.ttsState == TtsState.playing
                             ? Icons.stop_circle_outlined
@@ -116,6 +125,37 @@ class ReadingScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Chỉnh sửa'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        onPressed: () async {
+                          // Stop TTS playback automatically before leaving the screen context
+                          if (viewModel.ttsState == TtsState.playing) {
+                            viewModel.handleStopReading();
+                          }
+
+                          // Secure route navigation using decoupled provider initialization rules
+                          final newFile = await Navigator.push<ConvertedFile>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (routeContext) => ChangeNotifierProvider<EditingViewModel>(
+                                create: (providerContext) => EditingViewModel(
+                                  file: viewModel.file,
+                                  localDatabase: providerContext.read<LocalDatabase>(), // Read database up the context tree
+                                ),
+                                child: const EditingScreen(),
+                              ),
+                            ),
+                          );
+                          viewModel.refreshContent(newFile!);
+                        },
                       ),
                       const SettingButton()
                     ],

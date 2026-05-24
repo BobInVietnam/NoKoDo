@@ -10,6 +10,7 @@ import 'package:nodyslexia/modules/reading/reading_screen.dart';
 // Import your ViewModel
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 
+import '../../models/converted_file.dart';
 import '../reading/reading_viewmodel.dart';
 
 class FileToTextScreen extends StatelessWidget {
@@ -22,21 +23,22 @@ class FileToTextScreen extends StatelessWidget {
     final navigator = Navigator.of(context);
 
     // Call the ViewModel logic
-    final String? result = await viewModel.processImageFromSource(sourceIndex);
+    final ConvertedFile? result = await viewModel.processImageFromSource(sourceIndex);
 
     // If context is still valid and we got a result, navigate to the next screen
     if (context.mounted && result != null) {
-      Navigator.push(
+      final editedFile = await Navigator.push<ConvertedFile>(
         context,
         MaterialPageRoute(
           builder: (context) => ChangeNotifierProvider(
             create: (context) => ReadingViewModel(
-                extractedText: result,
+                file: result,
                 ttsService: TtsService()),
             child: ReadingScreen(),
           ),
         ),
       );
+      viewModel.updateHistory(editedFile!);
     } else if (context.mounted && result == null && !viewModel.isLoading) {
       // Optional: Show an error or cancellation message
       scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
@@ -77,7 +79,7 @@ class FileToTextScreen extends StatelessWidget {
     final titleStyle = GoogleFonts.galindo(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[700]);
     final subtitleStyle = GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]);
     final historyTitleStyle = GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.teal[700]);
-
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     // Watch the ViewModel for UI updates (like loading states or history changes)
     final viewModel = context.watch<FileToTextViewModel>();
 
@@ -152,19 +154,33 @@ class FileToTextScreen extends StatelessWidget {
                         leading: const Icon(Icons.description),
                         title: Text(item.fileName),
                         subtitle: Text(item.extractedText, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        onTap: () {
+                        onTap: () async {
                           // Re-open a past result
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChangeNotifierProvider(
-                                create: (context) => ReadingViewModel(
-                                    extractedText: item.extractedText,
-                                    ttsService: TtsService()),
-                                child: ReadingScreen(),
-                              ),
-                            ),
-                          );
+                          viewModel.setLoading(true);
+                          try {
+                            final file = await viewModel.localDatabase.getConvertedFileById(item.id!);
+                            if (context.mounted) {
+                              final editedFile = await Navigator.push<
+                                  ConvertedFile>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChangeNotifierProvider(
+                                        create: (context) =>
+                                            ReadingViewModel(
+                                                file: file!,
+                                                ttsService: TtsService()),
+                                        child: ReadingScreen(),
+                                      ),
+                                ),
+                              );
+                              viewModel.updateHistory(editedFile!);
+                            }
+                          } catch (e) {
+                            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
+                          } finally {
+                            viewModel.setLoading(false);
+                          }
                         },
                       );
                     },

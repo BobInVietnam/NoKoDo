@@ -3,25 +3,29 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 
 import '../../utils/ocr_service.dart';
 
 class FileToTextViewModel extends ChangeNotifier {
   final OCRService ocrService; // Use the interface for flexibility
+  final LocalDatabase localDatabase;
 
-  FileToTextViewModel({required this.ocrService});
+  FileToTextViewModel({
+    required this.ocrService,
+    required this.localDatabase});
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  List<ConvertedFile> _history = [];
+  final List<ConvertedFile> _history = [];
   List<ConvertedFile> get history => _history;
 
   /// Processes an image from either the camera or gallery.
   /// Returns the formatted extracted text, or null if it fails/cancels.
-  Future<String?> processImageFromSource(int sourceIndex) async {
-    _setLoading(true);
+  Future<ConvertedFile?> processImageFromSource(int sourceIndex) async {
+    setLoading(true);
 
     try {
       // 1. Pick the image using image_picker (Mocked here)
@@ -32,29 +36,36 @@ class FileToTextViewModel extends ChangeNotifier {
       // 2. Send to backend via ApiService (Mocked here)
       final String? formattedResult = await ocrService.extractText(File(image.path));
 
-      _addToHistory(image.name, formattedResult!);
+      final file = ConvertedFile(
+          fileName: image.name,
+          extractedText: formattedResult!,
+          dateConverted: DateTime.now());
+      final id = await localDatabase.insertConvertedFile(file);
+      final fileWithId = await localDatabase.getConvertedFileById(id);
+      _addToHistory(fileWithId!);
 
-      return formattedResult;
+      return fileWithId;
 
     } catch (e) {
       debugPrint("Error processing image: $e");
       return null;
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
-  void _addToHistory(String fileName, String text) {
-    _history.add(ConvertedFile(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      fileName: fileName,
-      extractedText: text,
-      dateConverted: DateTime.now(),
-    ));
+  void updateHistory(ConvertedFile newFile) {
+    var index = _history.indexWhere((file) => file.id == newFile.id);
+    _history[index] = newFile;
+    notifyListeners();
+  }
+
+  void _addToHistory(ConvertedFile file) {
+    _history.add(file);
     notifyListeners(); // Tells the UI to update the history board
   }
 
-  void _setLoading(bool value) {
+  void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }

@@ -3,8 +3,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-abstract class LocalDatabase {
-  Future<void> doSomething();
+import '../models/converted_file.dart';
+
+abstract class LocalDatabase extends ChangeNotifier{
+  Future<void> test();
+  Future<int> insertConvertedFile(ConvertedFile file);
+  Future<List<ConvertedFile>> getAllConvertedFiles();
+  Future<ConvertedFile?> getConvertedFileById(int id);
+  Future<int> deleteConvertedFile(int id);
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -36,8 +42,9 @@ class TestLocalDatabase extends LocalDatabase {
       await db.execute(
           "CREATE TABLE Lesson ("
               "id INTEGER PRIMARY KEY, "
-              "name TEXT)");
-              // "create_date INTEGER, "); // millis since epoch
+              "name TEXT, "
+              "content TEXT, "
+              "created_date INTEGER)");
       await db.execute(
           "CREATE TABLE Content ("
               "id INTEGER PRIMARY KEY, "
@@ -50,20 +57,69 @@ class TestLocalDatabase extends LocalDatabase {
           "CREATE TABLE Dictionary ("
               "id INTEGER PRIMARY KEY, "
               "word TEXT, "
-              "text TEXT,"
+              "text TEXT, "
               "image_url TEXT)");
       await db.execute(
-          "CREATE TABLE ConvertedText ("
-              "id INTEGER PRIMARY KEY, "
-              "word TEXT, "
-              "file_url TEXT)");
+          "CREATE TABLE ConvertedFile ("
+              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+              "name STRING, "
+              "extracted_text TEXT, "
+              "created_date INTEGER)");
     }
     return await openDatabase(path, version: 1, onCreate: onCreate);
   }
 
-  Future<void> doSomething() async {
+// 1. INSERT A CONVERTED FILE RECORD
+  @override
+  Future<int> insertConvertedFile(ConvertedFile file) async {
     final db = await database;
+    // Inserts record and returns the auto-incremented primary key ID
+    return await db.insert(
+      'ConvertedFile',
+      file.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 
-    db.insert("Lesson", {'id': 123, 'name': 'Test'});
+  @override
+  Future<void> test() async {
+    final db = await database;
+    debugPrint("DATABASE: Online!");
+  }
+
+  // 2. QUERY ALL CONVERTED FILES
+  @override
+  Future<List<ConvertedFile>> getAllConvertedFiles() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('ConvertedFile');
+
+    return List.generate(maps.length, (i) {
+      return ConvertedFile.fromMap(maps[i]);
+    });
+  }
+
+  @override
+  Future<ConvertedFile?> getConvertedFileById(int id) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'ConvertedFile',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1, // Optimizes execution since IDs are unique
+    );
+
+    if (maps.isEmpty) return null;
+    return ConvertedFile.fromMap(maps.first);
+  }
+
+  // 3. DELETE A CONVERTED FILE RECORD BY INT ID
+  @override
+  Future<int> deleteConvertedFile(int id) async {
+    final db = await database;
+    return await db.delete(
+      'ConvertedFile',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

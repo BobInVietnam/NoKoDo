@@ -2,12 +2,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 
 class EditingViewModel extends ChangeNotifier {
   late TextEditingController textController;
+  final LocalDatabase localDatabase;
 
   String _fileName = ""; // Initial template file state placeholder
+  int _fileId = 0;
   bool _showRenameDialog = false;
 
   // --- History Management State ---
@@ -16,16 +19,23 @@ class EditingViewModel extends ChangeNotifier {
   final int _maxHistorySteps = 10;
 
   Timer? _debounceTimer;
+  String _lastUpdatedText = "";
   String _lastSavedText = "";
 
   // Getters
   String get fileName => _fileName;
+  int get fileId => _fileId;
   bool get canUndo => _undoStack.isNotEmpty && _undoStack.length < _maxHistorySteps;
   bool get canRedo => _redoStack.isNotEmpty;
   bool get showRenameDialog => _showRenameDialog;
 
-  EditingViewModel({required ConvertedFile file}) {
+  EditingViewModel({
+    required ConvertedFile file,
+    required this.localDatabase
+  }) {
     _fileName = file.fileName;
+    _fileId = file.id!;
+    _lastUpdatedText = file.extractedText;
     _lastSavedText = file.extractedText;
 
     textController = TextEditingController(text: file.extractedText);
@@ -34,7 +44,7 @@ class EditingViewModel extends ChangeNotifier {
 
   void _onTextChanged() {
 
-    if (textController.text == _lastSavedText) return;
+    if (textController.text == _lastUpdatedText) return;
 
     // Reset the debounce timer on every single keystroke
     _debounceTimer?.cancel();
@@ -46,8 +56,8 @@ class EditingViewModel extends ChangeNotifier {
 
   void _saveToHistory(String newText) {
     // 1. Push the PREVIOUS stable text state onto the undo stack before accepting new changes
-    if (_undoStack.isEmpty || _undoStack.last != _lastSavedText) {
-      _undoStack.add(_lastSavedText);
+    if (_undoStack.isEmpty || _undoStack.last != _lastUpdatedText) {
+      _undoStack.add(_lastUpdatedText);
     }
 
     // 2. Enforce the 10-step history threshold boundary (FIFO)
@@ -58,11 +68,14 @@ class EditingViewModel extends ChangeNotifier {
     // 3. Clear the redo stack because a brand new typed action breaks the redo timeline branch
     _redoStack.clear();
 
-    _lastSavedText = newText;
+    _lastUpdatedText = newText;
     notifyListeners();
   }
 
   // --- Button Action Placeholders ---
+  Future<ConvertedFile?> getUpdatedFile() {
+    return localDatabase.getConvertedFileById(fileId);
+  }
 
   void renameFile(String newName) {
     debugPrint("ACTION: Trigger rename dialog scenario.");
@@ -82,7 +95,7 @@ class EditingViewModel extends ChangeNotifier {
 
     // 2. Pop the last state item out of the undo stack
     final String previousState = _undoStack.removeLast();
-    _lastSavedText = previousState;
+    _lastUpdatedText = previousState;
 
     // 3. Update the text controller temporarily without re-triggering history tracking metrics
     textController.removeListener(_onTextChanged);
@@ -103,7 +116,7 @@ class EditingViewModel extends ChangeNotifier {
 
     // 2. Extract forward target state from the redo stack
     final String nextState = _redoStack.removeLast();
-    _lastSavedText = nextState;
+    _lastUpdatedText = nextState;
 
     // 3. Apply state modification smoothly to text view node
     textController.removeListener(_onTextChanged);
@@ -114,21 +127,38 @@ class EditingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  //TODO will be implemented way later
   void simplifyText() {
     debugPrint("ACTION: Trigger NLP / LLM Simplification engine request.");
-    // This will eventually update textController.text with easier vocabulary
+    localDatabase.test();
   }
 
   void resetToDefault() {
     debugPrint("ACTION: Reverting modifications back to original OCR raw text layout.");
+    _debounceTimer?.cancel();
+    textController.text = _lastSavedText;
+    _saveToHistory(textController.text);
   }
 
   void saveDocument() {
     debugPrint("ACTION: Writing text data mutations into LocalDatabase / remote stream.");
+    _debounceTimer?.cancel();
+    _saveToHistory(textController.text);
+    _lastSavedText = _lastUpdatedText;
+    localDatabase.insertConvertedFile(
+      ConvertedFile(
+          id: fileId,
+          fileName: fileName,
+          extractedText: textController.text,
+          dateConverted: DateTime.now()
+      )
+    );
   }
 
+  //TODO must finish
   void createDuplicateCopy() {
     debugPrint("ACTION: Writing deep copy snapshot copy into persistence layer.");
+    localDatabase.test();
   }
 
   @override
