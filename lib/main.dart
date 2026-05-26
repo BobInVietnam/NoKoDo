@@ -41,7 +41,7 @@ Future<void> main() async {
           create: (context) => TestLocalDatabase()
       ),
     ],
-    child: const TestNokodoApp()));
+    child: const NokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {

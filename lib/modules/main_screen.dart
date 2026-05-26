@@ -6,13 +6,14 @@ import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
-import 'package:nodyslexia/modules/library_screen.dart';
+import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
+import 'library/library_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -101,13 +102,6 @@ class _MainScreenState extends State<MainScreen> {
                             );
                           }
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Row 2 (2 buttons)
-                    Row(
-                      children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.book_outlined, // Placeholder
                           label: 'Làm Bài Kiểm Tra',
@@ -118,13 +112,46 @@ class _MainScreenState extends State<MainScreen> {
                             );
                           },
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Row 2 (2 buttons)a
+                    Row(
+                      children: <Widget>[
+                        _buildMenuButton(
+                          icon: Icons.abc_outlined, // Placeholder
+                          label: 'Đơn giản hóa câu từ',
+                          onPressed: () {
+                            //TODO Implement this hhhh
+                            debugPrint("Chưa implement");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
+                                  create: (innerContext) => LibraryViewModel(
+                                    localDatabase: innerContext.read<LocalDatabase>(),
+                                  ),
+                                  child: const LibraryScreen(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                         _buildMenuButton(
                           icon: Icons.bar_chart_outlined, // Placeholder
                           label: 'Thư Viện',
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const LibraryScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
+                                  create: (innerContext) => LibraryViewModel(
+                                    localDatabase: innerContext.read<LocalDatabase>(),
+                                  ),
+                                  child: const LibraryScreen(),
+                                ),
+                              ),
                             );
                           },
                         ),
