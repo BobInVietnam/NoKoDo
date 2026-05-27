@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/converted_file.dart';
+import '../models/dictionary_entry.dart';
 
 abstract class LocalDatabase extends ChangeNotifier{
   Future<void> test();
@@ -11,6 +12,14 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<List<ConvertedFile>> getAllConvertedFiles();
   Future<ConvertedFile?> getConvertedFileById(int id);
   Future<int> deleteConvertedFile(int id);
+  /// Inserts a new dictionary entry and returns its auto-generated ID.
+  Future<int> insertDictionaryEntry(DictionaryEntry entry);
+  /// Fetches a paginated slice of all entries in the dictionary.
+  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(int limit, int offset);
+  /// Searches for words matching the query with pagination.
+  Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset);
+  /// Looks up a precise singular word entry (Returns null if not found).
+  Future<DictionaryEntry?> getDictionaryEntryByWord(String word);
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -54,11 +63,12 @@ class TestLocalDatabase extends LocalDatabase {
               "lesson_id INTEGER,"
               "FOREIGN KEY(lesson_id) REFERENCES Lesson(id))");
       await db.execute(
-          "CREATE TABLE Dictionary ("
-              "id INTEGER PRIMARY KEY, "
+          "CREATE TABLE DictionaryEntry ("
+              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
               "word TEXT, "
-              "text TEXT, "
-              "image_url TEXT)");
+              "description TEXT, "
+              "image_name TEXT)");
+      await db.execute("CREATE INDEX idx_dictionary_word ON DictionaryEntry (word)");
       await db.execute(
           "CREATE TABLE ConvertedFile ("
               "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -122,4 +132,63 @@ class TestLocalDatabase extends LocalDatabase {
       whereArgs: [id],
     );
   }
+
+  @override
+  Future<int> insertDictionaryEntry(DictionaryEntry entry) async {
+    final db = await database;
+    return await db.insert(
+      'DictionaryEntry',
+      entry.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  @override
+  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(int limit, int offset) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'DictionaryEntry',
+      limit: limit,
+      offset: offset,
+      orderBy: 'word ASC', // Keeps listings strictly alphabetical
+    );
+    return List.generate(maps.length, (i) => DictionaryEntry.fromMap(maps[i]));
+  }
+
+  @override
+  Future<DictionaryEntry?> getDictionaryEntryByWord(String word) async {
+    final db = await database;
+
+    final List<Map<String, Object?>> maps = await db.query(
+      'DictionaryEntry',
+      where: 'word = ?',
+      whereArgs: [word.trim()],
+      limit: 1, // Ends index query parsing immediately once matching node is located
+    );
+
+    if (maps.isEmpty) return null;
+    return DictionaryEntry.fromMap(maps.first);
+  }
+
+  @override
+  Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset) async {
+    final db = await database;
+    if (query.trim().isEmpty) return [];
+
+    final List<Map<String, Object?>> maps = await db.query(
+      'DictionaryEntry',
+      where: 'word LIKE ?',
+      // Using '%' wildcards allows matching prefixes, suffixes, or sub-substring fragments
+      whereArgs: ['%${query.trim()}%'],
+      limit: limit,
+      offset: offset,
+      orderBy: 'word ASC',
+    );
+
+    return List.generate(maps.length, (i) => DictionaryEntry.fromMap(maps[i]));
+  }
+
+
+
+
 }

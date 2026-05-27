@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
+import 'package:nodyslexia/modules/library/library_screen.dart';
+import 'package:nodyslexia/modules/library/library_viewmodel.dart';
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
@@ -41,7 +43,7 @@ Future<void> main() async {
           create: (context) => TestLocalDatabase()
       ),
     ],
-    child: const NokodoApp()));
+    child: const TestNokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {
@@ -145,13 +147,16 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: ChangeNotifierProvider(
-        create: (context) => FileToTextViewModel(
-            ocrService: MockOCRService(),
-            localDatabase: context.read<LocalDatabase>()
-        ),
-        child: FileToTextScreen(),
-      )
+      // home: ChangeNotifierProvider(
+      //   create: (context) => FileToTextViewModel(
+      //       ocrService: MockOCRService(),
+      //       localDatabase: context.read<LocalDatabase>()
+      //   ),
+      //   child: FileToTextScreen(),
+      // )
+      home: ChangeNotifierProvider(create: (context) =>
+          LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
+          child: LibraryScreen())
     );
   }
 }
