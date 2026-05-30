@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
@@ -33,7 +34,8 @@ class FileToTextScreen extends StatelessWidget {
           builder: (context) => ChangeNotifierProvider(
             create: (context) => ReadingViewModel(
                 file: result,
-                ttsService: TtsService()),
+                ttsService: TtsService(),
+                localDatabase: context.read<LocalDatabase>()),
             child: ReadingScreen(),
           ),
         ),
@@ -169,7 +171,8 @@ class FileToTextScreen extends StatelessWidget {
                                         create: (context) =>
                                             ReadingViewModel(
                                                 file: file!,
-                                                ttsService: TtsService()),
+                                                ttsService: TtsService(),
+                                                localDatabase: context.read<LocalDatabase>()),
                                         child: ReadingScreen(),
                                       ),
                                 ),

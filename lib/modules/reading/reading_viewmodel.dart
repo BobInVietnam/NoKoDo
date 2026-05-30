@@ -1,6 +1,10 @@
 // viewmodels/reading_viewmodel.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/models/converted_file.dart';
+import 'package:nodyslexia/models/dictionary_entry.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
 class ReadingViewModel extends ChangeNotifier {
@@ -8,6 +12,7 @@ class ReadingViewModel extends ChangeNotifier {
   String _extractedText = "";
   int _fileId = 0;
   final TtsService _ttsService;
+  final LocalDatabase _localDatabase;
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
   int _currentOffset = 0;
@@ -21,6 +26,7 @@ class ReadingViewModel extends ChangeNotifier {
   double get currentReadingSpeed => _currentReadingSpeed;
   int get currentWordStart => _currentWordStart;
   int get currentWordEnd => _currentWordEnd;
+  TtsService get ttsService => _ttsService;
   TtsState get ttsState => _ttsService.ttsState;
   bool get isMenuOpen => _selectionMenuOverlay != null;
   String get extractedText => _extractedText;
@@ -28,7 +34,9 @@ class ReadingViewModel extends ChangeNotifier {
 
   ReadingViewModel({
     required ConvertedFile file,
-    required TtsService ttsService,}) : _ttsService = ttsService, _file = file {
+    required TtsService ttsService,
+    required LocalDatabase localDatabase})
+      : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
     _extractedText = _file.extractedText;
     _fileId = _file.id!;
     _initializeTts();
@@ -102,6 +110,10 @@ class ReadingViewModel extends ChangeNotifier {
     _currentOffset = offset;
     debugPrint("READING: Current selection: $currentSelection");
     notifyListeners();
+  }
+
+  Future<DictionaryEntry?>  getWordDefinition() async {
+    return await _localDatabase.getDictionaryEntryByWord(currentSelection!);
   }
 
   @override

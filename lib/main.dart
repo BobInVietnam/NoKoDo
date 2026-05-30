@@ -43,7 +43,7 @@ Future<void> main() async {
           create: (context) => TestLocalDatabase()
       ),
     ],
-    child: const TestNokodoApp()));
+    child: const NokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {
@@ -147,16 +147,17 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      // home: ChangeNotifierProvider(
-      //   create: (context) => FileToTextViewModel(
-      //       ocrService: MockOCRService(),
-      //       localDatabase: context.read<LocalDatabase>()
-      //   ),
-      //   child: FileToTextScreen(),
+      home: ChangeNotifierProvider(
+        create: (context) => FileToTextViewModel(
+            ocrService: MockOCRService(),
+            localDatabase: context.read<LocalDatabase>()
+        ),
+        child: FileToTextScreen(),
+      )
+      // home: ChangeNotifierProvider(create: (context) =>
+      //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
+      //     child: LibraryScreen()
       // )
-      home: ChangeNotifierProvider(create: (context) =>
-          LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
-          child: LibraryScreen())
     );
   }
 }

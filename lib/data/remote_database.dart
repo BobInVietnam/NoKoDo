@@ -106,10 +106,10 @@ class TestRemoteDatabase extends RemoteDatabase {
       -- 5. Count how many sessions exist (ignores NULLs automatically)
       COUNT(SessionStats.sessionid) as attempts
   FROM 
-      Student S
+      student S
   -- 1. Link Student to Class and Class to Tests (The "Master List")
-  JOIN Class_Test CT ON S.classid = CT.classid
-  JOIN Test T ON CT.testid = T.id
+  JOIN class_test CT ON S.classid = CT.classid
+  JOIN test T ON CT.testid = T.id
   
   -- 2. Create a subquery that calculates the score for every session
   LEFT JOIN Student_Test_Status SessionStats 
@@ -136,7 +136,7 @@ class TestRemoteDatabase extends RemoteDatabase {
 
     debugPrint("TESTING: Querying database for Test...");
     final List<Map<String, Object?>> maps = await db.rawQuery('''
-   SELECT * FROM Test WHERE Test.id = ?;
+   SELECT * FROM test WHERE test.id = ?;
       ''',
         [testId]
     );
@@ -161,7 +161,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     answer,
     is_multiple_choice,
     choices
-  FROM Question WHERE Question.testid = ?;
+  FROM question WHERE question.testid = ?;
     ''',
       [testId]
     );
@@ -179,7 +179,7 @@ class TestRemoteDatabase extends RemoteDatabase {
 
     debugPrint("TESTING: Querying database for TestSession...");
     final List<Map<String, Object?>> maps = await db.query(
-      'Student_Test_Status',
+      'student_test_status',
       where: 'studentid = ? AND date_created = ?',
       whereArgs: [testSession.studentId, testSession.startTime]
     );
@@ -197,7 +197,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     final db = await database;
 
     debugPrint("TESTING: Posting test session data...");
-    final int sessionId = await db.insert('Student_Test_Status',
+    final int sessionId = await db.insert('student_test_status',
         {
           'studentid': testSession.studentId,
           'testid': testSession.testId,
@@ -213,7 +213,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     final db = await database;
 
     debugPrint("TESTING: Posting test session data...");
-    await db.update('Student_Test_Status',
+    await db.update('student_test_status',
         {
           'date_finished': testSession.endTime,
           'duration': testSession.endTime - testSession.startTime,

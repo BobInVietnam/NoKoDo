@@ -1,5 +1,6 @@
 // screens/reading_screen.dart
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/customwigdets/dictionary_entry_display.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
@@ -63,10 +64,14 @@ class ReadingScreen extends StatelessWidget {
                         onReadPressed: () {
                           viewModel.toggleTts();
                         },
-                        onDefinePressed: () {
-                          //TODO Implement this
-                          debugPrint("READING: Define function pressed");
-                        },
+                        onDefinePressed: () async {
+                          final dictionaryEntry = await viewModel.getWordDefinition();
+                          if (context.mounted) {
+                            DictionaryDetailDialog.show(
+                                context,
+                                dictionaryEntry,
+                                viewModel.ttsService);
+                          }},
                         onHighlightPressed: () {
                           //TODO Implement this
                           debugPrint("READING: Highlight function pressed");
