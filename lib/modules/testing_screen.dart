@@ -1,128 +1,151 @@
-// lib/modules/reading/tts_highlight_test_screen.dart
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 
-class TtsHighlightTestScreen extends StatelessWidget {
-  const TtsHighlightTestScreen({super.key});
+import '../data/remote_database.dart';
+// Import your database class path here
+// import 'package:your_project/database/prod_remote_database.dart';
 
-  /// Dynamically segments text strings based on active native character array metrics
-  List<TextSpan> _buildHighlightSpans(
-      String fullText,
-      int start,
-      int end,
-      TextStyle baseStyle,
-      Color highlightColor,
-      ) {
-    // If no word is actively processing, return the text frame un-highlighted
-    if (start == -1 || end == -1 || start >= fullText.length || end > fullText.length) {
-      return [TextSpan(text: fullText, style: baseStyle)];
+class NetworkTestScreen extends StatefulWidget {
+  const NetworkTestScreen({super.key});
+
+  @override
+  State<NetworkTestScreen> createState() => _NetworkTestScreenState();
+}
+
+class _NetworkTestScreenState extends State<NetworkTestScreen> {
+  // Instantiating your remote database service
+  final RemoteDatabase _remoteDatabase = LocalhostRemoteDatabase();
+
+  bool _isLoading = false;
+  String _statusMessage = "Status: Idle. Press the button to initiate request.";
+  String _jsonOutput = "{}";
+  Color _statusColor = Colors.grey;
+
+  Future<void> _runNetworkTest() async {
+    setState(() {
+      _isLoading = true;
+      _statusMessage = "Sending request to API endpoint...";
+      _statusColor = Colors.blue;
+      _jsonOutput = "{}";
+    });
+
+    try {
+      // Trigger your network function
+      Map<String, Object?>? response = await _remoteDatabase.getUser("MrBq1EAfvoYAswZZfJrbGSM2jlj1");
+      // For test screen feedback integration, we simulate success state feedback.
+      // In production, your testConnection() function could return the Map/String directly.
+      setState(() {
+        _statusMessage = "HTTP SUCCESS: Payload received! Check debug terminal.";
+        _jsonOutput = response.toString();
+        _statusColor = Colors.green;
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = "CRITICAL FAILURE: Look at debug terminal for full stacktrace.";
+        _jsonOutput = '{\n  "error": "${e.toString()}"\n}';
+        _statusColor = Colors.red;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    return [
-      // 1. Strings before the highlighted keyword token
-      TextSpan(
-        text: fullText.substring(0, start),
-        style: baseStyle,
-      ),
-      // 2. The active matching keyword token painted with custom background properties
-      TextSpan(
-        text: fullText.substring(start, end),
-        style: baseStyle.copyWith(
-          backgroundColor: highlightColor,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-      // 3. Trailing strings remaining after the highlighted keyword token
-      TextSpan(
-        text: fullText.substring(end),
-        style: baseStyle,
-      ),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to real-time progress emissions from our injected viewmodel
-    final viewModel = context.watch<ReadingViewModel>();
-
-    final baseTextStyle = TextStyle(
-      fontSize: 24,
-      height: 1.6,
-      color: Colors.grey[800],
-    );
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TTS Real-time Highlight Tester'),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: const Text("API Connectivity Endpoint Test"),
+        centerTitle: true,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // 1. Text Container Render Area
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.all(32.0), // Generous padding for tablet viewports
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600), // Keeps layout neat on large tablet screens
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. Connection Status Card Container
+                Card(
+                  elevation: 4,
+                  color: _statusColor.withOpacity(0.1),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.teal.shade200, width: 2),
+                    side: BorderSide(color: _statusColor, width: 1.5),
                   ),
-                  child: SingleChildScrollView(
-                    child: SelectionArea(
-                      child: RichText(
-                        textAlign: TextAlign.justify,
-                        text: TextSpan(
-                          children: _buildHighlightSpans(
-                            viewModel.extractedText,
-                            viewModel.currentWordStart, // tracked by progress indices
-                            viewModel.currentWordEnd,   // tracked by progress indices
-                            baseTextStyle,
-                            Colors.yellow[400]!, // Custom marker tint
-                          ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      _statusMessage,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: _statusColor == Colors.grey ? Colors.black87 : _statusColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                // 2. Terminal Console Display Mockup
+                const Text(
+                  "UI Parsed Console Output:",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        _jsonOutput,
+                        style: const TextStyle(
+                          fontFamily: 'Courier', // Monospace styling for code block view
+                          color: Colors.greenAccent,
+                          fontSize: 16,
+                          height: 1.4,
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 40),
 
-              // 2. Playback Control Trigger Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: viewModel.handleReadAll,
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text("Đọc Truyện"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                // 3. Execution Trigger Button
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _runNetworkTest,
+                  icon: _isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                      : const Icon(Icons.network_ping),
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      _isLoading ? "Communicating..." : "Ping API Server",
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  const SizedBox(width: 20),
-                  ElevatedButton.icon(
-                    onPressed: viewModel.handleStopReading,
-                    icon: const Icon(Icons.stop),
-                    label: const Text("Dừng"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

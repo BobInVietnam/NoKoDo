@@ -89,7 +89,7 @@ class RepoManager extends ChangeNotifier {
   Future<Test> getTestDetailsAndQuestions(int testId) async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting test data...$testId");
-    final Map<String, Object?> test = await onlineDatabase.getTestDetails(testId);
+    final Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
     debugPrint("TESTING: RepoMan got test data");
     final List<Map<String, Object?>> questionsList = await onlineDatabase.getTestQuestions(testId);
     debugPrint("TESTING: RepoMan got questions data");

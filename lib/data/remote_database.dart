@@ -1,21 +1,24 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/test.dart';
 
 abstract class RemoteDatabase {
+  Future<bool> testConnection();
   Future<Map<String, Object?>?> getUser(String uid);
   Future<List<Map<String, Object?>>> getTestList(String uid);
-  Future<Map<String, Object?>> getTestDetails(int testId);
+  Future<Map<String, Object?>> getTestDetails(int testId, String studentId);
   Future<List<Map<String, Object?>>> getTestQuestions(int testId);
   Future<int> sendTestSessionStatus(TestSession testSession);
   Future<void> updateTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(List<Map<String, Object?>> answersList);
 
-  Future<Future<Map<String, dynamic>>> getStudentStatistics(String uid);
+  Future<Map<String, dynamic>> getStudentStatistics(String uid);
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -131,7 +134,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>> getTestDetails(int testId) async {
+  Future<Map<String, Object?>> getTestDetails(int testId, String studentId) async {
     final db = await database;
 
     debugPrint("TESTING: Querying database for Test...");
@@ -237,8 +240,212 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Future<Map<String, dynamic>>> getStudentStatistics(String uid) {
+  Future<Map<String, dynamic>> getStudentStatistics(String uid) {
     // TODO: implement getStudentStatistics
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> testConnection() async {
+    try {
+      final db = await database;
+      return db.isOpen;
+    } catch (e) {
+      debugPrint("TESTING: DB errored. Cause: $e");
+      return false;
+    }
+  }
+}
+
+class LocalhostRemoteDatabase extends RemoteDatabase {
+  String get _baseUrl {
+    if (Platform.isAndroid) {
+      // 10.0.2.2 is the special loopback interface pointing directly to your development computer's localhost
+      return 'http://10.0.2.2:3000';
+    } else {
+      // iOS Simulators share the same network interface as your host Mac
+      return 'http://localhost:3000';
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getStudentStatistics(String uid) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/test');
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+
+      // 1. Send the asynchronous network request
+      final http.Response response = await http.get(targetUrl);
+
+      Map<String, dynamic> jsonContents;
+      // 2. Evaluate the HTTP Status Code response boundary
+      if (response.statusCode == 200) {
+        // 3. Parse the raw text body payload into a structured Dart Map object
+        jsonContents = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 4. Log the target JSON value cleanly to your debug terminal console window
+        debugPrint('HTTP SUCCESS: Connection established payload received!');
+        debugPrint('JSON Content: $jsonContents');
+        debugPrint('Extracted Key Value (hello): ${jsonContents['hello']}');
+        return jsonContents;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return <String, dynamic>{};
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return <String, dynamic>{};
+    }
+  }
+
+  @override
+  Future<Map<String, Object?>> getTestDetails(int testId, String studentId) async {
+    // 1. Construct the target URL with path parameters and query arguments matching the API contract
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/$testId').replace(
+      queryParameters: {
+        'studentid': studentId,
+      },
+    );
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+
+      // 2. Send the asynchronous network request
+      final http.Response response = await http.get(targetUrl);
+
+      // 3. Evaluate the HTTP Status Code response boundary
+      if (response.statusCode == 200) {
+        // 4. Parse the raw text body payload into a structured Dart Map object safely
+        final Map<String, Object?> jsonContents =
+        jsonDecode(response.body) as Map<String, Object?>;
+
+        debugPrint('HTTP SUCCESS: Connection established payload received!');
+        debugPrint('JSON Content: $jsonContents');
+        return jsonContents;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return <String, Object?>{};
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return <String, Object?>{};
+    }
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> getTestList(String uid) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam').replace(
+      queryParameters: {
+        'studentid': uid,
+      },
+    );
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+
+      // 2. Send the asynchronous network request
+      final http.Response response = await http.get(targetUrl);
+
+      // 3. Evaluate the HTTP Status Code response boundary
+      if (response.statusCode == 200) {
+        // 4. Parse the raw text body payload into a structured Dart Map object safely
+        final Map<String, Object?> jsonContents =
+          jsonDecode(response.body) as Map<String, Object?>;
+
+        final List<Map<String, Object?>> testList = List<Map<String, Object?>>.from(
+          jsonContents["testInfoList"] as List,
+        );
+        debugPrint('HTTP SUCCESS: Connection established payload received!');
+        debugPrint('JSON Content: $jsonContents');
+        return testList;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> getTestQuestions(int testId) {
+    // TODO: implement getTestQuestions
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, Object?>?> getUser(String uid) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+
+      final http.Response response = await http.get(targetUrl);
+
+      if (response.statusCode == 200) {
+        final Map<String, Object?> jsonContents = jsonDecode(response.body)
+            as Map<String, Object?>;
+        debugPrint('HTTP SUCCESS: Connection established payload received!');
+        debugPrint('JSON Content: $jsonContents');
+        return jsonContents;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return <String, Object?>{};
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return <String, Object?>{};
+    }
+  }
+
+  @override
+  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList) {
+    // TODO: implement sendTestAnswers
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int> sendTestSessionStatus(TestSession testSession) {
+    // TODO: implement sendTestSessionStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateTestSessionStatus(TestSession testSession) {
+    // TODO: implement updateTestSessionStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> testConnection() async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/test');
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+
+      // 1. Send the asynchronous network request
+      final http.Response response = await http.get(targetUrl);
+
+      // 2. Evaluate the HTTP Status Code response boundary
+      if (response.statusCode == 200) {
+        // 3. Parse the raw text body payload into a structured Dart Map object
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 4. Log the target JSON value cleanly to your debug terminal console window
+        debugPrint('HTTP SUCCESS: Connection established payload received!');
+        debugPrint('JSON Content: $jsonContents');
+        debugPrint('Extracted Key Value (hello): ${jsonContents['hello']}');
+        return true;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return false;
+    }
+  }
+
 }
