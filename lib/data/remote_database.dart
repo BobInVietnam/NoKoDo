@@ -14,9 +14,8 @@ abstract class RemoteDatabase {
   Future<List<Map<String, Object?>>> getTestList(String uid);
   Future<Map<String, Object?>> getTestDetails(int testId, String studentId);
   Future<List<Map<String, Object?>>> getTestQuestions(int testId);
-  Future<int> sendTestSessionStatus(TestSession testSession);
-  Future<void> updateTestSessionStatus(TestSession testSession);
-  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList);
+  Future<void> sendTestSessionStatus(TestSession testSession);
+  Future<void> sendTestAnswers(Map<String, Object?> answersList);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
 }
@@ -204,7 +203,10 @@ class TestRemoteDatabase extends RemoteDatabase {
         {
           'studentid': testSession.studentId,
           'testid': testSession.testId,
-          'date_created': testSession.startTime
+          'date_created': testSession.startTime,
+          'date_finished': testSession.endTime,
+          'duration': testSession.endTime - testSession.startTime,
+          'result': testSession.score
         },
         conflictAlgorithm: ConflictAlgorithm.replace);
     debugPrint("TESTING: Test session posted.");
@@ -212,27 +214,12 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> updateTestSessionStatus(TestSession testSession) async {
-    final db = await database;
-
-    debugPrint("TESTING: Posting test session data...");
-    await db.update('student_test_status',
-        {
-          'date_finished': testSession.endTime,
-          'duration': testSession.endTime - testSession.startTime,
-          'result': testSession.score
-        },
-        where: 'sessionid = ?',
-        whereArgs: [testSession.id]);
-    debugPrint("TESTING: Test session posted.");
-  }
-
-  @override
-  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList) async {
+  Future<void> sendTestAnswers(Map<String, Object?> answersList) async {
     final db = await database;
 
     debugPrint("TESTING: Posting test answers data...");
-    for (final answer in answersList) {
+    for (var answer in (answersList["answers"] as List<Map<String, Object?>>)) {
+      answer["date_created"] = answersList["startTime"];
       await db.insert('Student_Answer', answer,
           conflictAlgorithm: ConflictAlgorithm.replace);
     }
@@ -401,21 +388,56 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendTestAnswers(List<Map<String, Object?>> answersList) {
-    // TODO: implement sendTestAnswers
+  Future<void> sendTestAnswers(Map<String, Object?> answersList) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/answers');
+
+    try {
+      final http.Response response = await http.post(
+        targetUrl,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: jsonEncode(answersList)
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Test answers data synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+    }
     throw UnimplementedError();
   }
 
   @override
-  Future<int> sendTestSessionStatus(TestSession testSession) {
-    // TODO: implement sendTestSessionStatus
-    throw UnimplementedError();
-  }
+  Future<void> sendTestSessionStatus(TestSession testSession) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/${testSession.testId}');
 
-  @override
-  Future<void> updateTestSessionStatus(TestSession testSession) {
-    // TODO: implement updateTestSessionStatus
-    throw UnimplementedError();
+    try {
+      final http.Response response = await http.post(
+        targetUrl,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'testId': testSession.testId,
+          'studentId': testSession.studentId,
+          'startTime': testSession.startTime,
+          'endTime': testSession.endTime,
+          'score': testSession.score,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Test session data synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+    }
   }
 
   @override
@@ -439,7 +461,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('Extracted Key Value (hello): ${jsonContents['hello']}');
         return true;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}, ${response.body}');
         return false;
       }
     } catch (error) {

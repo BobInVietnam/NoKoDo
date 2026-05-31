@@ -119,7 +119,6 @@ class _TestScreenState extends State<TestScreen> {
               try {
                 // C. Prepare the data
                 TestSession submitTestSession = TestSession(
-                    id: widget.testSession.id,
                     testId: widget.testSession.testId,
                     studentId: widget.testSession.studentId,
                     startTime: widget.testSession.startTime,
@@ -128,7 +127,7 @@ class _TestScreenState extends State<TestScreen> {
                 );
 
                 // D. Run the async operation (The Waiting Part)
-                await context.read<RepoManager>().updateTestSessionStatus(submitTestSession);
+                await context.read<RepoManager>().sendTestSessionStatus(submitTestSession);
                 if (!mounted) return;
                 await context.read<RepoManager>().sendTestAnswers(widget.testSession, _answers);
 

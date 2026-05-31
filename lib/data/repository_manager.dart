@@ -98,30 +98,27 @@ class RepoManager extends ChangeNotifier {
     return Test.fromMap(mutableTest);
   }
 
-  Future<int> sendTestSessionStatus(TestSession testSession) async {
+  Future<void> sendTestSessionStatus(TestSession testSession) async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan sending test session data...");
-    final int sessionId = await onlineDatabase.sendTestSessionStatus(testSession);
-    return sessionId;
-  }
-
-  Future<void> updateTestSessionStatus(TestSession testSession) async {
-    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
-    debugPrint("TESTING: RepoMan sending test session data...");
-    await onlineDatabase.updateTestSessionStatus(testSession);
+    await onlineDatabase.sendTestSessionStatus(testSession);
   }
 
   Future<void> sendTestAnswers(TestSession testSession, Map<int, dynamic> answersList) async {
     await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan sending test answers data...");
-    final List<Map<String, Object?>> answersMapList = [];
+    Map<String, Object?> answersMapList = <String, Object?>{
+      'studentId': testSession.studentId,
+      'testId': testSession.testId,
+      'startTime': testSession.startTime,
+      'answers': []
+    };
     for (final entry in answersList.entries) {
       final Map<String, Object?> answerMap = {
-        'sessionid': testSession.id,
-        'questionid': entry.key,
+        'questionId': entry.key,
         'answer': entry.value
       };
-      answersMapList.add(answerMap);
+      (answersMapList['answers'] as List).add(answerMap);
     }
     await onlineDatabase.sendTestAnswers(answersMapList);
   }

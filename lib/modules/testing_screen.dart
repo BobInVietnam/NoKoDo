@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../data/remote_database.dart';
-// Import your database class path here
-// import 'package:your_project/database/prod_remote_database.dart';
+import '../models/test.dart';
 
 class NetworkTestScreen extends StatefulWidget {
   const NetworkTestScreen({super.key});
@@ -25,19 +24,54 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
   Future<void> _runNetworkTest() async {
     setState(() {
       _isLoading = true;
-      _statusMessage = "Sending request to API endpoint...";
+      _statusMessage = "Sending test answers payload to API endpoint...";
       _statusColor = Colors.blue;
       _jsonOutput = "{}";
     });
 
     try {
-      // Trigger your network function
-      Map<String, Object?>? response = await _remoteDatabase.getUser("MrBq1EAfvoYAswZZfJrbGSM2jlj1");
-      // For test screen feedback integration, we simulate success state feedback.
-      // In production, your testConnection() function could return the Map/String directly.
+      // 1. Create a mock TestSession object configuration
+      final mockSession = TestSession(
+        testId: 789,
+        studentId: "MrBq1EAfvoYAswZZfJrbGSM2jlj1",
+        startTime: 1717150000,
+        endTime: 1717153600,
+        score: 8.5,
+      );
+
+      // 2. Mock a collection of question answers (Key: questionId, Value: selectedAnswer)
+      final Map<int, dynamic> mockAnswersList = {
+        7891: "A",
+        7892: "C",
+        7893: "B",
+        7894: null,
+        7895: null,
+        7896: "Daspd"
+      };
+
+      // 3. Replicate the local mapping logic to generate the payload shape
+      final Map<String, Object?> answersMapPayload = {
+        'studentId': mockSession.studentId,
+        'testId': mockSession.testId,
+        'startTime': mockSession.startTime,
+        'answers': []
+      };
+
+      for (final entry in mockAnswersList.entries) {
+        final Map<String, Object?> answerMap = {
+          'questionId': entry.key,
+          'answer': entry.value
+        };
+        (answersMapPayload['answers'] as List).add(answerMap);
+      }
+
+      // 4. Trigger the network function you just implemented
+      await _remoteDatabase.sendTestAnswers(answersMapPayload);
+
       setState(() {
-        _statusMessage = "HTTP SUCCESS: Payload received! Check debug terminal.";
-        _jsonOutput = response.toString();
+        _statusMessage = "HTTP POST SUCCESS: Answer collection transmitted! Check backend console log.";
+        // Pretty-print the complete structural JSON payload sent to the network pipeline
+        _jsonOutput = const JsonEncoder.withIndent('  ').convert(answersMapPayload);
         _statusColor = Colors.green;
       });
     } catch (e) {

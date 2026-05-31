@@ -92,19 +92,18 @@ class TestInfo {
 }
 
 class TestSession {
-  int id;
   final int testId;
   final String studentId;
   final int startTime;
   final int endTime;
   final double score;
 
-  TestSession({required this.id, required this.testId,
+  TestSession({required this.testId,
     required this.studentId, required this.startTime,
     required this.endTime, required this.score});
 
   factory TestSession.fromMap(Map<String, Object?> map) {
-    return TestSession(id: map['id'] as int,
+    return TestSession(
         testId: map['testid'] as int,
         studentId: map['studentid'] as String,
         startTime: map['starttime'] as int,

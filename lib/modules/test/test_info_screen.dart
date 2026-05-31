@@ -61,15 +61,14 @@ class TestDetailScreen extends StatelessWidget {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            final TestSession testSession = TestSession(id: 0,
+                            final TestSession testSession = TestSession(
                               testId: test.id,
                               studentId: currentStudent!.uid,
                               startTime: DateTime.now().millisecondsSinceEpoch,
-                              endTime: 0,
+                              endTime: DateTime.now().millisecondsSinceEpoch,
                               score: 0
                             );
-                            final sessionId = await context.read<RepoManager>().sendTestSessionStatus(testSession);
-                            testSession.id = sessionId;
+                            await context.read<RepoManager>().sendTestSessionStatus(testSession);
                             if (context.mounted) {
                               Navigator.push(
                                 context,
