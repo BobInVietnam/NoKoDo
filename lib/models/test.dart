@@ -5,7 +5,7 @@ abstract class Question {
 
   Question(this.id, this.content, this.correctAnswer);
   factory Question.fromMap(Map<String, Object?> map) {
-    if (map['is_multiple_choice'] as int == 0) {
+    if (map['isMultipleChoice'] as int == 0) {
       return FillBlankQuestion(
           map['id'] as int,
           map['question'] as String,
@@ -14,11 +14,7 @@ abstract class Question {
       return MultipleChoiceQuestion(
           map['id'] as int,
           map['question'] as String,
-          (map['choices'] as String).replaceAll('[', '') // Remove start brace
-              .replaceAll(']', '') // Remove end brace
-              .split(',')          // Split by comma
-              .map((e) => e.trim().replaceAll('"', "")) // Remove whitespace and quotes
-              .toList(), //String manip inline
+          List<String>.from(map['choices'] as List),
           map['answer'] as String);
     }
   }
@@ -86,7 +82,7 @@ class TestInfo {
         attempts: map['attempts'] as int,
         allowedAttempts: map['allowed_attempts'] as int,
         difficulty: map['difficulty'] as int,
-        result: map['result'] as double?
+        result: (map['result'] as num?)?.toDouble()
     );
   }
 }
@@ -106,9 +102,9 @@ class TestSession {
     return TestSession(
         testId: map['testid'] as int,
         studentId: map['studentid'] as String,
-        startTime: map['starttime'] as int,
-        endTime: map['endtime'] as int,
-        score: map['score'] as double);
+        startTime: map['dateCreated'] as int,
+        endTime: map['dateFinished'] as int,
+        score: map['result'] as double);
   }
 }
 
@@ -129,8 +125,8 @@ class Test {
     return Test(
       id: map['id'] as int,
       questions: map['questions'] as List<Question>,
-      timeLimit: map['time_limit'] as int,
-      allowedAttempts: map['allowed_attempts'] as int,
+      timeLimit: map['timeLimit'] as int,
+      allowedAttempts: map['allowedAttempts'] as int,
     );
   }
 

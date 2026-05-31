@@ -33,7 +33,7 @@ Future<void> main() async {
     MultiProvider(providers: [
       ChangeNotifierProvider(
       create: (context) => RepoManager(
-          onlineDatabase: TestRemoteDatabase(),
+          onlineDatabase: LocalhostRemoteDatabase(),
           database: TestLocalDatabase())
     ),
       ChangeNotifierProvider(
@@ -43,7 +43,7 @@ Future<void> main() async {
           create: (context) => TestLocalDatabase()
       ),
     ],
-    child: const TestNokodoApp()));
+    child: const NokodoApp()));
 }
 
 class NokodoApp extends StatelessWidget {

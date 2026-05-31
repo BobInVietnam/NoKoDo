@@ -79,7 +79,6 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<List<TestInfo>> getTestList() async {
-    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
     final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid);
     debugPrint("TESTING: RepoMan got data");
@@ -87,25 +86,21 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<Test> getTestDetailsAndQuestions(int testId) async {
-    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan getting test data...$testId");
-    final Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
+    Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
     debugPrint("TESTING: RepoMan got test data");
-    final List<Map<String, Object?>> questionsList = await onlineDatabase.getTestQuestions(testId);
-    debugPrint("TESTING: RepoMan got questions data");
-    final mutableTest = Map<String, Object?>.from(test);
-    mutableTest['questions'] = questionsList.map((map) => Question.fromMap(map)).toList();
-    return Test.fromMap(mutableTest);
+    final List<Map<String, Object?>> questionsList =
+      List<Map<String, Object?>>.from(test['questions'] as List);
+    test['questions'] = questionsList.map((map) => Question.fromMap(map)).toList();
+    return Test.fromMap(test);
   }
 
   Future<void> sendTestSessionStatus(TestSession testSession) async {
-    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan sending test session data...");
     await onlineDatabase.sendTestSessionStatus(testSession);
   }
 
   Future<void> sendTestAnswers(TestSession testSession, Map<int, dynamic> answersList) async {
-    await Future.delayed(const Duration(seconds: 2)); //TODO: remove in prod
     debugPrint("TESTING: RepoMan sending test answers data...");
     Map<String, Object?> answersMapList = <String, Object?>{
       'studentId': testSession.studentId,

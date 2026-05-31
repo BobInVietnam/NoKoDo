@@ -390,7 +390,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendTestAnswers(Map<String, Object?> answersList) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/answers');
-
+    debugPrint(answersList.toString());
     try {
       final http.Response response = await http.post(
         targetUrl,
@@ -408,13 +408,13 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
     }
-    throw UnimplementedError();
   }
 
   @override
   Future<void> sendTestSessionStatus(TestSession testSession) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/${testSession.testId}');
 
+    debugPrint(testSession.toString());
     try {
       final http.Response response = await http.post(
         targetUrl,
@@ -434,6 +434,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('HTTP SUCCESS: Test session data synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
+        throw (Exception);
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
