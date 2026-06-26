@@ -150,7 +150,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
             // Screen Title
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 16.0),
-              child: Text('Luyện tập', style: textTheme.displayLarge),
+              child: Text('Bài kiểm tra', style: textTheme.displayLarge),
             ),
 
             // Search and Sort Area
@@ -337,7 +337,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ngày thêm: ${TestInfo.dateCreated}',
+                        'Ngày thêm: ${DateTime.fromMillisecondsSinceEpoch(TestInfo.dateCreated)}',
                         style: textTheme.bodyMedium,
                       ),
                     ],

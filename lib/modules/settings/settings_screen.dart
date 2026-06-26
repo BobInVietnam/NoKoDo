@@ -93,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.all(20),
               child: AdjustableText(
-                "The quick, brown fox jumps over the lazy dog!? Wow.",
+                "Do bạch kim rất quý nên sẽ dùng để lắp vô xương",
                 maxLines: 2,
               ),
             ),

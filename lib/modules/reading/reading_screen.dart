@@ -122,7 +122,7 @@ class ReadingScreen extends StatelessWidget {
                         icon: Icon(viewModel.ttsState == TtsState.playing
                             ? Icons.stop_circle_outlined
                             : Icons.play_circle_outline),
-                        label: Text(viewModel.ttsState == TtsState.playing ? 'Stop' : 'Read All'),
+                        label: Text(viewModel.ttsState == TtsState.playing ? 'Dừng' : 'Đọc thành tiếng'),
                         onPressed: viewModel.toggleTts,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: viewModel.ttsState == TtsState.playing ? Colors.redAccent : Colors.teal,

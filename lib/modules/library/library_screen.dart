@@ -135,14 +135,14 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                     ),
                     Text(
                       formattedDate,
-                      style: textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+                      style: textTheme.bodySmall?.copyWith(color: Colors.grey[900]),
                     ),
                   ],
                 ),
                 const Divider(height: 16),
                 Text(
                   fileItem.extractedText,
-                  style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600], height: 1.4),
+                  style: textTheme.bodyMedium?.copyWith(color: Colors.grey[900], height: 1.4),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -495,6 +495,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
               controller: _tabController,
               indicatorColor: Colors.teal,
               labelColor: Colors.teal,
+              labelStyle: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               unselectedLabelColor: Colors.grey[600],
               tabs: const [
                 Tab(text: 'Văn bản'),
