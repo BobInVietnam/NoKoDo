@@ -11,6 +11,14 @@ class ConvertedFile {
     required this.dateConverted,
   });
 
+  List<String> get paragraphs {
+    return extractedText
+        .split('\n\n')
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+  }
+
   // Map representation for Database insertions
   Map<String, Object?> toMap() {
     return {

@@ -7,6 +7,8 @@ import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
+enum TtsMode { none, paragraph, all, selection }
+
 class ReadingViewModel extends ChangeNotifier {
   ConvertedFile _file;
   String _extractedText = "";
@@ -19,6 +21,8 @@ class ReadingViewModel extends ChangeNotifier {
   String? _currentSelection;
   OverlayEntry? _selectionMenuOverlay;
   double _currentReadingSpeed = 0.5;
+  int _selectedParagraphIndex = 0;
+  TtsMode _currentTtsMode = TtsMode.none;
 
   // Getters
   ConvertedFile get file => _file;
@@ -31,6 +35,16 @@ class ReadingViewModel extends ChangeNotifier {
   bool get isMenuOpen => _selectionMenuOverlay != null;
   String get extractedText => _extractedText;
   int get fileId => _fileId;
+  int get selectedParagraphIndex => _selectedParagraphIndex;
+  List<String> get paragraphs => _file.paragraphs;
+  TtsMode get currentTtsMode => _currentTtsMode;
+
+  void selectParagraph(int index) {
+    if (index >= 0 && index < paragraphs.length) {
+      _selectedParagraphIndex = index;
+      notifyListeners();
+    }
+  }
 
   ReadingViewModel({
     required ConvertedFile file,
@@ -45,6 +59,7 @@ class ReadingViewModel extends ChangeNotifier {
   void refreshContent(ConvertedFile file) {
     _extractedText = file.extractedText;
     _file = file;
+    _selectedParagraphIndex = 0;
     notifyListeners();
   }
 
@@ -62,34 +77,91 @@ class ReadingViewModel extends ChangeNotifier {
     }
   }
 
-  void toggleTts() {
-    if (ttsState != TtsState.playing) {
-      if (currentSelection == null) {
-        handleReadAll();
-      } else {
-        _handleReadSelected();
+  void toggleTtsParagraph() {
+    if (ttsState == TtsState.playing && _currentTtsMode == TtsMode.paragraph) {
+      handleStopReading();
+    } else {
+      if (ttsState == TtsState.playing) {
+        _ttsService.stop();
       }
+      _currentTtsMode = TtsMode.paragraph;
+      _currentOffset = 0;
+      _currentWordStart = -1;
+      _currentWordEnd = -1;
+      if (paragraphs.isNotEmpty && _selectedParagraphIndex < paragraphs.length) {
+        _ttsService.speak(paragraphs[_selectedParagraphIndex], onComplete: () {
+          _currentTtsMode = TtsMode.none;
+          _currentWordStart = -1;
+          _currentWordEnd = -1;
+          notifyListeners();
+        });
+      }
+      notifyListeners();
+    }
+  }
+
+  void toggleTtsSelection() {
+    if (ttsState == TtsState.playing && _currentTtsMode == TtsMode.selection) {
+      handleStopReading();
+    } else {
+      if (ttsState == TtsState.playing) {
+        _ttsService.stop();
+      }
+      if (currentSelection != null) {
+        _currentTtsMode = TtsMode.selection;
+        _currentWordStart = -1;
+        _currentWordEnd = -1;
+        _ttsService.speak(currentSelection!, onComplete: () {
+          _currentTtsMode = TtsMode.none;
+          _currentWordStart = -1;
+          _currentWordEnd = -1;
+          notifyListeners();
+        });
+        notifyListeners();
+      }
+    }
+  }
+
+  void toggleTtsAll() {
+    if (ttsState == TtsState.playing && _currentTtsMode == TtsMode.all) {
+      handleStopReading();
+    } else {
+      if (ttsState == TtsState.playing) {
+        _ttsService.stop();
+      }
+      _currentTtsMode = TtsMode.all;
+      _readParagraphSequentially(_selectedParagraphIndex);
+    }
+  }
+
+  void _readParagraphSequentially(int index) {
+    if (index < paragraphs.length) {
+      _selectedParagraphIndex = index;
+      _currentOffset = 0;
+      _currentWordStart = -1;
+      _currentWordEnd = -1;
+      notifyListeners();
+
+      _ttsService.speak(paragraphs[index], onComplete: () {
+        if (_currentTtsMode == TtsMode.all) {
+          _readParagraphSequentially(index + 1);
+        } else {
+          _currentTtsMode = TtsMode.none;
+          _currentWordStart = -1;
+          _currentWordEnd = -1;
+          notifyListeners();
+        }
+      });
     } else {
       handleStopReading();
     }
   }
 
-  void handleReadAll() {
-    _ttsService.speak(extractedText, onComplete: () {
-      notifyListeners();
-    });
-    notifyListeners();
-  }
-
-  void _handleReadSelected() {
-    _ttsService.speak(currentSelection!, onComplete: () {
-      notifyListeners();
-    });
-    // removeSelectionMenu();
-  }
-
   void handleStopReading() {
     _ttsService.stop();
+    _currentTtsMode = TtsMode.none;
+    _currentWordStart = -1;
+    _currentWordEnd = -1;
     notifyListeners();
   }
 

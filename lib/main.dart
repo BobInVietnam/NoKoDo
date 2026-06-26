@@ -147,14 +147,13 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: NetworkTestScreen()
-      // home: ChangeNotifierProvider(
-      //   create: (context) => FileToTextViewModel(
-      //       ocrService: MockOCRService(),
-      //       localDatabase: context.read<LocalDatabase>()
-      //   ),
-      //   child: FileToTextScreen(),
-      // )
+      home: ChangeNotifierProvider(
+        create: (context) => FileToTextViewModel(
+            ocrService: MockOCRService(),
+            localDatabase: context.read<LocalDatabase>()
+        ),
+        child: FileToTextScreen(),
+      )
       // home: ChangeNotifierProvider(create: (context) =>
       //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
       //     child: LibraryScreen()
