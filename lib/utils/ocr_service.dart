@@ -17,44 +17,42 @@ class LocalOCRService implements OCRService {
 
   @override
   Future<String?> extractText(File imageFile) async {
-    // Handling localhost: Android Emulator uses 10.0.2.2, iOS uses 127.0.0.1
-    final String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
-    final uri = Uri.parse('$baseUrl/predict');
+    // Handling localhost: Android Emulator uses 10.0.2.2, iOS/Others use 127.0.0.1
+    // The Next.js API server runs on port 3000
+    final String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://127.0.0.1:3000';
+    final uri = Uri.parse('$baseUrl/api/ocr');
 
     // 1. Create Multipart Request
     var request = http.MultipartRequest('POST', uri);
 
-    // 1. Manually resolve the MIME type
+    // 2. Manually resolve the MIME type
     final String? mimeType = lookupMimeType(imageFile.path); // Returns e.g., 'image/jpeg'
     debugPrint("FILE_TO_TEXT: mime type = ${mimeType}");
 
-    // 2. Parse into type and subtype
+    // 3. Parse into type and subtype
     final contentType = mimeType != null
         ? MediaType.parse(mimeType)
         : MediaType('image', 'jpeg'); // Fallback to jpeg if detection fails
 
-    // 3. Attach the file with the explicit Content-Type header
+    // 4. Attach the file with key 'image' to match Next.js backend requirement
     request.files.add(
       await http.MultipartFile.fromPath(
-        'file',
+        'image',
         imageFile.path,
-        contentType: contentType, // This fixes the server-side rejection
+        contentType: contentType,
       ),
     );
 
     try {
-      // 3. Send and get response
+      // 5. Send and get response
       var streamedResponse = await client.send(request);
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        // 4. Parse the JSON response
-        // The Python server returns {"text_lines": ["line1", "line2"], ...}
+        // 6. Parse the JSON response: {"success": true, "text": "transcribed text"}
         final Map<String, dynamic> data = json.decode(response.body);
-        final List<dynamic> lines = data['text_lines'];
-
-        // 5. Join lines into a single content string
-        return lines.join('\n');
+        debugPrint(data.toString());
+        return data['text'] as String?;
       } else {
         debugPrint('OCR Server Error: ${response.statusCode} - ${response.body}');
         return null;

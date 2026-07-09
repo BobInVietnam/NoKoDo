@@ -23,7 +23,6 @@ class ReadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<ReadingViewModel>();
 
     return Scaffold(
