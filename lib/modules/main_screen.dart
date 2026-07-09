@@ -11,6 +11,9 @@ import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:provider/provider.dart';
 
+import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
+import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
+import 'package:nodyslexia/utils/simplifier_service.dart';
 import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
 import 'library/library_viewmodel.dart';
@@ -123,16 +126,14 @@ class _MainScreenState extends State<MainScreen> {
                           icon: Icons.abc_outlined, // Placeholder
                           label: 'Đơn giản hóa câu từ',
                           onPressed: () {
-                            //TODO Implement this hhhh
-                            debugPrint("Chưa implement");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
-                                  create: (innerContext) => LibraryViewModel(
-                                    localDatabase: innerContext.read<LocalDatabase>(),
+                                builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
+                                  create: (innerContext) => SimplifierViewModel(
+                                    simplifierService: LocalSimplifierService(),
                                   ),
-                                  child: const LibraryScreen(),
+                                  child: const SimplifierScreen(),
                                 ),
                               ),
                             );
