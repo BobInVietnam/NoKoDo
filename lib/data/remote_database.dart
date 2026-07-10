@@ -353,6 +353,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
           jsonContents["lessons"] as List,
         );
         debugPrint('HTTP SUCCESS: Connection established lessons payload received!');
+        debugPrint('JSON Content: $jsonContents');
         return lessonList;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');

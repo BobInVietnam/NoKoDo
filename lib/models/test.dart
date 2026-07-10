@@ -5,7 +5,8 @@ abstract class Question {
 
   Question(this.id, this.content, this.correctAnswer);
   factory Question.fromMap(Map<String, Object?> map) {
-    if (map['isMultipleChoice'] as int == 0) {
+    final isMultipleChoiceVal = map['isMultipleChoice'] ?? 0;
+    if (isMultipleChoiceVal as int == 0) {
       return FillBlankQuestion(
           map['id'] as int,
           map['question'] as String,
@@ -75,12 +76,13 @@ class TestInfo {
     required this.allowedAttempts, required this.difficulty, required this.result});
 
   factory TestInfo.fromMap(Map<String, Object?> map) {
-    return TestInfo(id: map['id'] as int,
+    return TestInfo(
+        id: map['id'] as int,
         name: map['name'] as String,
-        dateCreated: map['date_created'] as int,
-        timeLimit: map['time_limit'] as int,
+        dateCreated: map['dateCreated'] as int,
+        timeLimit: map['timeLimit'] as int,
         attempts: map['attempts'] as int,
-        allowedAttempts: map['allowed_attempts'] as int,
+        allowedAttempts: map['allowedAttempts'] as int,
         difficulty: map['difficulty'] as int,
         result: (map['result'] as num?)?.toDouble()
     );
@@ -104,7 +106,7 @@ class TestSession {
         studentId: map['studentid'] as String,
         startTime: map['dateCreated'] as int,
         endTime: map['dateFinished'] as int,
-        score: map['result'] as double);
+        score: (map['score'] ?? map['result']) as double);
   }
 }
 

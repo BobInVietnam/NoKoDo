@@ -126,6 +126,4 @@ class RepoManager extends ChangeNotifier {
     }
     await onlineDatabase.sendTestAnswers(answersMapList);
   }
-
-
 }

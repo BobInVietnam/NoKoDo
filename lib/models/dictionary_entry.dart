@@ -17,7 +17,7 @@ class DictionaryEntry {
       if (id != null) 'id': id, // Let SQLite handle auto-increment if id is null
       'word': word,
       'description': description,
-      'image_name': imageName,
+      'imageName': imageName,
     };
   }
 
@@ -27,7 +27,7 @@ class DictionaryEntry {
       id: map['id'] as int?,
       word: map['word'] as String,
       description: map['description'] as String,
-      imageName: map['image_name'] as String,
+      imageName: (map['imageName'] ?? map['image_name']) as String,
     );
   }
 }

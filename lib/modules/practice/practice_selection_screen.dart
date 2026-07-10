@@ -6,7 +6,8 @@ import 'package:nodyslexia/models/lesson.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-import 'lesson_screen.dart';
+import 'package:nodyslexia/modules/practice/practice_details_screen.dart';
+import 'package:nodyslexia/modules/practice/practice_details_viewmodel.dart';
 
 class PracticeSelectionScreen extends StatefulWidget {
   const PracticeSelectionScreen({super.key});
@@ -203,7 +204,10 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => LessonDetailScreen(lessonId: lesson.id!.toString()),
+              builder: (context) => ChangeNotifierProvider(
+                create: (innerContext) => PracticeDetailsViewModel(lesson: lesson),
+                child: const PracticeDetailsScreen(),
+              ),
             ),
           );
           if (context.mounted) {
@@ -216,11 +220,22 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                lesson.name,
-                style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.teal[800]),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Icon(
+                    lesson.type == 0 ? Icons.menu_book : Icons.search,
+                    color: Colors.teal[700],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      lesson.name,
+                      style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.teal[800]),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Row(

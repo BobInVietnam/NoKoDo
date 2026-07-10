@@ -24,8 +24,8 @@ class ConvertedFile {
     return {
       if (id != null) 'id': id, // Let SQLite handle auto-increment if id is null
       'name': fileName,
-      'extracted_text': extractedText,
-      'created_date': dateConverted.millisecondsSinceEpoch,
+      'extractedText': extractedText,
+      'createdDate': dateConverted.millisecondsSinceEpoch,
     };
   }
 
@@ -34,8 +34,8 @@ class ConvertedFile {
     return ConvertedFile(
       id: map['id'] as int?,
       fileName: map['name'] as String,
-      extractedText: map['extracted_text'] as String,
-      dateConverted: DateTime.fromMillisecondsSinceEpoch(map['created_date'] as int),
+      extractedText: (map['extractedText'] ?? map['extracted_text']) as String,
+      dateConverted: DateTime.fromMillisecondsSinceEpoch((map['createdDate'] ?? map['created_date']) as int),
     );
   }
 }
