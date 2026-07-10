@@ -18,6 +18,7 @@ abstract class RemoteDatabase {
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
+  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId);
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -88,6 +89,17 @@ class TestRemoteDatabase extends RemoteDatabase {
       debugPrint('TESTING: No user found');
       return null;
     }
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('Lesson');
+    return maps.map((map) => {
+      ...map,
+      'dateCreated': map['created_date'],
+      'isDone': false,
+    }).toList();
   }
 
   @override
@@ -317,6 +329,38 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
       return <String, Object?>{};
+    }
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson').replace(
+      queryParameters: {
+        'classid': classId.toString(),
+        'studentid': uid,
+      },
+    );
+
+    try {
+      debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
+      final http.Response response = await http.get(targetUrl);
+
+      if (response.statusCode == 200) {
+        final Map<String, Object?> jsonContents =
+          jsonDecode(response.body) as Map<String, Object?>;
+
+        final List<Map<String, Object?>> lessonList = List<Map<String, Object?>>.from(
+          jsonContents["lessons"] as List,
+        );
+        debugPrint('HTTP SUCCESS: Connection established lessons payload received!');
+        return lessonList;
+      } else {
+        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      return [];
     }
   }
 

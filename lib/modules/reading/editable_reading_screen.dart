@@ -1,4 +1,4 @@
-// screens/reading_screen.dart
+// screens/editable_reading_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/dictionary_entry_display.dart';
 import 'package:provider/provider.dart';
@@ -8,17 +8,22 @@ import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 
 // Import your ViewModel
-import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 
-class ReadingScreen extends StatelessWidget {
+import '../../data/persistence.dart';
+import '../../models/converted_file.dart';
+import '../editing/editing_screen.dart';
+import '../editing/editing_viewmodel.dart';
+
+class EditableReadingScreen extends StatelessWidget {
   // Use a local key reference inside the context hierarchy to calculate placement targets
   final GlobalKey _textKey = GlobalKey();
 
-  ReadingScreen({super.key});
+  EditableReadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<ReadingViewModel>();
+    final viewModel = context.watch<EditableReadingViewModel>();
 
     return Scaffold(
       body: SafeArea(
@@ -170,7 +175,7 @@ class ReadingScreen extends StatelessWidget {
                     children: <Widget>[
                       ReturnButton(
                         onReturn: (context) {
-                          Navigator.pop(context);
+                          Navigator.pop(context, viewModel.file);
                         },
                       ),
                       ElevatedButton.icon(
@@ -198,6 +203,37 @@ class ReadingScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Chỉnh sửa'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        onPressed: () async {
+                          // Stop TTS playback automatically before leaving the screen context
+                          if (viewModel.ttsState == TtsState.playing) {
+                            viewModel.handleStopReading();
+                          }
+
+                          // Secure route navigation using decoupled provider initialization rules
+                          final newFile = await Navigator.push<ConvertedFile>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (routeContext) => ChangeNotifierProvider<EditingViewModel>(
+                                create: (providerContext) => EditingViewModel(
+                                  file: viewModel.file,
+                                  localDatabase: providerContext.read<LocalDatabase>(), // Read database up the context tree
+                                ),
+                                child: const EditingScreen(),
+                              ),
+                            ),
+                          );
+                          viewModel.refreshContent(newFile!);
+                        },
                       ),
                       const SettingButton()
                     ],

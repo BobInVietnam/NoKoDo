@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nodyslexia/modules/reading/reading_screen.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +21,7 @@ import 'package:nodyslexia/modules/editing/editing_viewmodel.dart';
 import '../../customwigdets/dictionary_entry_display.dart';
 import '../../models/dictionary_entry.dart';
 import '../../utils/tts_service.dart';
-import '../reading/reading_viewmodel.dart';
+import '../reading/editable_reading_viewmodel.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -153,13 +153,13 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (routeContext) => ChangeNotifierProvider<ReadingViewModel>(
-                            create: (providerContext) => ReadingViewModel(
+                          builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
+                            create: (providerContext) => EditableReadingViewModel(
                               file: fileItem,
                               ttsService: TtsService(),
                               localDatabase: viewModel.localDatabase
                             ),
-                            child: ReadingScreen(),
+                            child: EditableReadingScreen(),
                           ),
                         ),
                       );

@@ -6,13 +6,13 @@ import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/reading/reading_screen.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 
 // Import your ViewModel
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 
 import '../../models/converted_file.dart';
-import '../reading/reading_viewmodel.dart';
+import '../reading/editable_reading_viewmodel.dart';
 
 class FileToTextScreen extends StatelessWidget {
   const FileToTextScreen({super.key});
@@ -32,11 +32,11 @@ class FileToTextScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => ChangeNotifierProvider(
-            create: (context) => ReadingViewModel(
+            create: (context) => EditableReadingViewModel(
                 file: result,
                 ttsService: TtsService(),
                 localDatabase: context.read<LocalDatabase>()),
-            child: ReadingScreen(),
+            child: EditableReadingScreen(),
           ),
         ),
       );
@@ -169,11 +169,11 @@ class FileToTextScreen extends StatelessWidget {
                                   builder: (context) =>
                                       ChangeNotifierProvider(
                                         create: (context) =>
-                                            ReadingViewModel(
+                                            EditableReadingViewModel(
                                                 file: file!,
                                                 ttsService: TtsService(),
                                                 localDatabase: context.read<LocalDatabase>()),
-                                        child: ReadingScreen(),
+                                        child: EditableReadingScreen(),
                                       ),
                                 ),
                               );

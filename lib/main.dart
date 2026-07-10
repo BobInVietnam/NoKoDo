@@ -4,23 +4,19 @@ import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/library/library_viewmodel.dart';
-import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'data/repository_manager.dart';
-import 'modules/editing/editing_screen.dart';
-import 'modules/editing/editing_viewmodel.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
-import 'modules/reading/reading_screen.dart';
-import 'modules/testing_screen.dart';
 
 
 Future<void> main() async {

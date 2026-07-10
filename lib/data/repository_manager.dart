@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
+import 'package:nodyslexia/models/lesson.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 
@@ -83,6 +84,14 @@ class RepoManager extends ChangeNotifier {
     final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid);
     debugPrint("TESTING: RepoMan got data");
     return testList.map((map) => TestInfo.fromMap(map)).toList();
+  }
+
+  Future<List<Lesson>> getLessonList() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+    debugPrint("TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}");
+    final List<Map<String, Object?>> lessonList = await onlineDatabase.getLessonList(currentStudent!.uid, currentStudent!.classid);
+    debugPrint("TESTING: RepoMan got lesson list");
+    return lessonList.map((map) => Lesson.fromMap(map)).toList();
   }
 
   Future<Test> getTestDetailsAndQuestions(int testId) async {
