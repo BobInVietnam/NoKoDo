@@ -140,6 +140,8 @@ class EditingViewModel extends ChangeNotifier {
     _saveToHistory(textController.text);
   }
 
+  bool get hasUnsavedChanges => textController.text != _lastSavedText;
+
   void saveDocument() {
     debugPrint("ACTION: Writing text data mutations into LocalDatabase / remote stream.");
     _debounceTimer?.cancel();
@@ -155,10 +157,17 @@ class EditingViewModel extends ChangeNotifier {
     );
   }
 
-  //TODO must finish
-  void createDuplicateCopy() {
+  Future<int> createDuplicateCopy(String newName) async {
     debugPrint("ACTION: Writing deep copy snapshot copy into persistence layer.");
-    localDatabase.test();
+    _debounceTimer?.cancel();
+    final newId = await localDatabase.insertConvertedFile(
+      ConvertedFile(
+          fileName: newName,
+          extractedText: textController.text,
+          dateConverted: DateTime.now()
+      )
+    );
+    return newId;
   }
 
   @override

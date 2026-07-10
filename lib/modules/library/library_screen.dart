@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nodyslexia/modules/reading/reading_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ import 'package:nodyslexia/modules/editing/editing_viewmodel.dart';
 import '../../customwigdets/dictionary_entry_display.dart';
 import '../../models/dictionary_entry.dart';
 import '../../utils/tts_service.dart';
+import '../reading/reading_viewmodel.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -140,19 +142,52 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   ],
                 ),
                 const Divider(height: 16),
-                Text(
-                  fileItem.extractedText,
-                  style: textTheme.bodyMedium?.copyWith(color: Colors.grey[900], height: 1.4),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                Ink(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (routeContext) => ChangeNotifierProvider<ReadingViewModel>(
+                            create: (providerContext) => ReadingViewModel(
+                              file: fileItem,
+                              ttsService: TtsService(),
+                              localDatabase: viewModel.localDatabase
+                            ),
+                            child: ReadingScreen(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      child:  Text(
+                        fileItem.extractedText,
+                        style: textTheme.bodyMedium?.copyWith(color: Colors.grey[900], height: 1.4),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    )
+                  )
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                      tooltip: 'Xóa tập tin',
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.delete, size: 16),
+                      label: const Text('Xóa'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
                       onPressed: () => _confirmDeletionDialog(context, viewModel, fileItem),
                     ),
                     const SizedBox(width: 8),
