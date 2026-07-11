@@ -126,4 +126,9 @@ class RepoManager extends ChangeNotifier {
     }
     await onlineDatabase.sendTestAnswers(answersMapList);
   }
+
+  Future<void> sendUsageTime(int totalUsageTime) async {
+    debugPrint("TESTING: RepoMan sending usage time data...");
+    await onlineDatabase.sendUsageTime(totalUsageTime, currentStudent!.uid);
+  }
 }

@@ -16,6 +16,7 @@ abstract class RemoteDatabase {
   Future<List<Map<String, Object?>>> getTestQuestions(int testId);
   Future<void> sendTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
+  Future<void> sendUsageTime(int totalUsageTime, String uid);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, int classId);
@@ -239,9 +240,18 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, dynamic>> getStudentStatistics(String uid) {
-    // TODO: implement getStudentStatistics
-    throw UnimplementedError();
+  Future<Map<String, dynamic>> getStudentStatistics(String uid) async {
+    return {
+      'uid': uid,
+      'classid': 2,
+      'testNumber': 3,
+      'testFinishedNumber': 1,
+      'averageTestScore': 8,
+      'lessonNumber': 2,
+      'lessonFinishedNumber': 1,
+      'activityCounts': [0, 1, 0, 2, 0, 1, 3],
+      'totalUsageTime': 45320
+    };
   }
 
   @override
@@ -253,6 +263,11 @@ class TestRemoteDatabase extends RemoteDatabase {
       debugPrint("TESTING: DB errored. Cause: $e");
       return false;
     }
+  }
+
+  @override
+  Future<void> sendUsageTime(int totalUsageTime, String uid) async {
+    debugPrint("TESTING: Mock sendUsageTime updating: $totalUsageTime seconds for $uid");
   }
 }
 
@@ -269,7 +284,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
 
   @override
   Future<Map<String, dynamic>> getStudentStatistics(String uid) async {
-    final Uri targetUrl = Uri.parse('$_baseUrl/api/test');
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid/statistics');
 
     try {
       debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
@@ -513,6 +528,34 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
       return false;
+    }
+  }
+
+  @override
+  Future<void> sendUsageTime(int totalUsageTime, String uid) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
+
+    try {
+      debugPrint('HTTP REQUEST: Syncing usage time ($totalUsageTime seconds) to $targetUrl...');
+
+      // Dispatch a POST network request to perform a partial update on the student record
+      final http.Response response = await http.post(
+        targetUrl,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'totalTime': totalUsageTime, // Matches the 'totalTime' schema keyword on your Prisma backend
+        }),
+      );
+      // Evaluate the HTTP status codes
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Active application usage time synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected time sync payload with status code: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit usage time payload. Details: $error');
     }
   }
 

@@ -10,6 +10,7 @@ import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
@@ -196,8 +197,9 @@ class _MainScreenState extends State<MainScreen> {
                               context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => StatisticsViewmodel(
-                                      repoManager: context.read<RepoManager>()
-                                  )..gatherStatisticData(),
+                                      repoManager: context.read<RepoManager>(),
+                                      usageTimeTracker: context.read<UsageTimeTracker>()
+                                  ),
                                   child: const StatisticsScreen(),
                                 )
                                 )
@@ -270,6 +272,8 @@ class _MainScreenState extends State<MainScreen> {
 
               try {
                 final currentRepoManager = context.read<RepoManager>();
+                final usageTimeTracker = context.read<UsageTimeTracker>();
+                usageTimeTracker.resetTracker();
                 currentRepoManager.signOut();
                 if (context.mounted) {
                   Navigator.pop(context);

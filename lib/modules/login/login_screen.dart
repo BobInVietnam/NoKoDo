@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text
       );
       if (!mounted) return;
+      context.read<UsageTimeTracker>().resumeWithUserData(currentRepoManager.currentStudent?.totalTime ?? 0);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),

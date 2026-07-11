@@ -8,19 +8,6 @@ import 'package:provider/provider.dart';
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
 
-  // --- Placeholder Data ---
-  final double practiceCompletion = 0.75; // 75%
-  final double testCompletion = 0.50; // 50%
-  final double averageTestScore = 82.5; // Average score
-  final Duration totalUsageTime = const Duration(hours: 12, minutes: 35);
-  // -------------------------
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    return "${twoDigits(duration.inHours)} giờ ${twoDigitMinutes} phút";
-  }
-
   Widget _buildStatisticCard(
       {required BuildContext context,
         required String title,
@@ -64,6 +51,7 @@ class StatisticsScreen extends StatelessWidget {
     required String title,
     required double percent, // 0.0 to 1.0
     required IconData icon,
+    String? subtitle,
   }) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -91,10 +79,23 @@ class StatisticsScreen extends StatelessWidget {
                 children: [
                   Text(title, style: textTheme.titleMedium),
                   const SizedBox(height: 4.0),
-                  Text(
-                    '${(percent * 100).toStringAsFixed(0)}%',
-                    style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold, color: colorScheme.primary),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${(percent * 100).toStringAsFixed(0)}%',
+                        style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold, color: colorScheme.primary),
+                      ),
+                      if (subtitle != null)
+                        Text(
+                          subtitle,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -142,7 +143,6 @@ class StatisticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    // final colorScheme = Theme.of(context).colorScheme; // Not directly used here, but good to have
     final viewModel = context.watch<StatisticsViewmodel>();
 
     final double practiceCompletionRatio = viewModel.lessonNumber > 0
@@ -177,12 +177,14 @@ class StatisticsScreen extends StatelessWidget {
                       title: 'Hoàn thành Bài luyện tập',
                       percent: practiceCompletionRatio,
                       icon: Icons.model_training, // Example icon
+                      subtitle: '${viewModel.lessonFinishedNumber} / ${viewModel.lessonNumber} bài',
                     ),
                     _buildCircularProgressCard(
                       context: context,
                       title: 'Hoàn thành Bài kiểm tra',
                       percent: testCompletionRatio,
                       icon: Icons.assignment_turned_in_outlined, // Example icon
+                      subtitle: '${viewModel.testFinishedNumber} / ${viewModel.testNumber} bài',
                     ),
                     _buildStatisticCard(
                       context: context,
@@ -194,7 +196,7 @@ class StatisticsScreen extends StatelessWidget {
                     _buildStatisticCard(
                       context: context,
                       title: 'Thời gian sử dụng',
-                      value: _formatDuration(viewModel.totalUsageTimer),
+                      value: viewModel.formattedUsageTime,
                       icon: Icons.timer_outlined,
                     ),
                     // You can add more statistics cards here
@@ -207,7 +209,7 @@ class StatisticsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const <Widget>[
+                children: <Widget>[
                   ReturnButton(),
                   SettingButton(),
                 ],

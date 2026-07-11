@@ -10,6 +10,7 @@ import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
@@ -33,13 +34,17 @@ Future<void> main() async {
           database: TestLocalDatabase())
     ),
       ChangeNotifierProvider(
-      create: (context) => TextStyleSettings()
-      ),
+        create: (context) => TextStyleSettings()
+        ),
       ChangeNotifierProvider<LocalDatabase>(
-          create: (context) => TestLocalDatabase()
+        create: (context) => TestLocalDatabase()
       ),
-    ],
-    child: const NokodoApp()));
+      ChangeNotifierProvider(
+          create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())
+      )
+      ],
+    child: const NokodoApp())
+  );
 }
 
 class NokodoApp extends StatelessWidget {
@@ -47,8 +52,6 @@ class NokodoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ensuring the entire app uses the Galindo font as a base could be done here,
-    // or applied specifically where needed. For the title, we'll apply it directly.
     return MaterialApp(
       title: 'Nokodo',
       theme: ThemeData(
