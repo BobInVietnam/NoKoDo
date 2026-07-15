@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../data/remote_database.dart';
 import '../models/test.dart';
+import 'letter_search/letter_search_screen.dart';
+import 'letter_search/letter_search_viewmodel.dart';
 
 class NetworkTestScreen extends StatefulWidget {
   const NetworkTestScreen({super.key});
@@ -174,6 +177,33 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (context) => LetterSearchViewModel(),
+                          child: const LetterSearchScreen(),
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.search),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      "Test Letter Search",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),

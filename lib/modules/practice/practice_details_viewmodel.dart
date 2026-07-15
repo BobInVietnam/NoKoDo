@@ -4,6 +4,8 @@ import 'package:nodyslexia/modules/reading/reading_screen.dart';
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/modules/letter_search/letter_search_screen.dart';
+import 'package:nodyslexia/modules/letter_search/letter_search_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class PracticeDetailsViewModel extends ChangeNotifier {
@@ -25,6 +27,23 @@ class PracticeDetailsViewModel extends ChangeNotifier {
               localDatabase: providerContext.read<LocalDatabase>(),
             ),
             child: ReadingScreen(),
+          ),
+        ),
+      );
+    } else if (lesson.type == 1) {
+      List<Map<String, dynamic>>? customCases;
+      if (lesson.content.containsKey('cases')) {
+        customCases = List<Map<String, dynamic>>.from(lesson.content['cases'] as List);
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (innerContext) => ChangeNotifierProvider(
+            create: (providerContext) => LetterSearchViewModel(
+              content: customCases,
+            ),
+            child: const LetterSearchScreen(),
           ),
         ),
       );

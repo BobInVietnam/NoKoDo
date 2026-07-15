@@ -14,6 +14,7 @@ import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
+import 'modules/testing_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -93,7 +94,7 @@ class NokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
-      home: const LoginScreen(),
+      home: const NetworkTestScreen(),
     );
   }
 }
@@ -146,13 +147,14 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: ChangeNotifierProvider(
-        create: (context) => FileToTextViewModel(
-            ocrService: MockOCRService(),
-            localDatabase: context.read<LocalDatabase>()
-        ),
-        child: FileToTextScreen(),
-      )
+      home: NetworkTestScreen()
+      // home: ChangeNotifierProvider(
+      //   create: (context) => FileToTextViewModel(
+      //       ocrService: MockOCRService(),
+      //       localDatabase: context.read<LocalDatabase>()
+      //   ),
+      //   child: FileToTextScreen(),
+      // )
       // home: ChangeNotifierProvider(create: (context) =>
       //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
       //     child: LibraryScreen()
