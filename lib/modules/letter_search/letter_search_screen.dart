@@ -139,11 +139,11 @@ class LetterSearchScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min, // 1. Tells the Column to hug its rows vertically
-                      children: List.generate(7, (rowIndex) {
+                      children: List.generate(viewModel.currentGridHeight, (rowIndex) {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.center, // 2. Centers the characters horizontally
                           mainAxisSize: MainAxisSize.min, // 3. Tells the Row to hug its items tightly
-                          children: List.generate(9, (colIndex) {
+                          children: List.generate(viewModel.currentGridWidth, (colIndex) {
                             final char = viewModel.displayGrid[rowIndex][colIndex];
 
                             // 4. Set a square bounding box proportional to the text size

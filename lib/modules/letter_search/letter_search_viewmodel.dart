@@ -12,6 +12,8 @@ enum GameState {
 class LetterSearchViewModel extends ChangeNotifier {
   static const List<Map<String, dynamic>> defaultMockContent = [
     {
+      "height": 7,
+      "width": 9,
       "target": "d",
       "noise": ["b", "p", "q"],
       "chance": 0.35,
@@ -19,6 +21,8 @@ class LetterSearchViewModel extends ChangeNotifier {
       "size": 42.0
     },
     {
+      "height": 7,
+      "width": 9,
       "target": "t",
       "noise": ["f", "l", "i"],
       "chance": 0.40,
@@ -26,6 +30,8 @@ class LetterSearchViewModel extends ChangeNotifier {
       "size": 28.0
     },
     {
+      "height": 7,
+      "width": 9,
       "target": "n",
       "noise": ["u", "m", "h"],
       "chance": 0.45,
@@ -33,6 +39,8 @@ class LetterSearchViewModel extends ChangeNotifier {
       "size": 56.0
     },
     {
+      "height": 5,
+      "width": 7,
       "target": "ă",
       "noise": ["a", "ã", "â"],
       "chance": 0.80,
@@ -40,6 +48,8 @@ class LetterSearchViewModel extends ChangeNotifier {
       "size": 40.0
     },
     {
+      "height": 5,
+      "width": 11,
       "target": "ê",
       "noise": ["ẽ", "è", "é"],
       "chance": 0.80,
@@ -79,6 +89,8 @@ class LetterSearchViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> get results => _results;
   double get currentSpacing => (_content[_currentRound]['spacing'] as num?)?.toDouble() ?? 4.0;
   double get currentSize => (_content[_currentRound]['size'] as num?)?.toDouble() ?? 22.0;
+  int get currentGridHeight => _content[_currentRound]['height'] as int;
+  int get currentGridWidth => _content[_currentRound]['width'] as int;
 
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
@@ -132,14 +144,15 @@ class LetterSearchViewModel extends ChangeNotifier {
     final List<String> noiseList = List<String>.from(currentRoundData['noise'] as List);
 
     final Random random = Random();
-    _displayGrid = List.generate(7, (_) => List.filled(9, ""));
+    _displayGrid = List.generate(currentGridHeight,
+            (_) => List.filled(currentGridWidth, ""));
 
-    int targetRow = random.nextInt(7);
-    int targetCol = random.nextInt(9);
+    int targetRow = random.nextInt(currentGridHeight);
+    int targetCol = random.nextInt(currentGridWidth);
     _displayGrid[targetRow][targetCol] = target;
 
-    for (int r = 0; r < 7; r++) {
-      for (int c = 0; c < 9; c++) {
+    for (int r = 0; r < currentGridHeight; r++) {
+      for (int c = 0; c < currentGridWidth; c++) {
         if (r == targetRow && c == targetCol) continue;
         if (random.nextDouble() < chance) {
           String selectedNoise = noiseList[random.nextInt(noiseList.length)];
