@@ -20,6 +20,7 @@ abstract class RemoteDatabase {
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, int classId);
+  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results);
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -268,6 +269,11 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendUsageTime(int totalUsageTime, String uid) async {
     debugPrint("TESTING: Mock sendUsageTime updating: $totalUsageTime seconds for $uid");
+  }
+
+  @override
+  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results) async {
+    debugPrint("TESTING: Mock sendLessonResult saved: $results for student $studentId and lesson $lessonId");
   }
 }
 
@@ -549,7 +555,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         }),
       );
       // Evaluate the HTTP status codes
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         debugPrint('HTTP SUCCESS: Active application usage time synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected time sync payload with status code: ${response.statusCode}, ${response.body}');
@@ -559,4 +565,32 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     }
   }
 
+  @override
+  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson');
+
+    try {
+      debugPrint('HTTP REQUEST: Syncing lesson result ($lessonId) to $targetUrl...');
+
+      final http.Response response = await http.post(
+        targetUrl,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'studentid': studentId,
+          'lessonid': lessonId,
+          'results': results,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Student lesson result synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected lesson result sync with status code: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
+    }
+  }
 }

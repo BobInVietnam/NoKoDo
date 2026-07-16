@@ -94,7 +94,7 @@ class NokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
-      home: const NetworkTestScreen(),
+      home: const LoginScreen()
     );
   }
 }

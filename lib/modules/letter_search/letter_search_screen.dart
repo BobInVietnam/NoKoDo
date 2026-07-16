@@ -8,58 +8,114 @@ import 'package:provider/provider.dart';
 class LetterSearchScreen extends StatelessWidget {
   const LetterSearchScreen({super.key});
 
+  Future<bool> _showExitConfirmation(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Thoát luyện tập?'),
+          content: const Text('Bài luyện tập đang diễn ra. Tiến trình hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Ở lại'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Thoát'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<LetterSearchViewModel>();
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      backgroundColor: Colors.teal.shade50,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top Status Header / Timer Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Tìm chữ: Vòng ${viewModel.currentRound + 1}/${viewModel.totalRound}',
-                    style: textTheme.displayMedium,
-                  ),
-                  if (viewModel.currentState == GameState.IN_PROGRESS)
-                    Row(
-                      children: [
-                        const Icon(Icons.timer_outlined, color: Colors.teal, size: 20),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${viewModel.elapsedSeconds.toStringAsFixed(1)} giây',
-                          style: textTheme.displayMedium
-                        ),
-                      ],
+    return PopScope(
+      canPop: viewModel.currentState != GameState.IN_PROGRESS,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          viewModel.syncLessonResultIfCompleted();
+          return;
+        }
+        final shouldPop = await _showExitConfirmation(context);
+        if (shouldPop && context.mounted) {
+          viewModel.syncLessonResultIfCompleted();
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.teal.shade50,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Top Status Header / Timer Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Tìm chữ: Vòng ${viewModel.currentRound + 1}/${viewModel.totalRound}',
+                      style: textTheme.displayMedium,
                     ),
-                ],
+                    if (viewModel.currentState == GameState.IN_PROGRESS)
+                      Row(
+                        children: [
+                          const Icon(Icons.timer_outlined, color: Colors.teal, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${viewModel.elapsedSeconds.toStringAsFixed(1)} giây',
+                            style: textTheme.displayMedium,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const Divider(height: 1),
+              const Divider(height: 1),
 
-            // Main body area depending on GameState
-            Expanded(
-              child: _buildBody(context, viewModel),
-            ),
-
-            // Bottom Navigation Actions
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ReturnButton()
-                ],
+              // Main body area depending on GameState
+              Expanded(
+                child: _buildBody(context, viewModel),
               ),
-            ),
-          ],
+
+              // Bottom Navigation Actions
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ReturnButton(
+                      onReturn: (context) async {
+                        // Triggers the pop check manually since ReturnButton pops explicitly
+                        final canDirectPop = viewModel.currentState != GameState.IN_PROGRESS
+                            && viewModel.currentState != GameState.COUNTDOWN;
+                        if (canDirectPop) {
+                          Navigator.pop(context);
+                        } else {
+                          final shouldPop = await _showExitConfirmation(context);
+                          if (shouldPop && context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        }
+                      },
+                    ),
+                    const SettingButton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -122,67 +178,64 @@ class LetterSearchScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             // Grid Display
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.teal.withOpacity(0.1),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                        ),
-                      ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.teal.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 8,
                     ),
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min, // 1. Tells the Column to hug its rows vertically
-                      children: List.generate(viewModel.currentGridHeight, (rowIndex) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center, // 2. Centers the characters horizontally
-                          mainAxisSize: MainAxisSize.min, // 3. Tells the Row to hug its items tightly
-                          children: List.generate(viewModel.currentGridWidth, (colIndex) {
-                            final char = viewModel.displayGrid[rowIndex][colIndex];
+                  ],
+                ),
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(viewModel.currentGridHeight, (rowIndex) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(viewModel.currentGridWidth, (colIndex) {
+                        final char = viewModel.displayGrid[rowIndex][colIndex];
+                        final double cellSize = viewModel.currentSize * 1.0;
 
-                            // 4. Set a square bounding box proportional to the text size
-                            final double cellSize = viewModel.currentSize * 1.0;
-
-                            return Padding(
-                              padding: EdgeInsets.all(viewModel.currentSpacing),
-                              child: SizedBox(
-                                width: cellSize,
-                                height: cellSize,
-                                child: Material(
-                                  color: Colors.transparent, // Keeps the parent Container's background
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(4.0),
-                                    onTap: () => viewModel.handleCellTap(rowIndex, colIndex),
-                                    child: Center(
-                                      child: Text(
-                                        char,
-                                        style: textTheme.bodyLarge?.copyWith(
-                                          fontSize: viewModel.currentSize,
-                                          height: 1.0, // Prevents native font metrics padding issues
-                                        ),
-                                      ),
+                        return Padding(
+                          padding: EdgeInsets.all(viewModel.currentSpacing),
+                          child: SizedBox(
+                            width: cellSize,
+                            height: cellSize,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(4.0),
+                                onTap: () => viewModel.handleCellTap(rowIndex, colIndex),
+                                child: Center(
+                                  child: Text(
+                                    char,
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      fontSize: viewModel.currentSize,
+                                      height: 1.0,
                                     ),
                                   ),
                                 ),
                               ),
-                            );
-                          }),
+                            ),
+                          ),
                         );
                       }),
-                    ),
-                  ),
-
+                    );
+                  }),
+                ),
               ),
+            ),
             const SizedBox(height: 16),
             Text(
               "Ký tự cần tìm: ${viewModel.target}",
-              style: textTheme.displayMedium
+              style: textTheme.displayMedium,
             ),
             // Feedback status bar
             Container(

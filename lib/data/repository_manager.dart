@@ -131,4 +131,13 @@ class RepoManager extends ChangeNotifier {
     debugPrint("TESTING: RepoMan sending usage time data...");
     await onlineDatabase.sendUsageTime(totalUsageTime, currentStudent!.uid);
   }
+
+  Future<void> sendLessonResult(int lessonId, Map<String, dynamic> results) async {
+    if (currentStudent == null) {
+      debugPrint("TESTING: RepoMan cannot send lesson result: currentStudent is null.");
+      return;
+    }
+    debugPrint("TESTING: RepoMan sending lesson result data...");
+    await onlineDatabase.sendLessonResult(currentStudent!.uid, lessonId, results);
+  }
 }

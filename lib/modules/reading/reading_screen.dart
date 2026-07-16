@@ -1,4 +1,3 @@
-// screens/reading_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/dictionary_entry_display.dart';
 import 'package:provider/provider.dart';
@@ -6,30 +5,61 @@ import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
-
-// Import your ViewModel
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 
-class ReadingScreen extends StatelessWidget {
-  // Use a local key reference inside the context hierarchy to calculate placement targets
-  final GlobalKey _textKey = GlobalKey();
+class ReadingScreen extends StatefulWidget {
+  const ReadingScreen({super.key});
 
-  ReadingScreen({super.key});
+  @override
+  State<ReadingScreen> createState() => _ReadingScreenState();
+}
+
+class _ReadingScreenState extends State<ReadingScreen> {
+  final GlobalKey _textKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+      // Triggers scrolled to bottom when within a 15-pixel tolerance
+      if (currentScroll >= maxScroll - 15) {
+        context.read<ReadingViewModel>().markScrolledToBottom();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ReadingViewModel>();
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            // Text Display Area
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: GestureDetector(
-                  // onTap: viewModel.removeSelectionMenu,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          context.read<ReadingViewModel>().syncLessonResultIfCriteriaMet();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              // Text Display Area
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
@@ -46,6 +76,7 @@ class ReadingScreen extends StatelessWidget {
                       ],
                     ),
                     child: SingleChildScrollView(
+                      controller: _scrollController,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: List.generate(viewModel.paragraphs.length, (index) {
@@ -136,76 +167,76 @@ class ReadingScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
 
-            // Bottom Control Bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Reading Speed Slider
-                  Row(
-                    children: [
-                      const Icon(Icons.speed, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Slider(
-                          value: viewModel.currentReadingSpeed,
-                          min: 0.1,
-                          max: 1.5,
-                          divisions: 14,
-                          label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(1)}x',
-                          onChanged: viewModel.handleSpeedChange,
-                          activeColor: Colors.teal,
+              // Bottom Control Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Reading Speed Slider
+                    Row(
+                      children: [
+                        const Icon(Icons.speed, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Slider(
+                            value: viewModel.currentReadingSpeed,
+                            min: 0.1,
+                            max: 1.5,
+                            divisions: 14,
+                            label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(1)}x',
+                            onChanged: viewModel.handleSpeedChange,
+                            activeColor: Colors.teal,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
 
-                  // Action Buttons (Return, Read All/Stop, Settings)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      ReturnButton(
-                        onReturn: (context) {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ElevatedButton.icon(
-                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
-                            ? Icons.stop_circle_outlined
-                            : Icons.play_circle_outline),
-                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn'),
-                        onPressed: viewModel.toggleTtsParagraph,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    // Action Buttons (Return, Read All/Stop, Settings)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        ReturnButton(
+                          onReturn: (context) {
+                            Navigator.pop(context);
+                          },
                         ),
-                      ),
-                      ElevatedButton.icon(
-                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
-                            ? Icons.stop_circle_outlined
-                            : Icons.menu_book_outlined),
-                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ'),
-                        onPressed: viewModel.toggleTtsAll,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ElevatedButton.icon(
+                          icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
+                              ? Icons.stop_circle_outlined
+                              : Icons.play_circle_outline),
+                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn'),
+                          onPressed: viewModel.toggleTtsParagraph,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
                         ),
-                      ),
-                      const SettingButton()
-                    ],
-                  ),
-                ],
+                        ElevatedButton.icon(
+                          icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
+                              ? Icons.stop_circle_outlined
+                              : Icons.menu_book_outlined),
+                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ'),
+                          onPressed: viewModel.toggleTtsAll,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                        const SettingButton()
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/widgets.dart';
 
+import '../../data/repository_manager.dart';
+
 enum GameState {
   START,
   COUNTDOWN,
@@ -59,6 +61,9 @@ class LetterSearchViewModel extends ChangeNotifier {
   ];
 
   final List<Map<String, dynamic>> _content;
+  final int? lessonId;
+  final RepoManager? repoManager;
+
   int _currentRound = 0;
   int _totalRounds = 0;
   GameState _currentState = GameState.START;
@@ -94,9 +99,23 @@ class LetterSearchViewModel extends ChangeNotifier {
 
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
+    this.lessonId,
+    this.repoManager,
   }) : _content = content ?? defaultMockContent {
     _totalRounds = _content.length;
     startGame();
+  }
+
+  void syncLessonResultIfCompleted() {
+    if (_currentState == GameState.FINISHED && lessonId != null && repoManager != null) {
+      debugPrint("LETTER_SEARCH: Game completed. Syncing result.");
+      repoManager!.sendLessonResult(lessonId!, {
+        'completed': true,
+        'results': _results,
+      });
+    } else {
+      debugPrint("LETTER_SEARCH: Exit checked. Game NOT completed or missing references.");
+    }
   }
 
   void startGame() {

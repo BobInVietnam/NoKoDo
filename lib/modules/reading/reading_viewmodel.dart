@@ -1,15 +1,16 @@
-// viewmodels/reading_viewmodel.dart
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
-import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
+import 'package:nodyslexia/utils/tts_service.dart';
 
 enum TtsMode { none, paragraph, all, selection }
 
 class ReadingViewModel extends ChangeNotifier {
+  final int? lessonId;
+  final RepoManager? repoManager;
 
   String _extractedText = "";
   List<String> _paragraphs = List.empty();
@@ -24,6 +25,10 @@ class ReadingViewModel extends ChangeNotifier {
   int _selectedParagraphIndex = 0;
   TtsMode _currentTtsMode = TtsMode.none;
 
+  bool _hasReadParagraph = false;
+  bool _hasReadAll = false;
+  bool _scrolledToBottom = false;
+
   // Getters
   String? get currentSelection => _currentSelection;
   double get currentReadingSpeed => _currentReadingSpeed;
@@ -36,7 +41,9 @@ class ReadingViewModel extends ChangeNotifier {
   List<String> get paragraphs => _paragraphs;
   int get selectedParagraphIndex => _selectedParagraphIndex;
   TtsMode get currentTtsMode => _currentTtsMode;
-
+  bool get scrolledToBottom => _scrolledToBottom;
+  bool get hasReadParagraph => _hasReadParagraph;
+  bool get hasReadAll => _hasReadAll;
 
   void selectParagraph(int index) {
     if (index >= 0 && index < _paragraphs.length) {
@@ -48,20 +55,23 @@ class ReadingViewModel extends ChangeNotifier {
   ReadingViewModel({
     required String text,
     required TtsService ttsService,
-    required LocalDatabase localDatabase})
-      : _ttsService = ttsService, _extractedText = text, _localDatabase = localDatabase{
+    required LocalDatabase localDatabase,
+    this.lessonId,
+    this.repoManager,
+  })  : _ttsService = ttsService,
+        _extractedText = text,
+        _localDatabase = localDatabase {
     _initializeTts();
     _extractParagraphs();
   }
 
   Future<void> _initializeTts() async {
     try {
-      // Ensure the engine is fully awake before configuring
       await _ttsService.setSpeechRate(_currentReadingSpeed);
       _ttsService.onWordProgress = (text, start, end, word) {
         _currentWordStart = start + _currentOffset;
         _currentWordEnd = end + _currentOffset;
-        notifyListeners(); // Force UI to highlight the active indexes
+        notifyListeners();
       };
     } catch (e) {
       debugPrint("TTS Initialization failed: $e");
@@ -84,6 +94,7 @@ class ReadingViewModel extends ChangeNotifier {
         _ttsService.stop();
       }
       _currentTtsMode = TtsMode.paragraph;
+      _hasReadParagraph = true;
       _currentOffset = 0;
       _currentWordStart = -1;
       _currentWordEnd = -1;
@@ -129,7 +140,31 @@ class ReadingViewModel extends ChangeNotifier {
         _ttsService.stop();
       }
       _currentTtsMode = TtsMode.all;
+      _hasReadAll = true;
       _readParagraphSequentially(_selectedParagraphIndex);
+    }
+  }
+
+  void markScrolledToBottom() {
+    if (!_scrolledToBottom) {
+      _scrolledToBottom = true;
+      debugPrint("READING: User scrolled to the bottom of the text.");
+      notifyListeners();
+    }
+  }
+
+  void syncLessonResultIfCriteriaMet() {
+    final hasRead = _hasReadParagraph || _hasReadAll;
+    if (hasRead && _scrolledToBottom && lessonId != null && repoManager != null) {
+      debugPrint("READING: Criteria met. Sending lesson result.");
+      repoManager!.sendLessonResult(lessonId!, {
+        'completed': true,
+        'hasReadParagraph': _hasReadParagraph,
+        'hasReadAll': _hasReadAll,
+        'scrolledToBottom': _scrolledToBottom,
+      });
+    } else {
+      debugPrint("READING: Criteria NOT met. hasRead: $hasRead, scrolledToBottom: $_scrolledToBottom");
     }
   }
 

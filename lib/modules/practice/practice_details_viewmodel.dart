@@ -8,6 +8,8 @@ import 'package:nodyslexia/modules/letter_search/letter_search_screen.dart';
 import 'package:nodyslexia/modules/letter_search/letter_search_viewmodel.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/repository_manager.dart';
+
 class PracticeDetailsViewModel extends ChangeNotifier {
   final Lesson lesson;
 
@@ -25,6 +27,8 @@ class PracticeDetailsViewModel extends ChangeNotifier {
               text: textContent,
               ttsService: TtsService(),
               localDatabase: providerContext.read<LocalDatabase>(),
+              lessonId: lesson.id,
+              repoManager: providerContext.read<RepoManager>(),
             ),
             child: ReadingScreen(),
           ),
@@ -42,6 +46,8 @@ class PracticeDetailsViewModel extends ChangeNotifier {
           builder: (innerContext) => ChangeNotifierProvider(
             create: (providerContext) => LetterSearchViewModel(
               content: customCases,
+              lessonId: lesson.id,
+              repoManager: providerContext.read<RepoManager>(),
             ),
             child: const LetterSearchScreen(),
           ),
