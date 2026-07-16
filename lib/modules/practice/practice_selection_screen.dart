@@ -64,8 +64,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PracticeSelectionViewModel>();
-    final TextStyle? screenTitleStyle = GoogleFonts.galindo(
-        fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[700]);
+    final textTheme = Theme.of(context).textTheme;
     final Color primaryColor = Theme.of(context).colorScheme.primary;
 
     // Sync input field value from viewmodel if cleared/externally modified
@@ -80,7 +79,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
             // Screen Title
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 16.0),
-              child: Text('Luyện tập', style: screenTitleStyle),
+              child: Text('Luyện tập', style: textTheme.displayLarge),
             ),
 
             // Search and Sort Area
@@ -164,6 +163,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
   }
 
   Widget _buildLessonCard(BuildContext context, Lesson lesson) {
+    final textTheme = Theme.of(context).textTheme;
     String statusText;
     Color statusColor;
     Widget? progressIndicator;
@@ -230,7 +230,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                   Expanded(
                     child: Text(
                       lesson.name,
-                      style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.teal[800]),
+                      style: textTheme.displayMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -246,12 +246,12 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                     children: [
                       Text(
                         'Độ khó: $difficultyText',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        style: textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Ngày thêm: ${createdDate.day}/${createdDate.month}/${createdDate.year}',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        style: textTheme.bodyMedium,
                       ),
                     ],
                   ),
@@ -260,7 +260,9 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                     children: [
                       Text(
                         statusText,
-                        style: TextStyle(fontSize: 13, color: statusColor, fontWeight: FontWeight.w500),
+                        style: textTheme.bodyMedium?.copyWith(
+                            color: statusColor
+                        ),
                       ),
                       if (progressIndicator != null) ...[
                         const SizedBox(height: 4),

@@ -158,7 +158,14 @@ class TestRemoteDatabase extends RemoteDatabase {
     );
     debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
-      return maps.first;
+      final Map<String, Object?> mutableMap = Map<String, Object?>.from(maps.first);
+      final List<Map<String, Object?>> attemptsList = await db.query(
+        'student_test_status',
+        where: 'testid = ? AND studentid = ?',
+        whereArgs: [testId, studentId],
+      );
+      mutableMap['studentStatuses'] = attemptsList;
+      return mutableMap;
     } else {
       debugPrint('TESTING: No test found.');
       return {}; //TODO: need to handle no test case (UNLIKELY exception)

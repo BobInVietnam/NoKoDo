@@ -7,6 +7,7 @@ import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
+import 'package:nodyslexia/modules/test/test_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
@@ -120,7 +121,14 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const TestSelectionScreen()),
+                              MaterialPageRoute(
+                                builder: (innerContext) => ChangeNotifierProvider(
+                                  create: (providerContext) => TestSelectionViewModel(
+                                    repoManager: providerContext.read<RepoManager>(),
+                                  ),
+                                  child: const TestSelectionScreen(),
+                                ),
+                              ),
                             );
                           },
                         ),

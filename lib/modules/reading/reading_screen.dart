@@ -45,6 +45,16 @@ class _ReadingScreenState extends State<ReadingScreen> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<ReadingViewModel>();
 
+    // Post-frame check to auto-mark scrolledToBottom if the text is short
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted && _scrollController.hasClients) {
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        if (maxScroll <= 0) {
+          context.read<ReadingViewModel>().markScrolledToBottom();
+        }
+      }
+    });
+
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {

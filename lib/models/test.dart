@@ -106,29 +106,47 @@ class TestSession {
         studentId: map['studentid'] as String,
         startTime: map['dateCreated'] as int,
         endTime: map['dateFinished'] as int,
-        score: (map['score'] ?? map['result']) as double);
+        score: ((map['score'] ?? map['result']) as num).toDouble()
+    );
   }
 }
 
 class Test {
   final int id;
+  final String name;
   final List<Question> questions;
   final int timeLimit;
   final int allowedAttempts;
+  final List<TestSession> studentStatuses;
   double score = 0;
   late List<QuestState> questionsState;
 
-  Test({required this.id, required this.questions,
-    required this.timeLimit, required this.allowedAttempts}) {
+  Test({
+    required this.id,
+    required this.name,
+    required this.questions,
+    required this.timeLimit,
+    required this.allowedAttempts,
+    required this.studentStatuses,
+  }) {
     questionsState = List.filled(questions.length, QuestState.UNANSWERED);
   }
 
   factory Test.fromMap(Map<String, Object?> map) {
+    final statusesList = map['studentStatuses'] as List?;
+    final List<TestSession> parsedStatuses = statusesList != null
+        ? statusesList
+            .map((item) => TestSession.fromMap(Map<String, Object?>.from(item as Map)))
+            .toList()
+        : [];
+
     return Test(
       id: map['id'] as int,
+      name: (map['name'] ?? '') as String,
       questions: map['questions'] as List<Question>,
-      timeLimit: map['timeLimit'] as int,
-      allowedAttempts: map['allowedAttempts'] as int,
+      timeLimit: (map['timeLimit'] ?? map['time_limit'] ?? 0) as int,
+      allowedAttempts: (map['allowedAttempts'] ?? map['allowed_attempts'] ?? 0) as int,
+      studentStatuses: parsedStatuses,
     );
   }
 
