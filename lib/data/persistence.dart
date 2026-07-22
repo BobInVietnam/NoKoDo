@@ -20,6 +20,12 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset);
   /// Looks up a precise singular word entry (Returns null if not found).
   Future<DictionaryEntry?> getDictionaryEntryByWord(String word);
+  /// Clears all entries from the dictionary table.
+  Future<void> clearDictionary();
+  /// Saves a key-value configuration pair.
+  Future<void> setConfig(String key, String value);
+  /// Retrieves a value by key (Returns null if not found).
+  Future<String?> getConfig(String key);
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -53,30 +59,28 @@ class TestLocalDatabase extends LocalDatabase {
               "id INTEGER PRIMARY KEY, "
               "name TEXT, "
               "content TEXT, "
-              "created_date INTEGER)");
-      await db.execute(
-          "CREATE TABLE Content ("
-              "id INTEGER PRIMARY KEY, "
-              "text_content TEXT, "
-              "question TEXT,"
-              "answer TEXT,"
-              "lesson_id INTEGER,"
-              "FOREIGN KEY(lesson_id) REFERENCES Lesson(id))");
+              "createdDate INTEGER)");
       await db.execute(
           "CREATE TABLE DictionaryEntry ("
               "id INTEGER PRIMARY KEY AUTOINCREMENT, "
               "word TEXT, "
               "description TEXT, "
-              "image_name TEXT)");
+              "imageName TEXT)");
       await db.execute("CREATE INDEX idx_dictionary_word ON DictionaryEntry (word)");
       await db.execute(
           "CREATE TABLE ConvertedFile ("
               "id INTEGER PRIMARY KEY AUTOINCREMENT, "
               "name STRING, "
-              "extracted_text TEXT, "
-              "created_date INTEGER)");
+              "extractedText TEXT, "
+              "createdDate INTEGER)");
+      await db.execute(
+          "CREATE TABLE SystemConfig ("
+              "key TEXT PRIMARY KEY, "
+              "value TEXT)");
     }
-    return await openDatabase(path, version: 1, onCreate: onCreate);
+    final db = await openDatabase(path, version: 1, onCreate: onCreate);
+    await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
+    return db;
   }
 
 // 1. INSERT A CONVERTED FILE RECORD
@@ -188,7 +192,32 @@ class TestLocalDatabase extends LocalDatabase {
     return List.generate(maps.length, (i) => DictionaryEntry.fromMap(maps[i]));
   }
 
+  @override
+  Future<void> clearDictionary() async {
+    final db = await database;
+    await db.delete('DictionaryEntry');
+  }
 
+  @override
+  Future<void> setConfig(String key, String value) async {
+    final db = await database;
+    await db.insert(
+      'SystemConfig',
+      {'key': key, 'value': value},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 
-
+  @override
+  Future<String?> getConfig(String key) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'SystemConfig',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return maps.first['value'] as String?;
+  }
 }

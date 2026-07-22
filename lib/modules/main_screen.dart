@@ -165,7 +165,8 @@ class _MainScreenState extends State<MainScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
                                   create: (innerContext) => LibraryViewModel(
-                                    localDatabase: innerContext.read<LocalDatabase>(),
+                                      localDatabase: innerContext.read<LocalDatabase>(),
+                                      repoManager: innerContext.read<RepoManager>(),
                                   ),
                                   child: const LibraryScreen(),
                                 ),

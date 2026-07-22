@@ -21,6 +21,8 @@ abstract class RemoteDatabase {
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, int classId);
   Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results);
+  Future<Map<String, String>> getSystemConfig();
+  Future<Map<String, dynamic>> getDictionaryData();
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -281,6 +283,27 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results) async {
     debugPrint("TESTING: Mock sendLessonResult saved: $results for student $studentId and lesson $lessonId");
+  }
+
+  @override
+  Future<Map<String, String>> getSystemConfig() async {
+    final db = await database;
+    try {
+      final List<Map<String, Object?>> maps = await db.query('system_config');
+      return {
+        for (final row in maps)
+          row['key'] as String: row['value'] as String
+      };
+    } catch (e) {
+      debugPrint("TESTING: Error querying local mock config: $e");
+      return {"dictVersion": "v1"};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getDictionaryData() async {
+    debugPrint("TESTING: Mock getDictionaryData returned empty.");
+    return {"count": 0, "entries": []};
   }
 }
 
@@ -600,4 +623,34 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
     }
   }
+
+  @override
+  Future<Map<String, String>> getSystemConfig() async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/config');
+    try {
+      final response = await http.get(targetUrl);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body);
+        return jsonContents.map((key, value) => MapEntry(key, value.toString()));
+      }
+    } catch (e) {
+      debugPrint("HTTP ERROR: Failed to get system config: $e");
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> getDictionaryData() async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/dictionary');
+    try {
+      final response = await http.get(targetUrl);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("HTTP ERROR: Failed to get dictionary data: $e");
+    }
+    return {"count": 0, "entries": []};
+  }
+
 }

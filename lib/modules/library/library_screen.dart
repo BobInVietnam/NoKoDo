@@ -230,115 +230,147 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
   Widget _buildDictionarySection(LibraryViewModel viewModel, TextTheme textTheme) {
     return Column(
       children: [
-        // Real-time Search Box Header Container
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            onChanged: viewModel.updateSearchQuery,
-            decoration: InputDecoration(
-              hintText: 'Tìm kiếm từ vựng...',
-              prefixIcon: const Icon(Icons.search, color: Colors.teal),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+        if (viewModel.isDictUpdating)
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(color: Colors.teal),
+                    const SizedBox(height: 24),
+                    Text(
+                      viewModel.dictUpdateStatus,
+                      style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: viewModel.dictUpdateProgress,
+                        color: Colors.teal,
+                        backgroundColor: Colors.teal.shade50,
+                        minHeight: 10,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+            ),
+          )
+        else ...[
+          // Real-time Search Box Header Container
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: viewModel.updateSearchQuery,
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm từ vựng...',
+                prefixIcon: const Icon(Icons.search, color: Colors.teal),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+                ),
               ),
             ),
           ),
-        ),
 
-        // Live Search Results / List View
-        Expanded(
-          child: viewModel.dictionaryEntries.isEmpty && !viewModel.isDictLoading
-              ? _buildPlaceholderSection(
-            'Không tìm thấy từ',
-            'Thử tra cứu với một từ vựng khác.',
-            Icons.find_in_page_outlined,
-          )
-              : ListView.builder(
-            controller: _dictScrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: viewModel.dictionaryEntries.length + (viewModel.hasMoreDictEntries ? 1 : 0),
-            itemBuilder: (context, index) {
-              // Show a bottom spinning bubble loader if we are loading the next page segment
-              if (index == viewModel.dictionaryEntries.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: CircularProgressIndicator(color: Colors.teal)),
-                );
-              }
-
-              final DictionaryEntry wordItem = viewModel.dictionaryEntries[index];
-
-              return Card(
-                color: Colors.white,
-                elevation: 0.5,
-                margin: const EdgeInsets.only(bottom: 10.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  side: BorderSide(color: Colors.grey.shade200),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12.0),
-                  onTap: () {
-                    // Open our static modal pipeline class instance effortlessly
-                    DictionaryDetailDialog.show(
-                      context,
-                      wordItem,
-                      TtsService(), // Calls your active singleton service provider
-                    );
-                  },
-                  leading: FutureBuilder<Directory>(
-                    future: getApplicationDocumentsDirectory(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Container(width: 50, height: 50, color: Colors.grey.shade100);
+          // Live Search Results / List View
+          Expanded(
+            child: viewModel.dictionaryEntries.isEmpty && !viewModel.isDictLoading
+                ? _buildPlaceholderSection(
+                    'Không tìm thấy từ',
+                    'Thử tra cứu với một từ vựng khác.',
+                    Icons.find_in_page_outlined,
+                  )
+                : ListView.builder(
+                    controller: _dictScrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    itemCount: viewModel.dictionaryEntries.length + (viewModel.hasMoreDictEntries ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      // Show a bottom spinning bubble loader if we are loading the next page segment
+                      if (index == viewModel.dictionaryEntries.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: CircularProgressIndicator(color: Colors.teal)),
+                        );
                       }
 
-                      // Construct the path pointer matching where we copied the file
-                      final String imagePath = p.join(snapshot.data!.path, wordItem.imageName);
-                      final File imageFile = File(imagePath);
+                      final DictionaryEntry wordItem = viewModel.dictionaryEntries[index];
 
-                      return Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.teal.shade50,
-                          borderRadius: BorderRadius.circular(8.0),
+                      return Card(
+                        color: Colors.white,
+                        elevation: 0.5,
+                        margin: const EdgeInsets.only(bottom: 10.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: BorderSide(color: Colors.grey.shade200),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: imageFile.existsSync() // Fallback safety validation
-                              ? Image.file(imageFile, fit: BoxFit.cover)
-                              : const Icon(Icons.menu_book_rounded, color: Colors.teal),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12.0),
+                          onTap: () {
+                            // Open our static modal pipeline class instance effortlessly
+                            DictionaryDetailDialog.show(
+                              context,
+                              wordItem,
+                              TtsService(), // Calls your active singleton service provider
+                            );
+                          },
+                          leading: FutureBuilder<Directory>(
+                            future: getApplicationDocumentsDirectory(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return Container(width: 50, height: 50, color: Colors.grey.shade100);
+                              }
+
+                              // Construct the path pointer matching where we copied the file
+                              final String imagePath = p.join(snapshot.data!.path, wordItem.imageName);
+                              final File imageFile = File(imagePath);
+
+                              return Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade50,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: imageFile.existsSync() // Fallback safety validation
+                                      ? Image.file(imageFile, fit: BoxFit.cover)
+                                      : const Icon(Icons.menu_book_rounded, color: Colors.teal),
+                                ),
+                              );
+                            },
+                          ),
+                          title: Text(
+                            wordItem.word,
+                            style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              wordItem.description,
+                              style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
                       );
                     },
                   ),
-                  title: Text(
-                    wordItem.word,
-                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      wordItem.description,
-                      style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              );
-            },
           ),
-        ),
+        ],
       ],
     );
   }

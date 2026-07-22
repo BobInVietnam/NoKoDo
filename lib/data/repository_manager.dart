@@ -14,6 +14,7 @@ class RepoManager extends ChangeNotifier {
   final LocalDatabase database;
 
   Student? currentStudent;
+  String? remoteDictVersion;
 
   // Constructor Injection: Pass the dependencies here
   RepoManager({
@@ -37,6 +38,15 @@ class RepoManager extends ChangeNotifier {
       print('Sign-in successful! User: ${userCredential.user!.email}');
       final Map<String, Object?>? currentUserMap = await onlineDatabase.getUser(userCredential.user!.uid);
       currentStudent = Student.fromMap(currentUserMap!);
+
+      try {
+        final configs = await onlineDatabase.getSystemConfig();
+        remoteDictVersion = configs['dictVersion'];
+        debugPrint("TESTING: Successfully loaded system config. remoteDictVersion: $remoteDictVersion");
+      } catch (e) {
+        debugPrint("TESTING: Failed to fetch system config during login: $e");
+      }
+
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       // Handle Firebase-specific errors.

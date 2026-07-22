@@ -38,6 +38,7 @@ class StatisticsViewmodel extends ChangeNotifier {
   }
 
   Future<void> _loadStatistics() async {
+    await _repoManager.sendUsageTime(_usageTimeTracker.totalSecondsElapsed);
     _isLoading = true;
     notifyListeners();
 

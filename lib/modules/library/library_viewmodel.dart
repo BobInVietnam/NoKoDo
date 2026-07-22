@@ -1,13 +1,18 @@
-// viewmodels/library_viewmodel.dart
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/models/converted_file.dart';
-
-import '../../models/dictionary_entry.dart'; // Make sure to import your Dictionary model
+import 'package:nodyslexia/models/dictionary_entry.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final LocalDatabase localDatabase;
+  final RepoManager repoManager;
 
   List<ConvertedFile> _savedFiles = [];
   bool _isLoading = false;
@@ -23,6 +28,11 @@ class LibraryViewModel extends ChangeNotifier {
   bool _hasMoreDictEntries = true;
   Timer? _searchDebounce;
 
+  // Update State Variables
+  bool _isDictUpdating = false;
+  double _dictUpdateProgress = 0.0;
+  String _dictUpdateStatus = "";
+
   // Getters
   List<ConvertedFile> get savedFiles => _savedFiles;
   bool get isLoading => _isLoading;
@@ -34,9 +44,87 @@ class LibraryViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   bool get hasMoreDictEntries => _hasMoreDictEntries;
 
-  LibraryViewModel({required this.localDatabase}) {
+  // Update Getters
+  bool get isDictUpdating => _isDictUpdating;
+  double get dictUpdateProgress => _dictUpdateProgress;
+  String get dictUpdateStatus => _dictUpdateStatus;
+
+  LibraryViewModel({required this.localDatabase, required this.repoManager}) {
     loadSavedFiles();
-    loadInitialDictionary();
+    _checkAndUpdateDictionary();
+  }
+
+  Future<void> _checkAndUpdateDictionary() async {
+    final String localVersion = await localDatabase.getConfig('dictVersion') ?? '';
+    final String remoteVersion = repoManager.remoteDictVersion ?? 'v1';
+
+    debugPrint("DICTIONARY SYNC CHECK: local: '$localVersion', remote: '$remoteVersion'");
+    if (localVersion != remoteVersion) {
+      await _performDictionaryUpdate(remoteVersion);
+    } else {
+      loadInitialDictionary();
+    }
+  }
+
+  Future<void> _performDictionaryUpdate(String remoteVersion) async {
+    _isDictUpdating = true;
+    _dictUpdateProgress = 0.0;
+    _dictUpdateStatus = "Đang tải dữ liệu từ máy chủ...";
+    notifyListeners();
+
+    try {
+      final Map<String, dynamic> data = await repoManager.onlineDatabase.getDictionaryData();
+      final List<dynamic> entries = data['entries'] ?? [];
+      final int total = entries.length;
+
+      if (total > 0) {
+        // Clear local cache dictionary table
+        await localDatabase.clearDictionary();
+
+        final docDir = await getApplicationDocumentsDirectory();
+
+        for (int i = 0; i < total; i++) {
+          final entry = entries[i] as Map<String, dynamic>;
+          final String word = entry['word'] ?? '';
+          final String description = entry['description'] ?? '';
+          final String imageName = entry['imageName'] ?? entry['image_name'] ?? '';
+          final String? imageData = entry['imageData'] ?? entry['image_data'];
+
+          // If raw base64 data is supplied, decode and save to app document path
+          if (imageData != null && imageData.isNotEmpty && imageName.isNotEmpty) {
+            try {
+              final File file = File(p.join(docDir.path, imageName));
+              await file.writeAsBytes(base64Decode(imageData));
+            } catch (e) {
+              debugPrint("Error writing dictionary image file: $e");
+            }
+          }
+
+          // Insert clean DictionaryEntry mapping
+          await localDatabase.insertDictionaryEntry(DictionaryEntry(
+            word: word,
+            description: description,
+            imageName: imageName,
+          ));
+
+          _dictUpdateProgress = (i + 1) / total;
+          _dictUpdateStatus = "Đang lưu từ vựng: ${i + 1}/$total...";
+          notifyListeners();
+        }
+      }
+
+      // Overwrite version values
+      await localDatabase.setConfig('dictVersion', remoteVersion);
+      _dictUpdateStatus = "Hoàn thành!";
+      
+    } catch (e) {
+      debugPrint("Error updating dictionary: $e");
+      _dictUpdateStatus = "Lỗi cập nhật: $e";
+    } finally {
+      _isDictUpdating = false;
+      notifyListeners();
+      loadInitialDictionary();
+    }
   }
 
   /// Fetches the latest saved files snapshot array from the persistence database
@@ -91,7 +179,7 @@ class LibraryViewModel extends ChangeNotifier {
 
   /// Pulls the next incremental segment of dictionary values from persistence records
   Future<void> loadNextDictionaryPage() async {
-    if (_isDictLoading || !_hasMoreDictEntries) return;
+    if (_isDictLoading || !_hasMoreDictEntries || _isDictUpdating) return;
 
     _isDictLoading = true;
     notifyListeners();
