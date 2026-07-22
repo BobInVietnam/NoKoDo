@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/persistence.dart';
 
 class TextStyleSettings extends ChangeNotifier {
   // Default values
@@ -8,6 +9,7 @@ class TextStyleSettings extends ChangeNotifier {
   String _fontFamily = 'Roboto';
   double _letterSpacing = 1.5;
   double _wordSpacing = 1.0;
+  List<String> _highlights = [];
 
   // Getters
   double get fontSize => _fontSize;
@@ -15,10 +17,47 @@ class TextStyleSettings extends ChangeNotifier {
   String get fontFamily => _fontFamily;
   double get letterSpacing => _letterSpacing;
   double get wordSpacing => _wordSpacing;
+  List<String> get highlights => _highlights;
 
   // Constructor: Triggers loading immediately when the provider is created
-  TextStyleSettings() {
+  TextStyleSettings([LocalDatabase? db]) {
     _loadFromPrefs();
+    if (db != null) {
+      _loadHighlightsFromDb(db);
+    }
+  }
+
+  Future<void> _loadHighlightsFromDb(LocalDatabase db) async {
+    try {
+      _highlights = await db.getAllHighlights();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("HIGHLIGHTS: Load from database failed: $e");
+    }
+  }
+
+  Future<void> addHighlight(LocalDatabase db, String text) async {
+    final cleanText = text.trim();
+    if (cleanText.isEmpty) return;
+    if (_highlights.contains(cleanText)) return;
+    try {
+      await db.insertHighlight(cleanText);
+      _highlights.add(cleanText);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("HIGHLIGHTS: Add failed: $e");
+    }
+  }
+
+  Future<void> removeHighlight(LocalDatabase db, String text) async {
+    final cleanText = text.trim();
+    try {
+      await db.deleteHighlight(cleanText);
+      _highlights.remove(cleanText);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("HIGHLIGHTS: Remove failed: $e");
+    }
   }
 
   // --- PERSISTENCE LOGIC ---

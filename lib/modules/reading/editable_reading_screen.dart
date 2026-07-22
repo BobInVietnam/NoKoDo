@@ -9,6 +9,7 @@ import 'package:nodyslexia/utils/tts_service.dart';
 
 // Import your ViewModel
 import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 
 import '../../data/persistence.dart';
 import '../../models/converted_file.dart';
@@ -105,7 +106,16 @@ class EditableReadingScreen extends StatelessWidget {
                                             }
                                           },
                                           onHighlightPressed: () {
-                                            debugPrint("READING: Highlight function pressed");
+                                            if (viewModel.currentSelection != null) {
+                                              final String text = viewModel.currentSelection!;
+                                              final settings = context.read<TextStyleSettings>();
+                                              final db = context.read<LocalDatabase>();
+                                              if (settings.highlights.contains(text.trim())) {
+                                                settings.removeHighlight(db, text);
+                                              } else {
+                                                settings.addHighlight(db, text);
+                                              }
+                                            }
                                           },
                                         ),
                                       ),

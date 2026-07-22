@@ -12,6 +12,7 @@ import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 
 // Import target route bindings
 import 'package:nodyslexia/modules/library/library_viewmodel.dart';
@@ -33,6 +34,7 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _dictScrollController = ScrollController();
+  final TextEditingController _highlightInputController = TextEditingController();
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     _tabController.dispose();
     _dictScrollController.removeListener(_onDictScroll);
     _dictScrollController.dispose();
+    _highlightInputController.dispose();
     super.dispose();
   }
 
@@ -223,6 +226,82 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
           );
         },
       ),
+    );
+  }
+
+  Widget _buildHighlightsSection(LibraryViewModel viewModel, TextStyleSettings textStyleSettings, TextTheme textTheme) {
+    final highlights = textStyleSettings.highlights;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _highlightInputController,
+                  decoration: const InputDecoration(
+                    hintText: 'Nhập từ hoặc câu cần tô sáng...',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final text = _highlightInputController.text.trim();
+                  if (text.isNotEmpty) {
+                    textStyleSettings.addHighlight(viewModel.localDatabase, text);
+                    _highlightInputController.clear();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                ),
+                child: const Text('Thêm'),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: highlights.isEmpty
+              ? _buildPlaceholderSection(
+                  'Từ Đã Đánh Dấu',
+                  'Các từ được chọn và đánh dấu trong bài đọc hoặc thêm tại đây sẽ hiển thị ở danh sách.',
+                  Icons.star_outline,
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: highlights.length,
+                  itemBuilder: (context, index) {
+                    final itemText = highlights[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8.0),
+                      elevation: 1,
+                      child: ListTile(
+                        leading: const Icon(Icons.star, color: Colors.amber),
+                        title: Text(
+                          itemText,
+                          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () {
+                            textStyleSettings.removeHighlight(viewModel.localDatabase, itemText);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -576,11 +655,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                 controller: _tabController,
                 children: <Widget>[
                   _buildHistorySection(viewModel, textTheme),
-                  _buildPlaceholderSection(
-                    'Từ Đã Đánh Dấu',
-                    'Danh sách các từ bạn đã đánh dấu sẽ xuất hiện ở đây.',
-                    Icons.bookmark_border_outlined,
-                  ),
+                  _buildHighlightsSection(viewModel, context.watch<TextStyleSettings>(), textTheme),
                   _buildDictionarySection(viewModel, textTheme), // Injected dynamic dictionary page section
                 ],
               ),

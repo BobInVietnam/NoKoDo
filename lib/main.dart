@@ -34,11 +34,11 @@ Future<void> main() async {
           onlineDatabase: LocalhostRemoteDatabase(),
           database: TestLocalDatabase())
     ),
-      ChangeNotifierProvider(
-        create: (context) => TextStyleSettings()
-        ),
       ChangeNotifierProvider<LocalDatabase>(
         create: (context) => TestLocalDatabase()
+      ),
+      ChangeNotifierProvider(
+        create: (context) => TextStyleSettings(context.read<LocalDatabase>())
       ),
       ChangeNotifierProvider(
           create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())

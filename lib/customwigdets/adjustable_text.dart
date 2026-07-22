@@ -74,32 +74,89 @@ class SelectableAdjustableText extends StatelessWidget {
       int end,
       TextStyle baseStyle,
       Color highlightColor,
+      List<String> savedHighlights,
       ) {
-    // If no word is actively processing, return the text frame un-highlighted
-    if (start == -1 || end == -1 || start >= fullText.length || end > fullText.length) {
-      return [TextSpan(text: fullText, style: baseStyle)];
+    final List<_TextRange> ranges = [];
+
+    // 1. Add TTS range
+    if (start != -1 && end != -1 && start < fullText.length && end <= fullText.length) {
+      ranges.add(_TextRange(start: start, end: end, isTts: true));
     }
 
-    return [
-      // 1. Strings before the highlighted keyword token
-      TextSpan(
-        text: fullText.substring(0, start),
-        style: baseStyle,
-      ),
-      // 2. The active matching keyword token painted with custom background properties
-      TextSpan(
-        text: fullText.substring(start, end),
-        style: baseStyle.copyWith(
-          backgroundColor: highlightColor,
-          fontWeight: FontWeight.bold
-        ),
-      ),
-      // 3. Trailing strings remaining after the highlighted keyword token
-      TextSpan(
-        text: fullText.substring(end),
-        style: baseStyle,
-      ),
-    ];
+    bool isNotLetter(String char) {
+      // [^a-zA-Z] means "anything EXCEPT a-z and A-Z"
+      return RegExp(r'^[^\p{L}]$', unicode: true).hasMatch(char); // Includes international accents
+    }
+
+    bool overlaps(int s, int e) {
+      for (final r in ranges) {
+        if (!(e <= r.start || s >= r.end)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // 2. Add database highlights (case-insensitive matching)
+    final lowerText = fullText.toLowerCase();
+    for (final h in savedHighlights) {
+      if (h.isEmpty) continue;
+      final lowerH = h.toLowerCase();
+      int index = lowerText.indexOf(lowerH);
+      while (index != -1) {
+        bool blankStart = index <= 0;
+        if (!blankStart) {
+          blankStart = isNotLetter(lowerText[index - 1]);
+        }
+        bool blankEnd = index + h.length + 1 >= lowerText.length;
+        if (!blankEnd) {
+          blankEnd = isNotLetter(lowerText[index + h.length]);
+        }
+        if (!overlaps(index, index + h.length) && blankStart && blankEnd) {
+          ranges.add(_TextRange(start: index, end: index + h.length, isTts: false));
+        }
+        index = lowerText.indexOf(lowerH, index + 1);
+      }
+    }
+
+    // Sort by start index
+    ranges.sort((a, b) => a.start.compareTo(b.start));
+
+    // Build Spans
+    final List<TextSpan> spans = [];
+    int currentIdx = 0;
+    for (final r in ranges) {
+      if (r.start > currentIdx) {
+        spans.add(TextSpan(text: fullText.substring(currentIdx, r.start), style: baseStyle));
+      }
+
+      final chunkText = fullText.substring(r.start, r.end);
+      if (r.isTts) {
+        spans.add(TextSpan(
+          text: chunkText,
+          style: baseStyle.copyWith(
+            backgroundColor: highlightColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ));
+      } else {
+        // Saved highlight matches: yellow background + bold font
+        spans.add(TextSpan(
+          text: chunkText,
+          style: baseStyle.copyWith(
+            backgroundColor: Colors.yellow[300],
+            fontWeight: FontWeight.bold,
+          ),
+        ));
+      }
+      currentIdx = r.end;
+    }
+
+    if (currentIdx < fullText.length) {
+      spans.add(TextSpan(text: fullText.substring(currentIdx), style: baseStyle));
+    }
+
+    return spans;
   }
 
   @override
@@ -122,6 +179,7 @@ class SelectableAdjustableText extends StatelessWidget {
             wordSpacing: settings.wordSpacing,
           ),
           Colors.yellow[400]!, // Custom marker tint
+          settings.highlights,
         ),
       ),
       textAlign: textAlign ?? TextAlign.justify,
@@ -143,6 +201,11 @@ class SelectableAdjustableText extends StatelessWidget {
         final List<ContextMenuButtonItem> buttonItems =
             editableTextState.contextMenuButtonItems;
         buttonItems.clear();
+
+        final String selectedText = selection.isCollapsed
+            ? ''
+            : editableTextState.textEditingValue.text.substring(selection.start, selection.end).trim();
+        final bool isAlreadyHighlighted = settings.highlights.contains(selectedText);
 
         buttonItems.addAll([
             ContextMenuButtonItem(
@@ -177,7 +240,7 @@ class SelectableAdjustableText extends StatelessWidget {
               },
             ),
             ContextMenuButtonItem(
-              label: 'Đánh dấu',
+              label: isAlreadyHighlighted ? 'Bỏ đánh dấu' : 'Đánh dấu',
               onPressed: () {
                 if (!selection.isCollapsed) {
                   onHighlightPressed?.call();
@@ -196,4 +259,11 @@ class SelectableAdjustableText extends StatelessWidget {
       },
     );
   }
+}
+
+class _TextRange {
+  final int start;
+  final int end;
+  final bool isTts;
+  _TextRange({required this.start, required this.end, required this.isTts});
 }

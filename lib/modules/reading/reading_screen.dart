@@ -6,6 +6,8 @@ import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
+import 'package:nodyslexia/data/persistence.dart';
 
 class ReadingScreen extends StatefulWidget {
   const ReadingScreen({super.key});
@@ -141,7 +143,16 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                             }
                                           },
                                           onHighlightPressed: () {
-                                            debugPrint("READING: Highlight function pressed");
+                                            if (viewModel.currentSelection != null) {
+                                              final String text = viewModel.currentSelection!;
+                                              final settings = context.read<TextStyleSettings>();
+                                              final db = context.read<LocalDatabase>();
+                                              if (settings.highlights.contains(text.trim())) {
+                                                settings.removeHighlight(db, text);
+                                              } else {
+                                                settings.addHighlight(db, text);
+                                              }
+                                            }
                                           },
                                         ),
                                       ),

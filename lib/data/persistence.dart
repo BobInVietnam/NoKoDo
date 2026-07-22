@@ -26,6 +26,12 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<void> setConfig(String key, String value);
   /// Retrieves a value by key (Returns null if not found).
   Future<String?> getConfig(String key);
+  /// Inserts a new highlighted word/phrase and returns its ID.
+  Future<int> insertHighlight(String text);
+  /// Retrieves all highlighted phrases saved on the local device.
+  Future<List<String>> getAllHighlights();
+  /// Removes a highlighted phrase from the local database.
+  Future<void> deleteHighlight(String text);
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -77,9 +83,14 @@ class TestLocalDatabase extends LocalDatabase {
           "CREATE TABLE SystemConfig ("
               "key TEXT PRIMARY KEY, "
               "value TEXT)");
+      await db.execute(
+          "CREATE TABLE Highlight ("
+              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+              "text TEXT UNIQUE)");
     }
     final db = await openDatabase(path, version: 1, onCreate: onCreate);
     await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
+    await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
     return db;
   }
 
@@ -219,5 +230,32 @@ class TestLocalDatabase extends LocalDatabase {
     );
     if (maps.isEmpty) return null;
     return maps.first['value'] as String?;
+  }
+
+  @override
+  Future<int> insertHighlight(String text) async {
+    final db = await database;
+    return await db.insert(
+      'Highlight',
+      {'text': text},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  @override
+  Future<List<String>> getAllHighlights() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('Highlight');
+    return List.generate(maps.length, (i) => maps[i]['text'] as String);
+  }
+
+  @override
+  Future<void> deleteHighlight(String text) async {
+    final db = await database;
+    await db.delete(
+      'Highlight',
+      where: 'text = ?',
+      whereArgs: [text],
+    );
   }
 }
