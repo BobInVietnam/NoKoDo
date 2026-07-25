@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
@@ -7,9 +6,6 @@ import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 
 class RepoManager extends ChangeNotifier {
-  // Get the instance of Firebase Auth.
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
   final RemoteDatabase onlineDatabase;
   final LocalDatabase database;
 
@@ -26,18 +22,17 @@ class RepoManager extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    // Since the authentication process takes time, we wait for its completion using await.
     try {
-      final UserCredential userCredential =
-      await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+      final Map<String, Object?>? currentUserMap = await onlineDatabase.studentLogin(
+        email,
+        password,
       );
 
-      // If sign-in is successful, return the user object obtained from Firebase.
-      print('Sign-in successful! User: ${userCredential.user!.email}');
-      final Map<String, Object?>? currentUserMap = await onlineDatabase.getUser(userCredential.user!.uid);
-      currentStudent = Student.fromMap(currentUserMap!);
+      if (currentUserMap == null) {
+        throw Exception("Email hoặc mật khẩu không chính xác.");
+      }
+
+      currentStudent = Student.fromMap(currentUserMap);
 
       try {
         final configs = await onlineDatabase.getSystemConfig();
@@ -48,37 +43,15 @@ class RepoManager extends ChangeNotifier {
       }
 
       notifyListeners();
-    } on FirebaseAuthException catch (e) {
-      // Handle Firebase-specific errors.
-      String errorMessage;
-
-      // Set a user-friendly error message based on the error code (e.code).
-      switch (e.code) {
-        case 'invalid-email':
-          errorMessage = 'The email address format is invalid.';
-          break;
-        case 'missing-password':
-        case 'invalid-credential':
-        case 'wrong-password':
-          errorMessage = 'The email address or password is incorrect.';
-          break;
-        default:
-          errorMessage = 'An unexpected error occurred during authentication.';
-      }
-
-      // Print the Firebase authentication error to the debug console.
-      debugPrint('Firebase Auth Error [${e.code}]: $errorMessage');
-      rethrow;
     } catch (e) {
-      // Handle other unexpected errors, such as network issues.
-      debugPrint('An unexpected error occurred: $e');
+      debugPrint('Authentication Error: $e');
       rethrow;
     }
   }
 
   void signOut() async {
-    await _firebaseAuth.signOut();
     currentStudent = null;
+    notifyListeners();
   }
 
   Future<Map<String, dynamic>> getRawStatistics() async {

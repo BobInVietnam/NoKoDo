@@ -23,6 +23,7 @@ abstract class RemoteDatabase {
   Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results);
   Future<Map<String, String>> getSystemConfig();
   Future<Map<String, dynamic>> getDictionaryData();
+  Future<Map<String, Object?>?> studentLogin(String email, String password);
 }
 
 class TestRemoteDatabase extends RemoteDatabase {
@@ -304,6 +305,25 @@ class TestRemoteDatabase extends RemoteDatabase {
   Future<Map<String, dynamic>> getDictionaryData() async {
     debugPrint("TESTING: Mock getDictionaryData returned empty.");
     return {"count": 0, "entries": []};
+  }
+
+  @override
+  Future<Map<String, Object?>?> studentLogin(String email, String password) async {
+    final db = await database;
+    try {
+      final List<Map<String, Object?>> maps = await db.query(
+        'student',
+        where: 'email = ?',
+        whereArgs: [email.trim().toLowerCase()],
+        limit: 1,
+      );
+      if (maps.isNotEmpty) {
+        return maps.first;
+      }
+    } catch (e) {
+      debugPrint("TESTING: Mock studentLogin error: $e");
+    }
+    return null;
   }
 }
 
@@ -653,4 +673,35 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     return {"count": 0, "entries": []};
   }
 
+  @override
+  Future<Map<String, Object?>?> studentLogin(String email, String password) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/auth/student/login');
+    try {
+      debugPrint('HTTP REQUEST: Initiating student login POST request to $targetUrl...');
+      final http.Response response = await http.post(
+        targetUrl,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'email': email.trim().toLowerCase(),
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body);
+        final Map<String, Object?>? student = jsonContents['student'] as Map<String, Object?>?;
+        debugPrint('HTTP SUCCESS: Student logged in successfully!');
+        return student;
+      } else {
+        debugPrint('HTTP ERROR: Login failed with code: ${response.statusCode}, ${response.body}');
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body);
+        throw Exception(jsonContents['error'] ?? 'Đăng nhập không thành công.');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Login call failed. Details: $error');
+      rethrow;
+    }
+  }
 }
