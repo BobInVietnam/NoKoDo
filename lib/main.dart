@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nodyslexia/modules/editting/editting_screen.dart';
-import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
-import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+import 'package:nodyslexia/models/converted_file.dart';
+import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
+import 'package:nodyslexia/modules/library/library_screen.dart';
+import 'package:nodyslexia/modules/library/library_viewmodel.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
+import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
+import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
+import 'modules/testing_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
-import 'modules/reading/reading_screen.dart';
 
 
 Future<void> main() async {
@@ -26,17 +31,21 @@ Future<void> main() async {
     MultiProvider(providers: [
       ChangeNotifierProvider(
       create: (context) => RepoManager(
-          onlineDatabase: TestRemoteDatabase(),
+          onlineDatabase: LocalhostRemoteDatabase(),
           database: TestLocalDatabase())
     ),
-      ChangeNotifierProvider(
-      create: (context) => TextStyleSettings()
+      ChangeNotifierProvider<LocalDatabase>(
+        create: (context) => TestLocalDatabase()
       ),
-      // ChangeNotifierProvider(
-      //   create: (context) => ReadingViewModel(extractedText: "NIỀM VUI CỦA BI VÀ BỐNG\nKhi cơn mưa vừa dứt, hai anh em Bi và Bống chợt thấy cầu vồng.\n– Cầu vồng kìa! Em nhìn xem. Đẹp quá!\nBi chỉ lên bầu trời và nói tiếp:\n– Anh nghe nói dưới chân cầu vồng có bảy hũ vàng đấy.\nBống hưởng ứng:\n– Lát nữa, mình sẽ đi lấy về nhé! Có vàng rồi, em sẽ mua nhiều búp bê\nvà quần áo đẹp.\n– Còn anh sẽ mua một con ngựa hồng và một cái ô tô.\nBỗng nhiên, cầu vồng biến mất. Bi cười:\n– Em ơi! Anh đùa đấy! Ở đó không có vàng đâu.\nBống vui vẻ:", ttsService: TtsService())
-      // )
-    ],
-    child: const NokodoApp()));
+      ChangeNotifierProvider(
+        create: (context) => TextStyleSettings(context.read<LocalDatabase>())
+      ),
+      ChangeNotifierProvider(
+          create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())
+      )
+      ],
+    child: const NokodoApp())
+  );
 }
 
 class NokodoApp extends StatelessWidget {
@@ -44,8 +53,6 @@ class NokodoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ensuring the entire app uses the Galindo font as a base could be done here,
-    // or applied specifically where needed. For the title, we'll apply it directly.
     return MaterialApp(
       title: 'Nokodo',
       theme: ThemeData(
@@ -87,7 +94,7 @@ class NokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
-      home: const LoginScreen(),
+      home: const LoginScreen()
     );
   }
 }
@@ -140,7 +147,18 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: ReadingScreen(),
+      home: NetworkTestScreen()
+      // home: ChangeNotifierProvider(
+      //   create: (context) => FileToTextViewModel(
+      //       ocrService: MockOCRService(),
+      //       localDatabase: context.read<LocalDatabase>()
+      //   ),
+      //   child: FileToTextScreen(),
+      // )
+      // home: ChangeNotifierProvider(create: (context) =>
+      //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
+      //     child: LibraryScreen()
+      // )
     );
   }
 }

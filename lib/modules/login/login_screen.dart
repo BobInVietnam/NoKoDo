@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,28 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text
       );
       if (!mounted) return;
+      context.read<UsageTimeTracker>().resumeWithUserData(currentRepoManager.currentStudent?.totalTime ?? 0);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
       );
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      // Set a user-friendly error message based on the error code (e.code).
-      switch (e.code) {
-        case 'invalid-email':
-          errorMessage = 'The email address format is invalid.';
-          break;
-        case 'missing-password':
-        case 'invalid-credential':
-        case 'wrong-password':
-          errorMessage = 'The email address or password is incorrect.';
-          break;
-        default:
-          errorMessage = 'An unexpected error occurred during authentication.';
-      }
-      _setDisplayMessage(errorMessage);
     } catch (e) {
-      _setDisplayMessage('An unexpected error occurred: $e');
+      final String msg = e.toString().replaceFirst('Exception: ', '').replaceFirst('Exception', '');
+      _setDisplayMessage(msg);
     } finally {
       _setSubmitDisabled(false);
     }

@@ -1,152 +1,50 @@
 import 'package:flutter/material.dart';
-
-// Import the custom buttons from your project
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-
 import 'package:nodyslexia/models/test.dart';
-
-import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/modules/test/test_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-// --- 2. THE TEST SCREEN WIDGET ---
+class TestScreen extends StatelessWidget {
+  const TestScreen({super.key});
 
-class TestScreen extends StatefulWidget {
-  final Test test; // The screen is built based on this test object
-  final TestSession testSession;
-  TestScreen({super.key, required this.test, required this.testSession});
-
-  @override
-  State<TestScreen> createState() => _TestScreenState();
-}
-
-class _TestScreenState extends State<TestScreen> {
-  late final PageController _pageController;
-  late final List<Question> _questions;
-
-  // State variables
-  int _currentPage = 0;
-  bool _isTrayExpanded = false;
-  final Map<int, String?> _answers = {}; // Stores {questionId: answer}
-  final Map<int, TextEditingController> _textControllers = {}; // To manage text fields
-
-  @override
-  void initState() {
-    super.initState();
-    _questions = widget.test.questions;
-    _pageController = PageController();
-
-    // Initialize text controllers for text input questions
-    for (int i = 0; i < _questions.length; i++) {
-      _answers[_questions[i].id] = null;
-      if (_questions[i] is FillBlankQuestion) {
-        _textControllers[i] = TextEditingController();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    for (var controller in _textControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  /// Registers an answer and automatically moves to the next page
-  void _registerAnswer(int questionId, String answer) {
-    setState(() {
-      _answers[questionId] = answer;
-    });
-
-    // Automatically jump to the next question
-    if (_currentPage < _questions.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } else {
-      // Last question, maybe show a "Submit" prompt
-      debugPrint("Test finished. Answers: $_answers");
-    }
-  }
-
-  /// Jumps the PageView to a specific question
-  void _jumpToPage(int pageIndex) {
-    _pageController.animateToPage(
-      pageIndex,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
-  /// Toggles the bottom tray between collapsed and expanded
-  void _toggleExpandTray() {
-    setState(() {
-      _isTrayExpanded = !_isTrayExpanded;
-    });
-  }
-
-  /// Submits the test
-  void _submitTest() {
-    // 1. Show the initial confirmation dialog
+  void _submitTest(BuildContext context, TestViewModel viewModel) {
     showDialog(
       context: context,
-      builder: (confirmContext) => AlertDialog( // Rename context to avoid confusion
+      builder: (confirmContext) => AlertDialog(
         title: const Text('Nộp bài?'),
         content: const Text('Bạn có chắc chắn muốn nộp bài không?'),
         actions: [
           TextButton(
-            // Just close the confirmation dialog
             onPressed: () => Navigator.pop(confirmContext),
             child: const Text('Huỷ'),
           ),
           TextButton(
             onPressed: () async {
-              // A. Close the "Are you sure?" dialog first
-              Navigator.pop(confirmContext);
+              Navigator.pop(confirmContext); // Close confirmation dialog
 
-              // B. Show a non-dismissible Loading Dialog
+              // Show a non-dismissible loading dialog
               showDialog(
                 context: context,
-                barrierDismissible: false, // Prevents clicking outside to close
+                barrierDismissible: false,
                 builder: (loadingContext) => const Center(
-                  child: CircularProgressIndicator(), // Or a custom loading widget
+                  child: CircularProgressIndicator(),
                 ),
               );
 
               try {
-                // C. Prepare the data
-                TestSession submitTestSession = TestSession(
-                    id: widget.testSession.id,
-                    testId: widget.testSession.testId,
-                    studentId: widget.testSession.studentId,
-                    startTime: widget.testSession.startTime,
-                    endTime: DateTime.now().millisecondsSinceEpoch,
-                    score: Question.calculateScore(_questions, _answers)
-                );
-
-                // D. Run the async operation (The Waiting Part)
-                await context.read<RepoManager>().updateTestSessionStatus(submitTestSession);
-                if (!mounted) return;
-                await context.read<RepoManager>().sendTestAnswers(widget.testSession, _answers);
-
-                debugPrint("Bài đã nộp: $_answers");
-                if (!mounted) return;
-                // E. Close the Loading Dialog
-                // We check 'mounted' to ensure the widget tree is still valid
-                Navigator.pop(context);
-                // F. Close the Test Screen (Go back to menu)
-                Navigator.pop(context);
+                await viewModel.submitTest();
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  Navigator.pop(context); // Exit TestScreen
+                }
               } catch (e) {
-                // Handle error: Close loader and show error
-                if (!mounted) return;
-                Navigator.pop(context); // Close loader
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Lỗi: $e')),
-                );
-
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
               }
             },
             child: const Text('Nộp bài'),
@@ -158,37 +56,33 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Inherit styles from the theme
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final viewModel = context.watch<TestViewModel>();
+    final questions = viewModel.questions;
 
     return Scaffold(
-      backgroundColor: Colors.grey[200], // Background color from images
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: Column(
           children: [
-            // --- 3. QUESTION AREA ---
+            // --- QUESTION AREA ---
             Expanded(
               child: PageView.builder(
-                controller: _pageController,
-                itemCount: _questions.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
+                controller: viewModel.pageController,
+                itemCount: questions.length,
+                onPageChanged: viewModel.setCurrentPage,
                 itemBuilder: (context, index) {
-                  return _buildQuestionPage(_questions[index], index);
+                  return _buildQuestionPage(context, viewModel, questions[index], index);
                 },
               ),
             ),
 
-            // --- 4. BOTTOM TRAY ---
-            // This is the animated tray
+            // --- BOTTOM TRAY ---
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOut,
-              height: _isTrayExpanded ? 450 : 150, // Changes height
+              height: viewModel.isTrayExpanded ? 450 : 150,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 boxShadow: [
@@ -199,9 +93,9 @@ class _TestScreenState extends State<TestScreen> {
                   )
                 ],
               ),
-              child: _isTrayExpanded
-                  ? _buildExpandedTrayContent(textTheme, colorScheme)
-                  : _buildCollapsedTrayContent(textTheme, colorScheme),
+              child: viewModel.isTrayExpanded
+                  ? _buildExpandedTrayContent(context, viewModel, textTheme, colorScheme)
+                  : _buildCollapsedTrayContent(context, viewModel, textTheme, colorScheme),
             ),
           ],
         ),
@@ -209,10 +103,7 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  // --- 5. QUESTION WIDGET BUILDERS ---
-
-  /// Builds the widget for a single question page
-  Widget _buildQuestionPage(Question question, int index) {
+  Widget _buildQuestionPage(BuildContext context, TestViewModel viewModel, Question question, int index) {
     bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final textTheme = Theme.of(context).textTheme;
     return Padding(
@@ -220,37 +111,38 @@ class _TestScreenState extends State<TestScreen> {
       child: Column(
         children: [
           // Question Box
-          isKeyboardOpen ? const SizedBox(height: 0) : Container(
-            width: double.infinity,
-            height: 200,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                question.content,
-                style: textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
+          isKeyboardOpen
+              ? const SizedBox(height: 0)
+              : Container(
+                  width: double.infinity,
+                  height: 200,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      question.content,
+                      style: textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
           const SizedBox(height: 24),
 
           // Answer Area (Dynamic)
           if (question is MultipleChoiceQuestion)
-            _buildMultipleChoiceOptions(question),
+            _buildMultipleChoiceOptions(context, viewModel, question),
           if (question is FillBlankQuestion)
-            _buildTextInput(question, index),
+            _buildTextInput(context, viewModel, question, index),
         ],
       ),
     );
   }
 
-  /// Builds the 4-grid for Multiple Choice
-  Widget _buildMultipleChoiceOptions(MultipleChoiceQuestion question) {
+  Widget _buildMultipleChoiceOptions(BuildContext context, TestViewModel viewModel, MultipleChoiceQuestion question) {
     final textTheme = Theme.of(context).textTheme;
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -259,13 +151,13 @@ class _TestScreenState extends State<TestScreen> {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
-      itemCount: question.options.length ?? 0,
-      shrinkWrap: true, // Important for GridView in a Column
+      itemCount: question.options.length,
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final option = question.options[index];
         return InkWell(
-          onTap: () => _registerAnswer(question.id, option),
+          onTap: () => viewModel.registerAnswer(question.id, option),
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -285,8 +177,7 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Builds the Text Field and "ENTER" button
-  Widget _buildTextInput(FillBlankQuestion question, int index) {
+  Widget _buildTextInput(BuildContext context, TestViewModel viewModel, FillBlankQuestion question, int index) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
@@ -296,7 +187,7 @@ class _TestScreenState extends State<TestScreen> {
         ),
         const SizedBox(height: 12),
         TextField(
-          controller: _textControllers[index],
+          controller: viewModel.textControllers[index],
           decoration: InputDecoration(
             hintText: 'Nhập câu trả lời...',
             border: OutlineInputBorder(
@@ -317,9 +208,9 @@ class _TestScreenState extends State<TestScreen> {
             foregroundColor: Colors.green,
           ),
           onPressed: () {
-            final answer = _textControllers[index]?.text ?? "";
+            final answer = viewModel.textControllers[index]?.text ?? "";
             if (answer.isNotEmpty) {
-              _registerAnswer(question.id, answer);
+              viewModel.registerAnswer(question.id, answer);
             }
           },
           child: const Text("XÁC NHẬN"),
@@ -328,10 +219,8 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  // --- 6. TRAY WIDGET BUILDERS ---
-
-  /// Builds the small, collapsed tray at the bottom
-  Widget _buildCollapsedTrayContent(TextTheme textTheme, ColorScheme colorScheme) {
+  Widget _buildCollapsedTrayContent(BuildContext context, TestViewModel viewModel, TextTheme textTheme, ColorScheme colorScheme) {
+    final questions = viewModel.questions;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Column(
@@ -342,8 +231,8 @@ class _TestScreenState extends State<TestScreen> {
               IconButton(
                 iconSize: 60,
                 icon: const Icon(Icons.arrow_left),
-                onPressed: _currentPage > 0
-                    ? () => _jumpToPage(_currentPage - 1)
+                onPressed: viewModel.currentPage > 0
+                    ? () => viewModel.jumpToPage(viewModel.currentPage - 1)
                     : null,
               ),
               const SizedBox(width: 16),
@@ -352,8 +241,8 @@ class _TestScreenState extends State<TestScreen> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: List.generate(_questions.length, (index) {
-                      return _buildQuestionIndicator(index, colorScheme);
+                    children: List.generate(questions.length, (index) {
+                      return _buildQuestionIndicator(viewModel, index, colorScheme);
                     }),
                   ),
                 ),
@@ -363,21 +252,21 @@ class _TestScreenState extends State<TestScreen> {
               IconButton(
                 iconSize: 60,
                 icon: const Icon(Icons.arrow_right),
-                onPressed: _currentPage < _questions.length - 1
-                    ? () => _jumpToPage(_currentPage + 1)
+                onPressed: viewModel.currentPage < questions.length - 1
+                    ? () => viewModel.jumpToPage(viewModel.currentPage + 1)
                     : null,
               ),
               // Expand Button
               IconButton(
                 iconSize: 36,
-                icon: const Icon(Icons.arrow_upward), // "delta"
-                onPressed: _toggleExpandTray,
+                icon: const Icon(Icons.arrow_upward),
+                onPressed: viewModel.toggleExpandTray,
               ),
             ],
           ),
           const Spacer(),
           Text(
-            '${_currentPage + 1} / ${_questions.length}',
+            '${viewModel.currentPage + 1} / ${questions.length}',
             style: textTheme.bodyMedium?.copyWith(color: Colors.black54),
           ),
           const Spacer(),
@@ -386,29 +275,29 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Builds the large, expanded tray
-  Widget _buildExpandedTrayContent(TextTheme textTheme, ColorScheme colorScheme) {
+  Widget _buildExpandedTrayContent(BuildContext context, TestViewModel viewModel, TextTheme textTheme, ColorScheme colorScheme) {
+    final questions = viewModel.questions;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           // Collapse Button
           IconButton(
-            icon: const Icon(Icons.arrow_downward), // "nabla"
-            onPressed: _toggleExpandTray,
+            icon: const Icon(Icons.arrow_downward),
+            onPressed: viewModel.toggleExpandTray,
           ),
           // Question Grid
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 12, // As per your image
+                crossAxisCount: 12,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
-              itemCount: _questions.length,
+              itemCount: questions.length,
               itemBuilder: (context, index) {
-                return _buildQuestionIndicator(index, colorScheme);
+                return _buildQuestionIndicator(viewModel, index, colorScheme);
               },
             ),
           ),
@@ -416,16 +305,16 @@ class _TestScreenState extends State<TestScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ReturnButton(), // Your custom widget
-              SettingButton(), // Your custom widget
+              ReturnButton(),
+              const SettingButton(),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   side: const BorderSide(color: Colors.green, width: 2),
                   backgroundColor: Colors.grey[200],
                   foregroundColor: Colors.green,
                 ),
-                onPressed: _submitTest,
-                child: const Text("Nộp bài")
+                onPressed: () => _submitTest(context, viewModel),
+                child: const Text("Nộp bài"),
               ),
             ],
           )
@@ -434,24 +323,24 @@ class _TestScreenState extends State<TestScreen> {
     );
   }
 
-  /// Builds one single question indicator square
-  Widget _buildQuestionIndicator(int index, ColorScheme colorScheme) {
-    final questionId = _questions[index].id;
-    final bool isAnswered = (_answers[questionId] != null);
-    final bool isCurrent = _currentPage == index;
+  Widget _buildQuestionIndicator(TestViewModel viewModel, int index, ColorScheme colorScheme) {
+    final questions = viewModel.questions;
+    final questionId = questions[index].id;
+    final bool isAnswered = (viewModel.answers[questionId] != null);
+    final bool isCurrent = viewModel.currentPage == index;
 
     Color color = Colors.grey[100]!;
-    Border? border = Border.all(color: Colors.green, width: 2); // Default green border
+    Border? border = Border.all(color: Colors.green, width: 2);
 
     if (isAnswered) {
-      color = Colors.green.withOpacity(0.5); // Answered = filled
+      color = Colors.green.withOpacity(0.5);
     }
     if (isCurrent) {
-      border = Border.all(color: colorScheme.primary, width: 3); // Current = thick blue
+      border = Border.all(color: colorScheme.primary, width: 3);
     }
 
     return GestureDetector(
-      onTap: () => _jumpToPage(index),
+      onTap: () => viewModel.jumpToPage(index),
       child: Container(
         width: 64,
         height: 64,
@@ -462,12 +351,12 @@ class _TestScreenState extends State<TestScreen> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: FittedBox(
-          fit: BoxFit.contain, // This is the default
+          fit: BoxFit.contain,
           child: Text(
-              (index + 1).toString(),
-          ))
+            (index + 1).toString(),
+          ),
+        ),
       ),
     );
   }
 }
-

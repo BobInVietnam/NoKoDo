@@ -1,19 +1,18 @@
+// viewmodels/editable_reading_viewmodel.dart
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
-import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
-import 'package:nodyslexia/utils/tts_service.dart';
+import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
 enum TtsMode { none, paragraph, all, selection }
 
-class ReadingViewModel extends ChangeNotifier {
-  final int? lessonId;
-  final RepoManager? repoManager;
-
+class EditableReadingViewModel extends ChangeNotifier {
+  ConvertedFile _file;
   String _extractedText = "";
-  List<String> _paragraphs = List.empty();
+  int _fileId = 0;
   final TtsService _ttsService;
   final LocalDatabase _localDatabase;
   int _currentWordStart = -1;
@@ -25,11 +24,8 @@ class ReadingViewModel extends ChangeNotifier {
   int _selectedParagraphIndex = 0;
   TtsMode _currentTtsMode = TtsMode.none;
 
-  bool _hasReadParagraph = false;
-  bool _hasReadAll = false;
-  bool _scrolledToBottom = false;
-
   // Getters
+  ConvertedFile get file => _file;
   String? get currentSelection => _currentSelection;
   double get currentReadingSpeed => _currentReadingSpeed;
   int get currentWordStart => _currentWordStart;
@@ -38,52 +34,47 @@ class ReadingViewModel extends ChangeNotifier {
   TtsState get ttsState => _ttsService.ttsState;
   bool get isMenuOpen => _selectionMenuOverlay != null;
   String get extractedText => _extractedText;
-  List<String> get paragraphs => _paragraphs;
+  int get fileId => _fileId;
   int get selectedParagraphIndex => _selectedParagraphIndex;
+  List<String> get paragraphs => _file.paragraphs;
   TtsMode get currentTtsMode => _currentTtsMode;
-  bool get scrolledToBottom => _scrolledToBottom;
-  bool get hasReadParagraph => _hasReadParagraph;
-  bool get hasReadAll => _hasReadAll;
 
   void selectParagraph(int index) {
-    if (index >= 0 && index < _paragraphs.length) {
+    if (index >= 0 && index < paragraphs.length) {
       _selectedParagraphIndex = index;
       notifyListeners();
     }
   }
 
-  ReadingViewModel({
-    required String text,
+  EditableReadingViewModel({
+    required ConvertedFile file,
     required TtsService ttsService,
-    required LocalDatabase localDatabase,
-    this.lessonId,
-    this.repoManager,
-  })  : _ttsService = ttsService,
-        _extractedText = text,
-        _localDatabase = localDatabase {
+    required LocalDatabase localDatabase})
+      : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
+    _extractedText = _file.extractedText;
+    _fileId = _file.id!;
     _initializeTts();
-    _extractParagraphs();
+  }
+
+  void refreshContent(ConvertedFile file) {
+    _extractedText = file.extractedText;
+    _file = file;
+    _selectedParagraphIndex = 0;
+    notifyListeners();
   }
 
   Future<void> _initializeTts() async {
     try {
+      // Ensure the engine is fully awake before configuring
       await _ttsService.setSpeechRate(_currentReadingSpeed);
       _ttsService.onWordProgress = (text, start, end, word) {
         _currentWordStart = start + _currentOffset;
         _currentWordEnd = end + _currentOffset;
-        notifyListeners();
+        notifyListeners(); // Force UI to highlight the active indexes
       };
     } catch (e) {
       debugPrint("TTS Initialization failed: $e");
     }
-  }
-
-  void _extractParagraphs() {
-    _paragraphs = extractedText
-        .split('\n\n')
-        .map((p) => p.trim())
-        .where((p) => p.isNotEmpty)
-        .toList();
   }
 
   void toggleTtsParagraph() {
@@ -94,12 +85,11 @@ class ReadingViewModel extends ChangeNotifier {
         _ttsService.stop();
       }
       _currentTtsMode = TtsMode.paragraph;
-      _hasReadParagraph = true;
       _currentOffset = 0;
       _currentWordStart = -1;
       _currentWordEnd = -1;
-      if (_paragraphs.isNotEmpty && _selectedParagraphIndex < _paragraphs.length) {
-        _ttsService.speak(_paragraphs[_selectedParagraphIndex], onComplete: () {
+      if (paragraphs.isNotEmpty && _selectedParagraphIndex < paragraphs.length) {
+        _ttsService.speak(paragraphs[_selectedParagraphIndex], onComplete: () {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
@@ -140,43 +130,19 @@ class ReadingViewModel extends ChangeNotifier {
         _ttsService.stop();
       }
       _currentTtsMode = TtsMode.all;
-      _hasReadAll = true;
       _readParagraphSequentially(_selectedParagraphIndex);
     }
   }
 
-  void markScrolledToBottom() {
-    if (!_scrolledToBottom) {
-      _scrolledToBottom = true;
-      debugPrint("READING: User scrolled to the bottom of the text.");
-      notifyListeners();
-    }
-  }
-
-  void syncLessonResultIfCriteriaMet() {
-    final hasRead = _hasReadParagraph || _hasReadAll;
-    if (hasRead && _scrolledToBottom && lessonId != null && repoManager != null) {
-      debugPrint("READING: Criteria met. Sending lesson result.");
-      repoManager!.sendLessonResult(lessonId!, {
-        'completed': true,
-        'hasReadParagraph': _hasReadParagraph,
-        'hasReadAll': _hasReadAll,
-        'scrolledToBottom': _scrolledToBottom,
-      });
-    } else {
-      debugPrint("READING: Criteria NOT met. hasRead: $hasRead, scrolledToBottom: $_scrolledToBottom");
-    }
-  }
-
   void _readParagraphSequentially(int index) {
-    if (index < _paragraphs.length) {
+    if (index < paragraphs.length) {
       _selectedParagraphIndex = index;
       _currentOffset = 0;
       _currentWordStart = -1;
       _currentWordEnd = -1;
       notifyListeners();
 
-      _ttsService.speak(_paragraphs[index], onComplete: () {
+      _ttsService.speak(paragraphs[index], onComplete: () {
         if (_currentTtsMode == TtsMode.all) {
           _readParagraphSequentially(index + 1);
         } else {

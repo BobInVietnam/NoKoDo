@@ -1,3 +1,4 @@
+// screens/editable_reading_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/dictionary_entry_display.dart';
 import 'package:provider/provider.dart';
@@ -5,73 +6,36 @@ import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
-import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+
+// Import your ViewModel
+import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
-import 'package:nodyslexia/data/persistence.dart';
 
-class ReadingScreen extends StatefulWidget {
-  const ReadingScreen({super.key});
+import '../../data/persistence.dart';
+import '../../models/converted_file.dart';
+import '../editing/editing_screen.dart';
+import '../editing/editing_viewmodel.dart';
 
-  @override
-  State<ReadingScreen> createState() => _ReadingScreenState();
-}
-
-class _ReadingScreenState extends State<ReadingScreen> {
+class EditableReadingScreen extends StatelessWidget {
+  // Use a local key reference inside the context hierarchy to calculate placement targets
   final GlobalKey _textKey = GlobalKey();
-  final ScrollController _scrollController = ScrollController();
 
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (_scrollController.hasClients) {
-      final maxScroll = _scrollController.position.maxScrollExtent;
-      final currentScroll = _scrollController.position.pixels;
-      // Triggers scrolled to bottom when within a 15-pixel tolerance
-      if (currentScroll >= maxScroll - 15) {
-        context.read<ReadingViewModel>().markScrolledToBottom();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  EditableReadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<ReadingViewModel>();
+    final viewModel = context.watch<EditableReadingViewModel>();
 
-    // Post-frame check to auto-mark scrolledToBottom if the text is short
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted && _scrollController.hasClients) {
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        if (maxScroll <= 0) {
-          context.read<ReadingViewModel>().markScrolledToBottom();
-        }
-      }
-    });
-
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          context.read<ReadingViewModel>().syncLessonResultIfCriteriaMet();
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: <Widget>[
-              // Text Display Area
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            // Text Display Area
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GestureDetector(
+                  // onTap: viewModel.removeSelectionMenu,
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
@@ -88,7 +52,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       ],
                     ),
                     child: SingleChildScrollView(
-                      controller: _scrollController,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: List.generate(viewModel.paragraphs.length, (index) {
@@ -188,76 +151,107 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   ),
                 ),
               ),
+            ),
 
-              // Bottom Control Bar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Reading Speed Slider
-                    Row(
-                      children: [
-                        const Icon(Icons.speed, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Slider(
-                            value: viewModel.currentReadingSpeed,
-                            min: 0.1,
-                            max: 1.5,
-                            divisions: 14,
-                            label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(1)}x',
-                            onChanged: viewModel.handleSpeedChange,
-                            activeColor: Colors.teal,
-                          ),
+            // Bottom Control Bar
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Reading Speed Slider
+                  Row(
+                    children: [
+                      const Icon(Icons.speed, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Slider(
+                          value: viewModel.currentReadingSpeed,
+                          min: 0.1,
+                          max: 1.5,
+                          divisions: 14,
+                          label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(1)}x',
+                          onChanged: viewModel.handleSpeedChange,
+                          activeColor: Colors.teal,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
-                    // Action Buttons (Return, Read All/Stop, Settings)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        ReturnButton(
-                          onReturn: (context) {
-                            Navigator.pop(context);
-                          },
+                  // Action Buttons (Return, Read All/Stop, Settings)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      ReturnButton(
+                        onReturn: (context) {
+                          Navigator.pop(context, viewModel.file);
+                        },
+                      ),
+                      ElevatedButton.icon(
+                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
+                            ? Icons.stop_circle_outlined
+                            : Icons.play_circle_outline),
+                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn'),
+                        onPressed: viewModel.toggleTtsParagraph,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        ElevatedButton.icon(
-                          icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
-                              ? Icons.stop_circle_outlined
-                              : Icons.play_circle_outline),
-                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn'),
-                          onPressed: viewModel.toggleTtsParagraph,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
+                            ? Icons.stop_circle_outlined
+                            : Icons.menu_book_outlined),
+                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ'),
+                        onPressed: viewModel.toggleTtsAll,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        ElevatedButton.icon(
-                          icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
-                              ? Icons.stop_circle_outlined
-                              : Icons.menu_book_outlined),
-                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ'),
-                          onPressed: viewModel.toggleTtsAll,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Chỉnh sửa'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        const SettingButton()
-                      ],
-                    ),
-                  ],
-                ),
+                        onPressed: () async {
+                          // Stop TTS playback automatically before leaving the screen context
+                          if (viewModel.ttsState == TtsState.playing) {
+                            viewModel.handleStopReading();
+                          }
+
+                          // Secure route navigation using decoupled provider initialization rules
+                          final newFile = await Navigator.push<ConvertedFile>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (routeContext) => ChangeNotifierProvider<EditingViewModel>(
+                                create: (providerContext) => EditingViewModel(
+                                  file: viewModel.file,
+                                  localDatabase: providerContext.read<LocalDatabase>(), // Read database up the context tree
+                                ),
+                                child: const EditingScreen(),
+                              ),
+                            ),
+                          );
+                          viewModel.refreshContent(newFile!);
+                        },
+                      ),
+                      const SettingButton()
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
-
+import 'package:flutter/material.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import '../../data/repository_manager.dart';
 
 class StatisticsViewmodel extends ChangeNotifier {
@@ -9,7 +9,6 @@ class StatisticsViewmodel extends ChangeNotifier {
   int _lessonNumber = 0;
   int _lessonFinishedNumber = 0;
   List<int> _activityCounts = [];
-  Duration _totalUsageTimer = Duration(hours: 12, minutes: 35);
   bool _isLoading = true;
 
   int get testNumber => _testNumber;
@@ -18,33 +17,54 @@ class StatisticsViewmodel extends ChangeNotifier {
   int get lessonNumber => _lessonNumber;
   int get lessonFinishedNumber => _lessonFinishedNumber;
   List<int> get activityCounts => _activityCounts;
-  Duration get totalUsageTimer => _totalUsageTimer;
   bool get isLoading => _isLoading;
-  RepoManager _repoManager;
 
-  StatisticsViewmodel({required RepoManager repoManager}) : _repoManager = repoManager;
+  final RepoManager _repoManager;
+  final UsageTimeTracker _usageTimeTracker;
 
-  Future<void> gatherStatisticData() async {
+  StatisticsViewmodel({
+    required RepoManager repoManager,
+    required UsageTimeTracker usageTimeTracker,
+  })  : _repoManager = repoManager,
+        _usageTimeTracker = usageTimeTracker {
+    _loadStatistics();
+    _usageTimeTracker.addListener(_onTrackerTick);
+  }
+
+  String get formattedUsageTime => _usageTimeTracker.formattedDuration;
+
+  void _onTrackerTick() {
+    notifyListeners();
+  }
+
+  Future<void> _loadStatistics() async {
+    await _repoManager.sendUsageTime(_usageTimeTracker.totalSecondsElapsed);
     _isLoading = true;
-    notifyListeners(); // Show a loading spinner in the UI
+    notifyListeners();
 
     try {
-      final rawData = await _repoManager.getRawStatistics();
+      final Map<String, dynamic> data = await _repoManager.getRawStatistics();
+      _testNumber = data['testNumber'] as int? ?? 0;
+      _testFinishedNumber = data['testFinishedNumber'] as int? ?? 0;
+      _averageTestScore = data['averageTestScore'] as int? ?? 0;
+      _lessonNumber = data['lessonNumber'] as int? ?? 0;
+      _lessonFinishedNumber = data['lessonFinishedNumber'] as int? ?? 0;
+      _activityCounts = List<int>.from(data['activityCounts'] as List? ?? []);
 
-      // Map raw data fields to your UI properties
-      _testNumber = rawData['test_count'] ?? 0;
-      _testFinishedNumber = rawData['completed_tests'] ?? 0;
-      _averageTestScore = rawData['average_score'] ?? 0;
-      _lessonNumber = rawData['total_lessons'] ?? 0;
-      _lessonFinishedNumber = rawData['completed_lessons'] ?? 0;
-
+      // If the timer hasn't been set with a profile baseline yet, initialize it
+      final totalUsageTime = data['totalUsageTime'] as int? ?? 0;
+      _usageTimeTracker.resumeWithUserData(totalUsageTime);
     } catch (e) {
-      debugPrint("Error loading statistics: $e");
-      // Handle error state gracefully if needed
+      debugPrint("❌ StatisticsViewModel Load Error: $e");
     } finally {
       _isLoading = false;
-      notifyListeners(); // Tell the UI to draw the real data numbers
+      notifyListeners();
     }
   }
 
+  @override
+  void dispose() {
+    _usageTimeTracker.removeListener(_onTrackerTick);
+    super.dispose();
+  }
 }

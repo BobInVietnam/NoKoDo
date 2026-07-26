@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
+import 'package:nodyslexia/data/persistence.dart';
 
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
+import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
-import 'package:nodyslexia/modules/library_screen.dart';
+import 'package:nodyslexia/modules/test/test_selection_viewmodel.dart';
+import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
+import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
+import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
+import 'package:nodyslexia/utils/simplifier_service.dart';
 import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
+import 'library/library_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -96,24 +104,55 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const PracticeSelectionScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider(
+                                  create: (innerContext) => PracticeSelectionViewModel(
+                                    repoManager: innerContext.read<RepoManager>(),
+                                  ),
+                                  child: const PracticeSelectionScreen(),
+                                ),
+                              ),
                             );
                           }
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Row 2 (2 buttons)
-                    Row(
-                      children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.book_outlined, // Placeholder
                           label: 'Làm Bài Kiểm Tra',
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const TestSelectionScreen()),
+                              MaterialPageRoute(
+                                builder: (innerContext) => ChangeNotifierProvider(
+                                  create: (providerContext) => TestSelectionViewModel(
+                                    repoManager: providerContext.read<RepoManager>(),
+                                  ),
+                                  child: const TestSelectionScreen(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Row 2 (2 buttons)a
+                    Row(
+                      children: <Widget>[
+                        _buildMenuButton(
+                          icon: Icons.abc_outlined, // Placeholder
+                          label: 'Đơn giản hóa câu từ',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
+                                  create: (innerContext) => SimplifierViewModel(
+                                    simplifierService: LocalSimplifierService(),
+                                  ),
+                                  child: const SimplifierScreen(),
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -123,7 +162,15 @@ class _MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const LibraryScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
+                                  create: (innerContext) => LibraryViewModel(
+                                      localDatabase: innerContext.read<LocalDatabase>(),
+                                      repoManager: innerContext.read<RepoManager>(),
+                                  ),
+                                  child: const LibraryScreen(),
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -142,7 +189,8 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: MockOCRService()
+                                      ocrService: LocalOCRService(),
+                                      localDatabase: context.read<LocalDatabase>()
                                   ),
                                   child: const FileToTextScreen(),
                                 )
@@ -158,8 +206,9 @@ class _MainScreenState extends State<MainScreen> {
                               context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => StatisticsViewmodel(
-                                      repoManager: context.read<RepoManager>()
-                                  )..gatherStatisticData(),
+                                      repoManager: context.read<RepoManager>(),
+                                      usageTimeTracker: context.read<UsageTimeTracker>()
+                                  ),
                                   child: const StatisticsScreen(),
                                 )
                                 )
@@ -232,6 +281,8 @@ class _MainScreenState extends State<MainScreen> {
 
               try {
                 final currentRepoManager = context.read<RepoManager>();
+                final usageTimeTracker = context.read<UsageTimeTracker>();
+                usageTimeTracker.resetTracker();
                 currentRepoManager.signOut();
                 if (context.mounted) {
                   Navigator.pop(context);
