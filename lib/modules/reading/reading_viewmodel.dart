@@ -139,6 +139,7 @@ class ReadingViewModel extends ChangeNotifier {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
       }
+      selectParagraph(0);
       _currentTtsMode = TtsMode.all;
       _hasReadAll = true;
       _readParagraphSequentially(_selectedParagraphIndex);
@@ -219,7 +220,7 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   Future<DictionaryEntry?>  getWordDefinition() async {
-    return await _localDatabase.getDictionaryEntryByWord(currentSelection!);
+    return await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
   }
 
   @override
