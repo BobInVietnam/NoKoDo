@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/models/lesson.dart';
@@ -8,6 +9,7 @@ import 'package:nodyslexia/data/remote_database.dart';
 class RepoManager extends ChangeNotifier {
   final RemoteDatabase onlineDatabase;
   final LocalDatabase database;
+  final _secureStorage = const FlutterSecureStorage();
 
   Student? currentStudent;
   String? remoteDictVersion;
@@ -32,6 +34,15 @@ class RepoManager extends ChangeNotifier {
         throw Exception("Email hoặc mật khẩu không chính xác.");
       }
 
+      final String? token = currentUserMap['token'] as String?;
+      if (token != null) {
+        await _secureStorage.write(key: 'jwt_token', value: token);
+        await _secureStorage.write(
+          key: 'last_active_time',
+          value: DateTime.now().millisecondsSinceEpoch.toString(),
+        );
+      }
+
       currentStudent = Student.fromMap(currentUserMap);
 
       try {
@@ -50,8 +61,66 @@ class RepoManager extends ChangeNotifier {
   }
 
   void signOut() async {
+    await _secureStorage.delete(key: 'jwt_token');
+    await _secureStorage.delete(key: 'last_active_time');
+    onlineDatabase.setToken(null);
     currentStudent = null;
     notifyListeners();
+  }
+
+  Future<bool> tryAutoLogin() async {
+    try {
+      final token = await _secureStorage.read(key: 'jwt_token');
+      final lastActiveStr = await _secureStorage.read(key: 'last_active_time');
+
+      if (token == null || lastActiveStr == null) {
+        return false;
+      }
+
+      final lastActive = int.tryParse(lastActiveStr);
+      if (lastActive == null) {
+        return false;
+      }
+
+      final difference = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(lastActive));
+      // Inactivity timeout: 24 hours
+      if (difference.inHours >= 24) {
+        debugPrint("TESTING: Session expired due to inactivity.");
+        await _secureStorage.delete(key: 'jwt_token');
+        await _secureStorage.delete(key: 'last_active_time');
+        return false;
+      }
+
+      // Verify token with backend
+      final Map<String, Object?>? studentMap = await onlineDatabase.verifySession(token);
+      if (studentMap == null) {
+        debugPrint("TESTING: Invalid token on backend session check.");
+        await _secureStorage.delete(key: 'jwt_token');
+        await _secureStorage.delete(key: 'last_active_time');
+        return false;
+      }
+
+      // Update session last active time
+      await _secureStorage.write(
+        key: 'last_active_time',
+        value: DateTime.now().millisecondsSinceEpoch.toString(),
+      );
+
+      currentStudent = Student.fromMap(studentMap);
+
+      try {
+        final configs = await onlineDatabase.getSystemConfig();
+        remoteDictVersion = configs['dictVersion'];
+      } catch (e) {
+        debugPrint("TESTING: Failed to fetch system config during auto-login: $e");
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint("TESTING: Auto-login failed: $e");
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>> getRawStatistics() async {

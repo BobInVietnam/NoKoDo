@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/data/persistence.dart';
 
@@ -29,6 +30,19 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late String? _token = null;
+  final _secureStorage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _getToken();
+  }
+
+  Future<void> _getToken() async {
+    _token = await _secureStorage.read(key: "jwt_token");
+  }
+
   // Helper function to create styled buttons
   Widget _buildMenuButton({
     required IconData icon,
@@ -148,7 +162,7 @@ class _MainScreenState extends State<MainScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
                                   create: (innerContext) => SimplifierViewModel(
-                                    simplifierService: LocalSimplifierService(),
+                                    simplifierService: LocalSimplifierService(token: _token),
                                   ),
                                   child: const SimplifierScreen(),
                                 ),
@@ -189,7 +203,7 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: LocalOCRService(),
+                                      ocrService: LocalOCRService(token: _token),
                                       localDatabase: context.read<LocalDatabase>()
                                   ),
                                   child: const FileToTextScreen(),

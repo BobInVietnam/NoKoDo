@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
@@ -10,8 +11,10 @@ abstract class SimplifierService {
 
 class LocalSimplifierService implements SimplifierService {
   final http.Client client;
+  final String? _token;
 
-  LocalSimplifierService({http.Client? client}) : client = client ?? http.Client();
+  LocalSimplifierService({http.Client? client, String? token})
+      : client = client ?? http.Client(), _token = token;
 
   @override
   Future<String?> simplifyText(String text) async {
@@ -25,6 +28,7 @@ class LocalSimplifierService implements SimplifierService {
         uri,
         headers: {
           'Content-Type': 'application/json',
+          if (_token != null) 'Authorization': 'Bearer $_token',
         },
         body: json.encode({'text': text}),
       );
