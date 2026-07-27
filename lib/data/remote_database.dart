@@ -12,15 +12,14 @@ abstract class RemoteDatabase {
   Future<bool> testConnection();
   Future<Map<String, Object?>?> getUser(String uid);
   Future<List<Map<String, Object?>>> getTestList(String uid);
-  Future<Map<String, Object?>> getTestDetails(int testId, String studentId);
-  Future<List<Map<String, Object?>>> getTestQuestions(int testId);
+  Future<Map<String, Object?>> getTestDetails(String testId, String studentId);
   Future<void> sendTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
   Future<void> sendUsageTime(int totalUsageTime, String uid);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
-  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId);
-  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results);
+  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
+  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results);
   Future<Map<String, String>> getSystemConfig();
   Future<Map<String, dynamic>> getDictionaryData();
   Future<Map<String, Object?>?> studentLogin(String email, String password);
@@ -99,7 +98,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId) async {
+  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId) async {
     final db = await database;
     final List<Map<String, Object?>> maps = await db.query('Lesson');
     return maps.map((map) => {
@@ -152,7 +151,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>> getTestDetails(int testId, String studentId) async {
+  Future<Map<String, Object?>> getTestDetails(String testId, String studentId) async {
     final db = await database;
 
     debugPrint("TESTING: Querying database for Test...");
@@ -174,31 +173,6 @@ class TestRemoteDatabase extends RemoteDatabase {
     } else {
       debugPrint('TESTING: No test found.');
       return {}; //TODO: need to handle no test case (UNLIKELY exception)
-    }
-  }
-
-  @override
-  Future<List<Map<String, Object?>>> getTestQuestions(int testId) async {
-    final db = await database;
-
-    debugPrint("TESTING: Querying database for Questions...");
-    final List<Map<String, Object?>> maps = await db.rawQuery('''
-  SELECT 
-    id,
-    question,
-    answer,
-    is_multiple_choice,
-    choices
-  FROM question WHERE question.testid = ?;
-    ''',
-      [testId]
-    );
-    debugPrint("TESTING: Map pulled : $maps");
-    if (maps.isNotEmpty) {
-      return maps;
-    } else {
-      debugPrint('TESTING: No question in test???');
-      return []; //TODO: deal with this too (UNLIKELY exception)
     }
   }
 
@@ -284,7 +258,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results) async {
+  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results) async {
     debugPrint("TESTING: Mock sendLessonResult saved: $results for student $studentId and lesson $lessonId");
   }
 
@@ -407,7 +381,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>> getTestDetails(int testId, String studentId) async {
+  Future<Map<String, Object?>> getTestDetails(String testId, String studentId) async {
     // 1. Construct the target URL with path parameters and query arguments matching the API contract
     final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/$testId').replace(
       queryParameters: {
@@ -441,7 +415,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<List<Map<String, Object?>>> getLessonList(String uid, int classId) async {
+  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson').replace(
       queryParameters: {
         'classid': classId.toString(),
@@ -507,12 +481,6 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
       return [];
     }
-  }
-
-  @override
-  Future<List<Map<String, Object?>>> getTestQuestions(int testId) {
-    // TODO: implement getTestQuestions
-    throw UnimplementedError();
   }
 
   @override
@@ -644,7 +612,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendLessonResult(String studentId, int lessonId, Map<String, dynamic> results) async {
+  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson');
 
     try {

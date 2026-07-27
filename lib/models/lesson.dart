@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Lesson {
-  final int? id; // Nullable: Database handles auto-increment on insertion
+  final String id;
   final String name;
   final int type;
   final String description;
@@ -11,7 +11,7 @@ class Lesson {
   final bool isDone;
 
   Lesson({
-    this.id,
+    required this.id,
     required this.name,
     required this.type,
     required this.description,
@@ -48,7 +48,7 @@ class Lesson {
     }
 
     return Lesson(
-      id: map['id'] as int?,
+      id: map['id'] as String,
       name: map['name'] as String,
       type: map['type'] as int,
       description: map['description'] as String,

@@ -85,15 +85,13 @@ class LibraryViewModel extends ChangeNotifier {
 
         for (int i = 0; i < total; i++) {
           final entry = entries[i] as Map<String, dynamic>;
-          final String word = entry['word'] ?? '';
-          final String description = entry['description'] ?? '';
-          final String imageName = entry['imageName'] ?? entry['image_name'] ?? '';
+          final DictionaryEntry newDictEntry = DictionaryEntry.fromMap(entry);
           final String? imageData = entry['imageData'] ?? entry['image_data'];
 
           // If raw base64 data is supplied, decode and save to app document path
-          if (imageData != null && imageData.isNotEmpty && imageName.isNotEmpty) {
+          if (imageData != null && imageData.isNotEmpty && newDictEntry.imageName.isNotEmpty) {
             try {
-              final File file = File(p.join(docDir.path, imageName));
+              final File file = File(p.join(docDir.path, newDictEntry.imageName));
               await file.writeAsBytes(base64Decode(imageData));
             } catch (e) {
               debugPrint("Error writing dictionary image file: $e");
@@ -101,11 +99,7 @@ class LibraryViewModel extends ChangeNotifier {
           }
 
           // Insert clean DictionaryEntry mapping
-          await localDatabase.insertDictionaryEntry(DictionaryEntry(
-            word: word,
-            description: description,
-            imageName: imageName,
-          ));
+          await localDatabase.insertDictionaryEntry(newDictEntry);
 
           _dictUpdateProgress = (i + 1) / total;
           _dictUpdateStatus = "Đang lưu từ vựng: ${i + 1}/$total...";

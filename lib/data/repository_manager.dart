@@ -146,7 +146,7 @@ class RepoManager extends ChangeNotifier {
     return lessonList.map((map) => Lesson.fromMap(map)).toList();
   }
 
-  Future<Test> getTestDetailsAndQuestions(int testId) async {
+  Future<Test> getTestDetailsAndQuestions(String testId) async {
     debugPrint("TESTING: RepoMan getting test data...$testId");
     Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
     debugPrint("TESTING: RepoMan got test data");
@@ -161,7 +161,7 @@ class RepoManager extends ChangeNotifier {
     await onlineDatabase.sendTestSessionStatus(testSession);
   }
 
-  Future<void> sendTestAnswers(TestSession testSession, Map<int, dynamic> answersList) async {
+  Future<void> sendTestAnswers(TestSession testSession, Map<String, dynamic> answersList) async {
     debugPrint("TESTING: RepoMan sending test answers data...");
     Map<String, Object?> answersMapList = <String, Object?>{
       'studentId': testSession.studentId,
@@ -184,7 +184,7 @@ class RepoManager extends ChangeNotifier {
     await onlineDatabase.sendUsageTime(totalUsageTime, currentStudent!.uid);
   }
 
-  Future<void> sendLessonResult(int lessonId, Map<String, dynamic> results) async {
+  Future<void> sendLessonResult(String lessonId, Map<String, dynamic> results) async {
     if (currentStudent == null) {
       debugPrint("TESTING: RepoMan cannot send lesson result: currentStudent is null.");
       return;

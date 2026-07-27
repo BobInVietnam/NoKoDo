@@ -61,7 +61,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   ];
 
   final List<Map<String, dynamic>> _content;
-  final int? lessonId;
+  final String lessonId;
   final RepoManager? repoManager;
 
   int _currentRound = 0;
@@ -99,7 +99,7 @@ class LetterSearchViewModel extends ChangeNotifier {
 
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
-    this.lessonId,
+    required this.lessonId,
     this.repoManager,
   }) : _content = content ?? defaultMockContent {
     _totalRounds = _content.length;
@@ -107,7 +107,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   }
 
   void syncLessonResultIfCompleted() {
-    if (_currentState == GameState.FINISHED && lessonId != null && repoManager != null) {
+    if (_currentState == GameState.FINISHED && repoManager != null) {
       debugPrint("LETTER_SEARCH: Game completed. Syncing result.");
       repoManager!.sendLessonResult(lessonId!, {
         'completed': true,

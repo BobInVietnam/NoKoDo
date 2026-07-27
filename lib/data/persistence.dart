@@ -62,13 +62,13 @@ class TestLocalDatabase extends LocalDatabase {
       await db.execute('PRAGMA foreign_keys = ON');
       await db.execute(
           "CREATE TABLE Lesson ("
-              "id INTEGER PRIMARY KEY, "
+              "id STRING PRIMARY KEY, "
               "name TEXT, "
               "content TEXT, "
               "createdDate INTEGER)");
       await db.execute(
           "CREATE TABLE DictionaryEntry ("
-              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+              "id STRING PRIMARY KEY, "
               "word TEXT, "
               "description TEXT, "
               "imageName TEXT)");

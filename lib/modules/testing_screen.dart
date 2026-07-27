@@ -35,7 +35,7 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
     try {
       // 1. Create a mock TestSession object configuration
       final mockSession = TestSession(
-        testId: 789,
+        testId: '789',
         studentId: "MrBq1EAfvoYAswZZfJrbGSM2jlj1",
         startTime: 1717150000,
         endTime: 1717153600,
@@ -43,13 +43,13 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
       );
 
       // 2. Mock a collection of question answers (Key: questionId, Value: selectedAnswer)
-      final Map<int, dynamic> mockAnswersList = {
-        7891: "A",
-        7892: "C",
-        7893: "B",
-        7894: null,
-        7895: null,
-        7896: "Daspd"
+      final Map<String, dynamic> mockAnswersList = {
+        '7891': "A",
+        '7892': "C",
+        '7893': "B",
+        '7894': null,
+        '7895': null,
+        '7896': "Daspd"
       };
 
       // 3. Replicate the local mapping logic to generate the payload shape
@@ -188,7 +188,7 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider(
-                          create: (context) => LetterSearchViewModel(),
+                          create: (context) => LetterSearchViewModel(lessonId: ''),
                           child: const LetterSearchScreen(),
                         ),
                       ),

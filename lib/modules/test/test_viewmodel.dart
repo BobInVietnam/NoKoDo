@@ -11,12 +11,12 @@ class TestViewModel extends ChangeNotifier {
   
   int _currentPage = 0;
   bool _isTrayExpanded = false;
-  final Map<int, String?> _answers = {};
+  final Map<String, String?> _answers = {};
   final Map<int, TextEditingController> _textControllers = {};
 
   int get currentPage => _currentPage;
   bool get isTrayExpanded => _isTrayExpanded;
-  Map<int, String?> get answers => _answers;
+  Map<String, String?> get answers => _answers;
   Map<int, TextEditingController> get textControllers => _textControllers;
   List<Question> get questions => test.questions;
 
@@ -38,7 +38,7 @@ class TestViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void registerAnswer(int questionId, String answer) {
+  void registerAnswer(String questionId, String answer) {
     _answers[questionId] = answer;
     notifyListeners();
 

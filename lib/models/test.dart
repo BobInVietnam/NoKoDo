@@ -1,5 +1,5 @@
 abstract class Question {
-  final int id;
+  final String id;
   final String content;
   final String correctAnswer;
 
@@ -8,12 +8,12 @@ abstract class Question {
     final isMultipleChoiceVal = map['isMultipleChoice'] ?? 0;
     if (isMultipleChoiceVal as int == 0) {
       return FillBlankQuestion(
-          map['id'] as int,
+          map['id'] as String,
           map['question'] as String,
           map['answer'] as String);
     } else {
       return MultipleChoiceQuestion(
-          map['id'] as int,
+          map['id'] as String,
           map['question'] as String,
           List<String>.from(map['choices'] as List),
           map['answer'] as String);
@@ -24,7 +24,7 @@ abstract class Question {
 
   static double calculateScore(
       List<Question> questionList,
-      Map<int, String?> answerList)
+      Map<String, String?> answerList)
   {
     int length = questionList.length;
     int correctAnswerCount = 0;
@@ -63,7 +63,7 @@ class FillBlankQuestion extends Question{
 enum QuestState {UNANSWERED, CORRECT, INCORRECT}
 
 class TestInfo {
-  final int id;
+  final String id;
   final String name;
   final int dateCreated;
   final int timeLimit;
@@ -77,7 +77,7 @@ class TestInfo {
 
   factory TestInfo.fromMap(Map<String, Object?> map) {
     return TestInfo(
-        id: map['id'] as int,
+        id: map['id'] as String,
         name: map['name'] as String,
         dateCreated: map['dateCreated'] as int,
         timeLimit: map['timeLimit'] as int,
@@ -90,7 +90,7 @@ class TestInfo {
 }
 
 class TestSession {
-  final int testId;
+  final String testId;
   final String studentId;
   final int startTime;
   final int endTime;
@@ -102,7 +102,7 @@ class TestSession {
 
   factory TestSession.fromMap(Map<String, Object?> map) {
     return TestSession(
-        testId: map['testid'] as int,
+        testId: map['testid'] as String,
         studentId: map['studentid'] as String,
         startTime: map['dateCreated'] as int,
         endTime: map['dateFinished'] as int,
@@ -112,7 +112,7 @@ class TestSession {
 }
 
 class Test {
-  final int id;
+  final String id;
   final String name;
   final List<Question> questions;
   final int timeLimit;
@@ -141,7 +141,7 @@ class Test {
         : [];
 
     return Test(
-      id: map['id'] as int,
+      id: map['id'] as String,
       name: (map['name'] ?? '') as String,
       questions: map['questions'] as List<Question>,
       timeLimit: (map['timeLimit'] ?? map['time_limit'] ?? 0) as int,

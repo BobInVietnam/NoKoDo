@@ -9,7 +9,7 @@ import 'package:nodyslexia/utils/tts_service.dart';
 enum TtsMode { none, paragraph, all, selection }
 
 class ReadingViewModel extends ChangeNotifier {
-  final int? lessonId;
+  final String? lessonId;
   final RepoManager? repoManager;
 
   String _extractedText = "";
