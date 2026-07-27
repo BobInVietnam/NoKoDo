@@ -31,7 +31,7 @@ class Lesson {
       'content': jsonEncode(content),
       'difficulty': difficulty,
       'dateCreated': dateCreated,
-      'isDone': isDone
+      'isDone': isDone ? 1 : 0
     };
   }
 
@@ -55,7 +55,7 @@ class Lesson {
       content: parsedContent,
       difficulty: map['difficulty'] as int,
       dateCreated: (map['dateCreated'] ?? map['date_created']) as int,
-      isDone: (map['isDone'] ?? map['is_done'] ?? false) as bool,
+      isDone: map['isDone'] == 1 || map['isDone'] == true || map['is_done'] == true || map['is_done'] == 1,
     );
   }
 }

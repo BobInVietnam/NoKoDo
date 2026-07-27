@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/models/student.dart';
@@ -107,16 +108,23 @@ class RepoManager extends ChangeNotifier {
       );
 
       currentStudent = Student.fromMap(studentMap);
+      if (token == null || lastActiveStr == null) return false;
 
-      try {
-        final configs = await onlineDatabase.getSystemConfig();
-        remoteDictVersion = configs['dictVersion'];
-      } catch (e) {
-        debugPrint("TESTING: Failed to fetch system config during auto-login: $e");
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - lastActive > 24 * 60 * 60 * 1000) {
+        signOut();
+        return false;
       }
 
-      notifyListeners();
-      return true;
+      onlineDatabase.setToken(token);
+      final profile = await onlineDatabase.verifySession(token);
+      if (profile != null) {
+        currentStudent = Student.fromMap(profile);
+        await _secureStorage.write(key: 'last_active_time', value: now.toString());
+        notifyListeners();
+        return true;
+      }
+      return false;
     } catch (e) {
       debugPrint("TESTING: Auto-login failed: $e");
       return false;
@@ -127,8 +135,22 @@ class RepoManager extends ChangeNotifier {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("Fetching statistics for student: ${currentStudent!.uid}");
-    // Assuming onlineDatabase or local database handles the heavy query aggregation
-    return await onlineDatabase.getStudentStatistics(currentStudent!.uid);
+    try {
+      final stats = await onlineDatabase.getStudentStatistics(currentStudent!.uid);
+      saveRawStatistics(stats);
+      return stats;
+    } catch (e) {
+      debugPrint("Offline: Fetching statistics from local database...: $e");
+      final cached = await database.getConfig('statistics_${currentStudent!.uid}');
+      if (cached != null) {
+        return jsonDecode(cached) as Map<String, dynamic>;
+      }
+      throw Exception("Không có kết nối mạng và không có dữ liệu thống kê ngoại tuyến.");
+    }
+  }
+
+  Future<void> saveRawStatistics(Map<String, dynamic> stats) async {
+    await database.setConfig('statistics_${currentStudent!.uid}', jsonEncode(stats));
   }
 
   Future<List<TestInfo>> getTestList() async {
@@ -141,9 +163,19 @@ class RepoManager extends ChangeNotifier {
   Future<List<Lesson>> getLessonList() async {
     if (currentStudent == null) throw Exception("No student logged in.");
     debugPrint("TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}");
-    final List<Map<String, Object?>> lessonList = await onlineDatabase.getLessonList(currentStudent!.uid, currentStudent!.classid);
-    debugPrint("TESTING: RepoMan got lesson list");
-    return lessonList.map((map) => Lesson.fromMap(map)).toList();
+    try {
+      final List<Map<String, Object?>> lessonList = await onlineDatabase.getLessonList(currentStudent!.uid, currentStudent!.classid);
+      final lessons = lessonList.map((map) => Lesson.fromMap(map)).toList();
+      await database.saveLessons(lessons);
+      return lessons;
+    } catch (e) {
+      debugPrint("Offline: Fetching lessons from local database...: $e");
+      final localLessons = await database.getAllLessons();
+      if (localLessons.isNotEmpty) {
+        return localLessons;
+      }
+      throw Exception("Không có kết nối mạng và không có dữ liệu bài học ngoại tuyến.");
+    }
   }
 
   Future<Test> getTestDetailsAndQuestions(String testId) async {
@@ -181,6 +213,14 @@ class RepoManager extends ChangeNotifier {
 
   Future<void> sendUsageTime(int totalUsageTime) async {
     debugPrint("TESTING: RepoMan sending usage time data...");
+    final cached = await database.getConfig('statistics_${currentStudent!.uid}');
+    if (cached != null) {
+      var stats = jsonDecode(cached) as Map<String, dynamic>;
+      stats['totalUsageTime'] = totalUsageTime;
+      await saveRawStatistics(stats);
+      debugPrint("TESTING: RepoMan saved usage time to cache");
+    }
+
     await onlineDatabase.sendUsageTime(totalUsageTime, currentStudent!.uid);
   }
 

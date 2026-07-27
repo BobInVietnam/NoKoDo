@@ -72,10 +72,13 @@ class TestViewModel extends ChangeNotifier {
       endTime: DateTime.now().millisecondsSinceEpoch,
       score: finalScore,
     );
-
-    await _repoManager.sendTestSessionStatus(submitTestSession);
-    await _repoManager.sendTestAnswers(testSession, _answers);
-    debugPrint("Test submitted with answers: $_answers");
+    try {
+      await _repoManager.sendTestSessionStatus(submitTestSession);
+      await _repoManager.sendTestAnswers(testSession, _answers);
+      debugPrint("Test submitted with answers: $_answers");
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

@@ -3,7 +3,7 @@ import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 
 class TestDetailViewModel extends ChangeNotifier {
-  final Test test;
+  Test test;
   final RepoManager _repoManager;
 
   TestDetailViewModel({required this.test, required RepoManager repoManager})
@@ -36,15 +36,33 @@ class TestDetailViewModel extends ChangeNotifier {
   }
 
   Future<TestSession> startNewSession() async {
-    final studentId = _repoManager.currentStudent!.uid;
-    final TestSession testSession = TestSession(
-      testId: test.id,
-      studentId: studentId,
-      startTime: DateTime.now().millisecondsSinceEpoch,
-      endTime: DateTime.now().millisecondsSinceEpoch,
-      score: 0,
-    );
-    await _repoManager.sendTestSessionStatus(testSession);
-    return testSession;
+    if (test.studentStatuses.length < test.allowedAttempts) {
+      final studentId = _repoManager.currentStudent!.uid;
+      final TestSession testSession = TestSession(
+        testId: test.id,
+        studentId: studentId,
+        startTime: DateTime
+            .now()
+            .millisecondsSinceEpoch,
+        endTime: DateTime
+            .now()
+            .millisecondsSinceEpoch,
+        score: 0,
+      );
+      await _repoManager.sendTestSessionStatus(testSession);
+      return testSession;
+    } else {
+      throw Exception("Đã đạt số lần tối đa làm bài.");
+    }
+  }
+
+  Future<void> refreshDetails() async {
+    try {
+      final updatedTest = await _repoManager.getTestDetailsAndQuestions(test.id);
+      test = updatedTest;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Failed to refresh test details: $e");
+    }
   }
 }

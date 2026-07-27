@@ -372,11 +372,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return jsonContents;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        return <String, dynamic>{};
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return <String, dynamic>{};
+      rethrow;
     }
   }
 
@@ -406,11 +406,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return jsonContents;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        return <String, Object?>{};
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return <String, Object?>{};
+      rethrow;
     }
   }
 
@@ -439,11 +439,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return lessonList;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        return [];
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return [];
+      rethrow;
     }
   }
 
@@ -475,11 +475,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return testList;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        return [];
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return [];
+      rethrow;
     }
   }
 
@@ -500,11 +500,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return jsonContents;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        return <String, Object?>{};
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return <String, Object?>{};
+      rethrow;
     }
   }
 
@@ -522,9 +522,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('HTTP SUCCESS: Test answers data synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
+        throw Exception('Server rejected session payload with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+      rethrow;
     }
   }
 
@@ -549,10 +551,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('HTTP SUCCESS: Test session data synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
-        throw (Exception);
+        throw Exception('Server rejected session payload with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+      rethrow;
     }
   }
 
@@ -578,11 +581,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return true;
       } else {
         debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}, ${response.body}');
-        return false;
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
-      return false;
+      rethrow;
     }
   }
 
@@ -605,9 +608,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('HTTP SUCCESS: Active application usage time synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected time sync payload with status code: ${response.statusCode}, ${response.body}');
+        throw Exception('Server rejected time sync payload with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit usage time payload. Details: $error');
+      rethrow;
     }
   }
 
@@ -631,9 +636,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('HTTP SUCCESS: Student lesson result synced successfully.');
       } else {
         debugPrint('HTTP ERROR: Server rejected lesson result sync with status code: ${response.statusCode}, ${response.body}');
+        throw Exception('Server rejected lesson result sync with status code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
+      rethrow;
     }
   }
 
@@ -645,11 +652,13 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
         return jsonContents.map((key, value) => MapEntry(key, value.toString()));
+      } else {
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint("HTTP ERROR: Failed to get system config: $e");
+      rethrow;
     }
-    return {};
   }
 
   @override
@@ -659,11 +668,13 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       final response = await _get(targetUrl);
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint("HTTP ERROR: Failed to get dictionary data: $e");
+      rethrow;
     }
-    return {"count": 0, "entries": []};
   }
 
   @override
@@ -729,11 +740,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         return student;
       } else {
         debugPrint('HTTP ERROR: Session validation failed with code: ${response.statusCode}, ${response.body}');
-        return null;
+        throw Exception('Session validation failed with code: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Session verification call failed. Details: $error');
-      return null;
+      rethrow;
     }
   }
 }

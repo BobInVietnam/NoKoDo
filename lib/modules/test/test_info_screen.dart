@@ -135,7 +135,7 @@ class TestDetailScreen extends StatelessWidget {
                                 final testSession = await viewModel.startNewSession();
                                 if (context.mounted) {
                                   Navigator.pop(context); // Close loader
-                                  Navigator.push(
+                                  await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (innerContext) => ChangeNotifierProvider(
@@ -148,12 +148,13 @@ class TestDetailScreen extends StatelessWidget {
                                       ),
                                     ),
                                   );
+                                  await viewModel.refreshDetails();
                                 }
                               } catch (e) {
                                 if (context.mounted) {
                                   Navigator.pop(context); // Close loader
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Lỗi: $e')),
+                                    SnackBar(content: Text('$e')),
                                   );
                                 }
                               }

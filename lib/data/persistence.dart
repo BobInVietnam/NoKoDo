@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/converted_file.dart';
 import '../models/dictionary_entry.dart';
+import '../models/lesson.dart';
 
 abstract class LocalDatabase extends ChangeNotifier{
   Future<void> test();
@@ -32,6 +33,10 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<List<String>> getAllHighlights();
   /// Removes a highlighted phrase from the local database.
   Future<void> deleteHighlight(String text);
+  /// Saves the full set of lessons in the local database.
+  Future<void> saveLessons(List<Lesson> lessons);
+  /// Retrieves all lessons from the local database.
+  Future<List<Lesson>> getAllLessons();
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -62,10 +67,14 @@ class TestLocalDatabase extends LocalDatabase {
       await db.execute('PRAGMA foreign_keys = ON');
       await db.execute(
           "CREATE TABLE Lesson ("
-              "id STRING PRIMARY KEY, "
+              "id TEXT PRIMARY KEY, "
               "name TEXT, "
+              "type INTEGER, "
+              "description TEXT, "
               "content TEXT, "
-              "createdDate INTEGER)");
+              "difficulty INTEGER, "
+              "dateCreated INTEGER, "
+              "isDone INTEGER)");
       await db.execute(
           "CREATE TABLE DictionaryEntry ("
               "id STRING PRIMARY KEY, "
@@ -89,6 +98,7 @@ class TestLocalDatabase extends LocalDatabase {
               "text TEXT UNIQUE)");
     }
     final db = await openDatabase(path, version: 1, onCreate: onCreate);
+    await db.execute("CREATE TABLE IF NOT EXISTS Lesson (id TEXT PRIMARY KEY, name TEXT, type INTEGER, description TEXT, content TEXT, difficulty INTEGER, dateCreated INTEGER, isDone INTEGER)");
     await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
     await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
     return db;
@@ -257,5 +267,26 @@ class TestLocalDatabase extends LocalDatabase {
       where: 'text = ?',
       whereArgs: [text],
     );
+  }
+
+  @override
+  Future<void> saveLessons(List<Lesson> lessons) async {
+    final db = await database;
+    final batch = db.batch();
+    for (var lesson in lessons) {
+      batch.insert(
+        'Lesson',
+        lesson.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<List<Lesson>> getAllLessons() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('Lesson');
+    return List.generate(maps.length, (i) => Lesson.fromMap(maps[i]));
   }
 }
