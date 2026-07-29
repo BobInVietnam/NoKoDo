@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _submitDisabled ? null : _submitLogin,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: const TextStyle(fontSize: 18),
+                  textStyle: textTheme.displayMedium,
                 ),
                 child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
               ),
@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   side: const BorderSide(color: Colors.blue),
-                  textStyle: const TextStyle(fontSize: 18),
+                  textStyle: textTheme.displayMedium,
                 ),
                 child: const Text('Sử dụng ngoại tuyến'),
               ),

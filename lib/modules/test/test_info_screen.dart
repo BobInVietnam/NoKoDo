@@ -13,6 +13,8 @@ class TestDetailScreen extends StatelessWidget {
   const TestDetailScreen({super.key});
 
   Widget _buildInfoRow(String label, String value, BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -20,21 +22,13 @@ class TestDetailScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Colors.grey[700],
-            ),
+            style: textTheme.displayMedium,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.teal[900],
-              ),
+              style: textTheme.displayMedium!.copyWith(color: Colors.black87),
               textAlign: TextAlign.right,
             ),
           ),
@@ -99,11 +93,7 @@ class TestDetailScreen extends StatelessWidget {
                                 children: <Widget>[
                                   Text(
                                     "Thông tin bài kiểm tra",
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                      color: Colors.teal,
-                                    ),
+                                    style: textTheme.displayMedium,
                                     textAlign: TextAlign.center,
                                   ),
                                   const Divider(height: 30, thickness: 1),
@@ -166,7 +156,7 @@ class TestDetailScreen extends StatelessWidget {
                               textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: const Text("BẮT ĐẦU"),
+                            child: Text("BẮT ĐẦU", style: textTheme.displayMedium!.copyWith(color: Colors.white)),
                           ),
                         )
                       ],
@@ -198,11 +188,7 @@ class TestDetailScreen extends StatelessWidget {
                         children: [
                           Text(
                             "Lịch sử làm bài",
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.teal,
-                            ),
+                            style: textTheme.displayMedium,
                             textAlign: TextAlign.center,
                           ),
                           const Divider(height: 24, thickness: 1),
@@ -247,36 +233,23 @@ class TestDetailScreen extends StatelessWidget {
                                                   children: [
                                                     Text(
                                                       "Lần làm thứ ${index + 1}",
-                                                      style: GoogleFonts.poppins(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.teal[900],
-                                                      ),
+                                                      style: textTheme.displayMedium,
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       "Bắt đầu: ${viewModel.formatTimestamp(attempt.startTime)}",
-                                                      style: GoogleFonts.poppins(
-                                                        fontSize: 12,
-                                                        color: Colors.grey[600],
-                                                      ),
+                                                      style: textTheme.bodyMedium,
                                                     ),
                                                     Text(
                                                       "Thời gian làm: ${viewModel.formatDuration(attempt.startTime, attempt.endTime)}",
-                                                      style: GoogleFonts.poppins(
-                                                        fontSize: 12,
-                                                        color: Colors.grey[600],
-                                                      ),
+                                                      style: textTheme.bodyMedium,
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                               Text(
                                                 "${attempt.score.toStringAsFixed(1)}đ",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20,
-                                                  color: Colors.teal,
-                                                ),
+                                                style: textTheme.displayMedium!.copyWith(color: Colors.teal),
                                               ),
                                             ],
                                           ),

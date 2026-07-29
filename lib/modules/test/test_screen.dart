@@ -9,6 +9,7 @@ class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
 
   void _submitTest(BuildContext context, TestViewModel viewModel) {
+    final textTheme = Theme.of(context).textTheme;
     showDialog(
       context: context,
       builder: (confirmContext) => AlertDialog(
@@ -17,7 +18,7 @@ class TestScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(confirmContext),
-            child: const Text('Huỷ'),
+            child: Text('Huỷ', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
           ),
           TextButton(
             onPressed: () async {
@@ -47,7 +48,7 @@ class TestScreen extends StatelessWidget {
                 }
               }
             },
-            child: const Text('Nộp bài'),
+            child: Text('Nộp bài', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
           ),
         ],
       ),
@@ -306,15 +307,15 @@ class TestScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ReturnButton(),
-              const SettingButton(),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  side: const BorderSide(color: Colors.green, width: 2),
+                  side: const BorderSide(color: Colors.green, width: 4),
+                  padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
                   backgroundColor: Colors.grey[200],
-                  foregroundColor: Colors.green,
+                  foregroundColor: Colors.teal,
                 ),
                 onPressed: () => _submitTest(context, viewModel),
-                child: const Text("Nộp bài"),
+                child: Text("Nộp bài", style: textTheme.bodyMedium,),
               ),
             ],
           )

@@ -32,11 +32,13 @@ class StatisticsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: textTheme.titleMedium),
+                  Text(title, style: textTheme.bodyMedium!.copyWith(
+                    fontWeight: FontWeight.bold
+                  )),
                   const SizedBox(height: 4.0),
                   Text(value,
-                      style: textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                      style: textTheme.displayMedium!.copyWith(
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -77,21 +79,22 @@ class StatisticsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: textTheme.titleMedium),
+                  Text(title, style: textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.bold
+                  )),
                   const SizedBox(height: 4.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '${(percent * 100).toStringAsFixed(0)}%',
-                        style: textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold, color: colorScheme.primary),
+                        style: textTheme.displayMedium!.copyWith(
+                            fontWeight: FontWeight.bold),
                       ),
                       if (subtitle != null)
                         Text(
                           subtitle,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
+                          style: textTheme.bodyMedium!.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),

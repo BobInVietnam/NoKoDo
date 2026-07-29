@@ -55,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton.icon(
-          icon: Icon(icon, size: 36),
+          icon: Icon(icon, size: 42),
           label: Padding(
             padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 20.0), // Add padding to make button taller
             child: Text(label,
@@ -114,7 +114,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.play_circle_outline, // Placeholder
-                          label: 'Luyện Tập',
+                          label: 'LUYỆN TẬP',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -131,7 +131,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         _buildMenuButton(
                           icon: Icons.book_outlined, // Placeholder
-                          label: 'Làm Bài Kiểm Tra',
+                          label: 'LÀM BÀI KIỂM TRA',
                           onPressed: () {
                             if (context.read<RepoManager>().currentStudent == null) {
                               _showOfflineWarning(context);
@@ -159,7 +159,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.abc_outlined, // Placeholder
-                          label: 'Đơn giản hóa câu từ',
+                          label: 'ĐƠN GIẢN HÓA CÂU TỪ',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -176,7 +176,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         _buildMenuButton(
                           icon: Icons.bar_chart_outlined, // Placeholder
-                          label: 'Thư Viện',
+                          label: 'THƯ VIỆN',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -201,7 +201,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.settings_outlined, // Placeholder
-                          label: 'Chuyển File Sang Văn Bản',
+                          label: 'CHUYỂN FILE SANG VĂN BẢN',
                           onPressed: () {
                             Navigator.push(
                                 context,
@@ -218,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         _buildMenuButton(
                           icon: Icons.help_outline, // Placeholder
-                          label: 'Theo Dõi Tiến Độ',
+                          label: 'THEO DÕI TIẾN ĐỘ',
                           onPressed: () {
                             if (context.read<RepoManager>().currentStudent == null) {
                               _showOfflineWarning(context);
@@ -276,6 +276,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showOfflineWarning(BuildContext context) {
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -292,6 +293,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _logOut() {
+    final textTheme = Theme.of(context).textTheme;
+
     showDialog(
       context: context,
       builder: (confirmContext) => AlertDialog( // Rename context to avoid confusion
@@ -301,7 +304,7 @@ class _MainScreenState extends State<MainScreen> {
           TextButton(
             // Just close the confirmation dialog
             onPressed: () => Navigator.pop(confirmContext),
-            child: const Text('Huỷ'),
+            child: Text('Huỷ', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
           ),
           TextButton(
             onPressed: () async {
@@ -338,7 +341,7 @@ class _MainScreenState extends State<MainScreen> {
                 }
               }
             },
-            child: const Text('Đăng xuất'),
+            child: Text('Đăng xuất', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
           ),
         ],
       ),

@@ -433,7 +433,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                           ),
                           title: Text(
                             wordItem.word,
-                            style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                            style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 4.0),
@@ -510,7 +510,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
               controller: _tabController,
               indicatorColor: Colors.teal,
               labelColor: Colors.teal,
-              labelStyle: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              labelStyle: textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
               unselectedLabelColor: Colors.grey[600],
               tabs: const [
                 Tab(text: 'Văn bản'),
