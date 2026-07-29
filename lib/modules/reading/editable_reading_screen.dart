@@ -25,6 +25,7 @@ class EditableReadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<EditableReadingViewModel>();
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -170,7 +171,7 @@ class EditableReadingScreen extends StatelessWidget {
                           min: 0.05,
                           max: 1.2,
                           divisions: 24,
-                          label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(2)}x',
+                          label: 'Tốc độ đọc: ${viewModel.currentReadingSpeed.toStringAsFixed(2)}x',
                           onChanged: viewModel.handleSpeedChange,
                           activeColor: Colors.teal,
                         ),
@@ -192,7 +193,12 @@ class EditableReadingScreen extends StatelessWidget {
                         icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
                             ? Icons.stop_circle_outlined
                             : Icons.play_circle_outline),
-                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn'),
+                        label: Text(
+                            viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
+                            style: textTheme.bodySmall!.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white
+                            )),
                         onPressed: viewModel.toggleTtsParagraph,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
@@ -205,7 +211,12 @@ class EditableReadingScreen extends StatelessWidget {
                         icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
                             ? Icons.stop_circle_outlined
                             : Icons.menu_book_outlined),
-                        label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ'),
+                        label: Text(
+                            viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
+                            style: textTheme.bodySmall!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white
+                            )),
                         onPressed: viewModel.toggleTtsAll,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
@@ -216,7 +227,11 @@ class EditableReadingScreen extends StatelessWidget {
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Chỉnh sửa'),
+                        label: Text('Chỉnh sửa',
+                            style: textTheme.bodySmall!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white
+                            )),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal[600],
                           foregroundColor: Colors.white,

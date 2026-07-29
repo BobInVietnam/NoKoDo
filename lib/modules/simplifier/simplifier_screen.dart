@@ -46,11 +46,7 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SimplifierViewModel>();
-    final titleStyle = GoogleFonts.poppins(
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
-      color: Colors.teal[800],
-    );
+    final textTheme = Theme.of(context).textTheme;
 
     // Sync from viewmodel text if needed (e.g. if cleared)
     if (viewModel.inputText != _inputController.text) {
@@ -69,7 +65,7 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: Text(
                   'Đơn giản hóa câu từ',
-                  style: titleStyle,
+                  style: textTheme.displayLarge,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -99,7 +95,7 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
                                   hintText: 'Câu chưa được đơn giản hóa được viết ở đây',
                                   border: InputBorder.none,
                                 ),
-                                style: GoogleFonts.poppins(fontSize: 16),
+                                style: textTheme.bodyMedium,
                               ),
                             ),
                             if (viewModel.inputText.isNotEmpty)
@@ -161,12 +157,10 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
                                           viewModel.simplifiedText.isNotEmpty
                                               ? viewModel.simplifiedText
                                               : 'Câu đã được đơn giản hóa',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 16,
+                                          style: textTheme.bodyMedium!.copyWith(
                                             color: viewModel.simplifiedText.isNotEmpty
-                                                ? Colors.black87
-                                                : Colors.black38,
-                                          ),
+                                                ? Colors.grey[700] : Colors.grey[400]
+                                          )
                                         ),
                                       ),
                                     ),

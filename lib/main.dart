@@ -61,31 +61,31 @@ class NokodoApp extends StatelessWidget {
             seedColor: Colors.teal,
             brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
         textTheme: TextTheme(
-          titleLarge: GoogleFonts.galindo(
+          titleLarge: GoogleFonts.paytoneOne(
             fontSize: 52,
             fontWeight: FontWeight.bold,
             color: Colors.teal[700]
           ),
-          displayLarge: GoogleFonts.rowdies(
+          displayLarge: GoogleFonts.paytoneOne(
             fontSize: 40,
             fontWeight: FontWeight.bold,
             color: Colors.teal[700],
           ),
-          displayMedium: GoogleFonts.poppins(
-            fontSize: 28,
+          displayMedium: GoogleFonts.notoSans(
+            fontSize: 30,
             fontWeight: FontWeight.bold,
             color: Colors.teal[800],
           ),
-          bodyLarge: GoogleFonts.poppins(
+          bodyLarge: GoogleFonts.notoSans(
             fontSize: 30,
             color: Colors.grey[700]
           ),
-          bodyMedium: GoogleFonts.poppins(
-              fontSize: 22,
+          bodyMedium: GoogleFonts.notoSans(
+              fontSize: 24,
               color: Colors.grey[800]
           ),
-          bodySmall: GoogleFonts.poppins(
-            fontSize: 16,
+          bodySmall: GoogleFonts.notoSans(
+            fontSize: 18,
             color: Colors.grey[800]
           ),
         ),

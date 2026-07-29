@@ -49,8 +49,6 @@ class DictionaryDetailDialog extends StatelessWidget {
               'Không tìm thấy từ trong thư viện',
               style: textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
-                fontSize: 18,
               ),
               textAlign: TextAlign.center,
             ),
@@ -82,7 +80,6 @@ class DictionaryDetailDialog extends StatelessWidget {
             Text(
               wordItem!.word,
               style: textTheme.displayMedium?.copyWith(
-                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: Colors.teal.shade800,
               ),
@@ -93,7 +90,7 @@ class DictionaryDetailDialog extends StatelessWidget {
             // 3. Description Segment Content
             Text(
               wordItem!.description,
-              style: textTheme.bodyMedium?.copyWith(color: Colors.grey[700], height: 1.5),
+              style: textTheme.bodyLarge!.copyWith(color: Colors.grey[700], height: 1.5),
               textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 20),
@@ -101,7 +98,8 @@ class DictionaryDetailDialog extends StatelessWidget {
             // 4. Core Audio Playback Interaction Action Button
             ElevatedButton.icon(
               icon: const Icon(Icons.volume_up_rounded, size: 22),
-              label: const Text('Đọc thành tiếng', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text('Đọc thành tiếng',
+                  style: textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
@@ -124,7 +122,7 @@ class DictionaryDetailDialog extends StatelessWidget {
             }
             Navigator.pop(context);
           },
-          child: Text('Đóng', style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold)),
+          child: Text('Đóng', style: textTheme.bodyMedium),
         ),
       ],
     );

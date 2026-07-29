@@ -32,7 +32,8 @@ class SettingsScreen extends StatelessWidget {
                     onChanged: viewModel.updateFontSize,
                     activeColor: Colors.teal,
                   ),
-                  Text("Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}"),
+                  Text("Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}",
+                  style: textTheme.bodyMedium),
 
                   const SizedBox(height: 15),
                   Text("Dãn cách chữ", style: textTheme.displayMedium),
@@ -63,7 +64,8 @@ class SettingsScreen extends StatelessWidget {
                     spacing: 10,
                     children: const [
                       _ColorButton(color: Colors.black, label: "Đen"),
-                      _ColorButton(color: Colors.blue, label: "Xanh"),
+                      _ColorButton(color: Colors.black87, label: "Xám"),
+                      _ColorButton(color: Colors.indigo, label: "Xanh"),
                       _ColorButton(color: Colors.red, label: "Đỏ"),
                       _ColorButton(color: Colors.teal, label: "Tía"),
                     ],
@@ -74,10 +76,10 @@ class SettingsScreen extends StatelessWidget {
                   DropdownButton<String>(
                     value: viewModel.fontFamily,
                     isExpanded: true,
-                    items: const [
-                      DropdownMenuItem(value: 'Roboto', child: Text("Standard (Roboto)")),
-                      DropdownMenuItem(value: 'Courier', child: Text("Monospace (Courier)")),
-                      DropdownMenuItem(value: 'Serif', child: Text("Classic (Serif)")),
+                    items: [
+                      DropdownMenuItem(value: 'Roboto', child: Text("Standard (Roboto)", style: textTheme.bodySmall)),
+                      DropdownMenuItem(value: 'Courier', child: Text("Monospace (Courier)", style: textTheme.bodySmall)),
+                      DropdownMenuItem(value: 'Serif', child: Text("Classic (Serif)", style: textTheme.bodySmall)),
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
@@ -119,16 +121,21 @@ class _ColorButton extends StatelessWidget {
   final Color color;
   final String label;
 
+
   const _ColorButton({required this.color, required this.label});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SettingsViewModel>();
     final bool isSelected = viewModel.color == color;
+    final textTheme = Theme.of(context).textTheme;
 
     return ActionChip(
       avatar: CircleAvatar(backgroundColor: color),
-      label: Text(label),
+      label: Text(label,
+          style: textTheme.bodySmall!.copyWith(
+              fontWeight: FontWeight.bold,
+          )),
       backgroundColor: isSelected ? color.withOpacity(0.2) : null,
       side: isSelected ? BorderSide(color: color, width: 2) : null,
       onPressed: () => viewModel.updateColor(color),

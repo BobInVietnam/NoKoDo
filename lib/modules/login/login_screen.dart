@@ -165,16 +165,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _submitDisabled ? null : _submitLogin,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: const TextStyle(fontSize: 18),
+                  textStyle: textTheme.displayMedium,
                 ),
                 child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 15),
+              OutlinedButton(
                 onPressed: _submitDisabled ? null : _loginAsOffline,
-                style: ElevatedButton.styleFrom(
+                style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: const TextStyle(fontSize: 18),
+                  side: const BorderSide(color: Colors.blue),
+                  textStyle: textTheme.displayMedium,
                 ),
                 child: const Text('Sử dụng ngoại tuyến'),
               ),

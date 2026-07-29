@@ -65,9 +65,9 @@ class FileToTextScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Icon(icon, size: 40),
+                Icon(icon, size: 56),
                 const SizedBox(height: 8),
-                Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
+                Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 32)),
               ],
             ),
           ),
@@ -78,9 +78,7 @@ class FileToTextScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = GoogleFonts.galindo(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[700]);
-    final subtitleStyle = GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]);
-    final historyTitleStyle = GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.teal[700]);
+    final textTheme = Theme.of(context).textTheme;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     // Watch the ViewModel for UI updates (like loading states or history changes)
     final viewModel = context.watch<FileToTextViewModel>();
@@ -91,11 +89,11 @@ class FileToTextScreen extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 8.0),
-              child: Text('Chuyển file sang văn bản', style: titleStyle, textAlign: TextAlign.center),
+              child: Text('Chuyển file sang văn bản', style: textTheme.displayLarge, textAlign: TextAlign.center),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Text('Hãy chọn phương thức nhập ảnh hoặc tài liệu PDF', style: subtitleStyle, textAlign: TextAlign.center),
+              child: Text('Hãy chọn phương thức nhập ảnh hoặc tài liệu PDF', style: textTheme.bodyMedium, textAlign: TextAlign.center),
             ),
             const SizedBox(height: 30),
 
@@ -129,7 +127,7 @@ class FileToTextScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Lịch sử', style: historyTitleStyle),
+                child: Text('Lịch sử', style: textTheme.displayMedium),
               ),
             ),
             const SizedBox(height: 10),
@@ -145,8 +143,8 @@ class FileToTextScreen extends StatelessWidget {
                     border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: viewModel.history.isEmpty
-                      ? const Center(
-                    child: Text('Lịch sử chuyển đổi sẽ xuất hiện ở đây.', style: TextStyle(color: Colors.grey, fontSize: 16), textAlign: TextAlign.center),
+                      ? Center(
+                    child: Text('Lịch sử chuyển đổi sẽ xuất hiện ở đây.', style: textTheme.bodyMedium),
                   )
                       : ListView.builder(
                     itemCount: viewModel.history.length,

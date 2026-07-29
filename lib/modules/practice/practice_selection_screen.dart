@@ -44,11 +44,12 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
       icon: Icon(
         isActive ? (viewModel.sortAscending ? Icons.arrow_downward : Icons.arrow_upward) : icon,
         color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
-        size: 18,
+        size: 24,
       ),
       label: Text(
         label,
         style: TextStyle(
+          fontSize: 18,
           color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
           fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
         ),
