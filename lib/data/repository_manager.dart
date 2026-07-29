@@ -154,6 +154,8 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<List<TestInfo>> getTestList() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
     final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid);
     debugPrint("TESTING: RepoMan got data");
@@ -161,9 +163,10 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<List<Lesson>> getLessonList() async {
-    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}");
     try {
+      if (currentStudent == null) throw Exception("No student logged in.");
       final List<Map<String, Object?>> lessonList = await onlineDatabase.getLessonList(currentStudent!.uid, currentStudent!.classid);
       final lessons = lessonList.map((map) => Lesson.fromMap(map)).toList();
       await database.saveLessons(lessons);
@@ -179,6 +182,8 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<Test> getTestDetailsAndQuestions(String testId) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan getting test data...$testId");
     Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
     debugPrint("TESTING: RepoMan got test data");
@@ -225,10 +230,8 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> sendLessonResult(String lessonId, Map<String, dynamic> results) async {
-    if (currentStudent == null) {
-      debugPrint("TESTING: RepoMan cannot send lesson result: currentStudent is null.");
-      return;
-    }
+    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan sending lesson result data...");
     await onlineDatabase.sendLessonResult(currentStudent!.uid, lessonId, results);
   }

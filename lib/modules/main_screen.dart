@@ -133,6 +133,10 @@ class _MainScreenState extends State<MainScreen> {
                           icon: Icons.book_outlined, // Placeholder
                           label: 'Làm Bài Kiểm Tra',
                           onPressed: () {
+                            if (context.read<RepoManager>().currentStudent == null) {
+                              _showOfflineWarning(context);
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -216,6 +220,10 @@ class _MainScreenState extends State<MainScreen> {
                           icon: Icons.help_outline, // Placeholder
                           label: 'Theo Dõi Tiến Độ',
                           onPressed: () {
+                            if (context.read<RepoManager>().currentStudent == null) {
+                              _showOfflineWarning(context);
+                              return;
+                            }
                             Navigator.push(
                               context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
@@ -254,8 +262,8 @@ class _MainScreenState extends State<MainScreen> {
                     child: const Icon(Icons.arrow_back, size: 28),
                   ),
                   Expanded(child: Container()),
-                  Text(username != null? "Xin chào $username" : "",
-                  style: textTheme.bodyMedium),
+                   Text(username != null? "Xin chào $username" : "Sử dụng ngoại tuyến",
+                   style: textTheme.bodyMedium),
                   SizedBox(width: 10),
                   SettingButton()
                 ],
@@ -263,6 +271,22 @@ class _MainScreenState extends State<MainScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  void _showOfflineWarning(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Chế độ ngoại tuyến'),
+        content: const Text('Tính năng này chỉ khả dụng khi đăng nhập tài khoản trực tuyến.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
       ),
     );
   }

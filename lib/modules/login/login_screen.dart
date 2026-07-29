@@ -79,6 +79,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _loginAsOffline() async {
+    try {
+      _setSubmitDisabled(true);
+      final repoManager = context.read<RepoManager>();
+      repoManager.signOut();
+      if (!mounted) return;
+      context.read<UsageTimeTracker>().resumeWithUserData(0);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } catch (e) {
+      debugPrint("Offline mode error: $e");
+    } finally {
+      _setSubmitDisabled(false);
+    }
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -150,6 +168,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                 ),
                 child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
+              ),
+              const SizedBox(height: 15),
+              OutlinedButton(
+                onPressed: _submitDisabled ? null : _loginAsOffline,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  side: const BorderSide(color: Colors.blue),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                child: const Text('Sử dụng ngoại tuyến'),
               ),
             ],
           ),
