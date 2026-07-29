@@ -16,6 +16,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   String _displayMessage = '';
   bool _submitDisabled = false;
+  bool _isAutoLoggingIn = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoLogin();
+  }
+
+  Future<void> _checkAutoLogin() async {
+    try {
+      final repoManager = context.read<RepoManager>();
+      final success = await repoManager.tryAutoLogin();
+      if (success && mounted) {
+        context.read<UsageTimeTracker>().resumeWithUserData(repoManager.currentStudent?.totalTime ?? 0);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
+    } catch (e) {
+      debugPrint("Auto login error: $e");
+    }
+    if (mounted) {
+      setState(() {
+        _isAutoLoggingIn = false;
+      });
+    }
+  }
 
   void _setDisplayMessage (String newMessage) {
     setState(() {
@@ -30,8 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submitLogin() async {
-    // In a real app, you would add authentication logic here
-    // For now, just navigate to the main screen
     try {
       _setSubmitDisabled(true);
       final currentRepoManager = context.read<RepoManager>();
@@ -53,6 +79,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _loginAsOffline() async {
+    try {
+      _setSubmitDisabled(true);
+      final repoManager = context.read<RepoManager>();
+      repoManager.signOut();
+      if (!mounted) return;
+      context.read<UsageTimeTracker>().resumeWithUserData(0);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } catch (e) {
+      debugPrint("Offline mode error: $e");
+    } finally {
+      _setSubmitDisabled(false);
+    }
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -63,6 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    if (_isAutoLoggingIn) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       // No AppBar here
@@ -116,6 +168,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                 ),
                 child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
+              ),
+              const SizedBox(height: 15),
+              OutlinedButton(
+                onPressed: _submitDisabled ? null : _loginAsOffline,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  side: const BorderSide(color: Colors.blue),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                child: const Text('Sử dụng ngoại tuyến'),
               ),
             ],
           ),

@@ -9,7 +9,7 @@ import 'package:nodyslexia/utils/tts_service.dart';
 enum TtsMode { none, paragraph, all, selection }
 
 class ReadingViewModel extends ChangeNotifier {
-  final int? lessonId;
+  final String? lessonId;
   final RepoManager? repoManager;
 
   String _extractedText = "";
@@ -139,6 +139,7 @@ class ReadingViewModel extends ChangeNotifier {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
       }
+      selectParagraph(0);
       _currentTtsMode = TtsMode.all;
       _hasReadAll = true;
       _readParagraphSequentially(_selectedParagraphIndex);
@@ -219,7 +220,7 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   Future<DictionaryEntry?>  getWordDefinition() async {
-    return await _localDatabase.getDictionaryEntryByWord(currentSelection!);
+    return await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
   }
 
   @override

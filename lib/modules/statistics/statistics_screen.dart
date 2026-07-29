@@ -144,6 +144,7 @@ class StatisticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<StatisticsViewmodel>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final double practiceCompletionRatio = viewModel.lessonNumber > 0
         ? viewModel.lessonFinishedNumber / viewModel.lessonNumber
@@ -153,6 +154,12 @@ class StatisticsScreen extends StatelessWidget {
         ? viewModel.testFinishedNumber / viewModel.testNumber
         : 0.0;
 
+    if (viewModel.hasError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Lỗi khi tải thống kê.')));
+        viewModel.clearError();
+      });
+    }
     return Scaffold(
       body: SafeArea(
         child: Column(

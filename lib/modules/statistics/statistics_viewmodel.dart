@@ -10,6 +10,7 @@ class StatisticsViewmodel extends ChangeNotifier {
   int _lessonFinishedNumber = 0;
   List<int> _activityCounts = [];
   bool _isLoading = true;
+  bool _hasError = false;
 
   int get testNumber => _testNumber;
   int get testFinishedNumber => _testFinishedNumber;
@@ -18,6 +19,7 @@ class StatisticsViewmodel extends ChangeNotifier {
   int get lessonFinishedNumber => _lessonFinishedNumber;
   List<int> get activityCounts => _activityCounts;
   bool get isLoading => _isLoading;
+  bool get hasError => _hasError;
 
   final RepoManager _repoManager;
   final UsageTimeTracker _usageTimeTracker;
@@ -38,9 +40,13 @@ class StatisticsViewmodel extends ChangeNotifier {
   }
 
   Future<void> _loadStatistics() async {
-    await _repoManager.sendUsageTime(_usageTimeTracker.totalSecondsElapsed);
-    _isLoading = true;
-    notifyListeners();
+    try {
+      await _repoManager.sendUsageTime(_usageTimeTracker.totalSecondsElapsed);
+      _isLoading = true;
+      notifyListeners();
+    } catch (e) {
+      _hasError = true;
+    }
 
     try {
       final Map<String, dynamic> data = await _repoManager.getRawStatistics();
@@ -56,10 +62,16 @@ class StatisticsViewmodel extends ChangeNotifier {
       _usageTimeTracker.resumeWithUserData(totalUsageTime);
     } catch (e) {
       debugPrint("❌ StatisticsViewModel Load Error: $e");
+      _hasError = true;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearError() {
+    _hasError = false;
+    notifyListeners();
   }
 
   @override

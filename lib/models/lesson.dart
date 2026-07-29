@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Lesson {
-  final int? id; // Nullable: Database handles auto-increment on insertion
+  final String id;
   final String name;
   final int type;
   final String description;
@@ -11,7 +11,7 @@ class Lesson {
   final bool isDone;
 
   Lesson({
-    this.id,
+    required this.id,
     required this.name,
     required this.type,
     required this.description,
@@ -31,7 +31,7 @@ class Lesson {
       'content': jsonEncode(content),
       'difficulty': difficulty,
       'dateCreated': dateCreated,
-      'isDone': isDone
+      'isDone': isDone ? 1 : 0
     };
   }
 
@@ -48,14 +48,14 @@ class Lesson {
     }
 
     return Lesson(
-      id: map['id'] as int?,
+      id: map['id'] as String,
       name: map['name'] as String,
       type: map['type'] as int,
       description: map['description'] as String,
       content: parsedContent,
       difficulty: map['difficulty'] as int,
       dateCreated: (map['dateCreated'] ?? map['date_created']) as int,
-      isDone: (map['isDone'] ?? map['is_done'] ?? false) as bool,
+      isDone: map['isDone'] == 1 || map['isDone'] == true || map['is_done'] == true || map['is_done'] == 1,
     );
   }
 }

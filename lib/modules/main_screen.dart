@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/data/persistence.dart';
 
@@ -29,6 +30,19 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late String? _token = null;
+  final _secureStorage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _getToken();
+  }
+
+  Future<void> _getToken() async {
+    _token = await _secureStorage.read(key: "jwt_token");
+  }
+
   // Helper function to create styled buttons
   Widget _buildMenuButton({
     required IconData icon,
@@ -119,6 +133,10 @@ class _MainScreenState extends State<MainScreen> {
                           icon: Icons.book_outlined, // Placeholder
                           label: 'Làm Bài Kiểm Tra',
                           onPressed: () {
+                            if (context.read<RepoManager>().currentStudent == null) {
+                              _showOfflineWarning(context);
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -148,7 +166,7 @@ class _MainScreenState extends State<MainScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
                                   create: (innerContext) => SimplifierViewModel(
-                                    simplifierService: LocalSimplifierService(),
+                                    simplifierService: LocalSimplifierService(token: _token),
                                   ),
                                   child: const SimplifierScreen(),
                                 ),
@@ -189,7 +207,7 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: LocalOCRService(),
+                                      ocrService: LocalOCRService(token: _token),
                                       localDatabase: context.read<LocalDatabase>()
                                   ),
                                   child: const FileToTextScreen(),
@@ -202,6 +220,10 @@ class _MainScreenState extends State<MainScreen> {
                           icon: Icons.help_outline, // Placeholder
                           label: 'Theo Dõi Tiến Độ',
                           onPressed: () {
+                            if (context.read<RepoManager>().currentStudent == null) {
+                              _showOfflineWarning(context);
+                              return;
+                            }
                             Navigator.push(
                               context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
@@ -240,8 +262,8 @@ class _MainScreenState extends State<MainScreen> {
                     child: const Icon(Icons.arrow_back, size: 28),
                   ),
                   Expanded(child: Container()),
-                  Text(username != null? "Xin chào $username" : "",
-                  style: textTheme.bodyMedium),
+                   Text(username != null? "Xin chào $username" : "Sử dụng ngoại tuyến",
+                   style: textTheme.bodyMedium),
                   SizedBox(width: 10),
                   SettingButton()
                 ],
@@ -249,6 +271,22 @@ class _MainScreenState extends State<MainScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  void _showOfflineWarning(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Chế độ ngoại tuyến'),
+        content: const Text('Tính năng này chỉ khả dụng khi đăng nhập tài khoản trực tuyến.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
       ),
     );
   }

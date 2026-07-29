@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
@@ -12,8 +13,10 @@ abstract class OCRService {
 
 class LocalOCRService implements OCRService {
   final http.Client client;
+  final String? _token;
 
-  LocalOCRService({http.Client? client}) : client = client ?? http.Client();
+  LocalOCRService({http.Client? client, String? token})
+      : client = client ?? http.Client(), _token = token;
 
   @override
   Future<String?> extractText(File imageFile) async {
@@ -24,6 +27,9 @@ class LocalOCRService implements OCRService {
 
     // 1. Create Multipart Request
     var request = http.MultipartRequest('POST', uri);
+    if (_token != null) {
+      request.headers['Authorization'] = 'Bearer $_token';
+    }
 
     // 2. Manually resolve the MIME type
     final String? mimeType = lookupMimeType(imageFile.path); // Returns e.g., 'image/jpeg'

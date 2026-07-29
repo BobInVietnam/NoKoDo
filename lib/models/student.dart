@@ -2,7 +2,7 @@ class Student {
   final String uid;
   final String firstname;
   final String lastname;
-  final int classid;
+  final String classid;
   int totalTime;
 
   Student({
@@ -28,7 +28,7 @@ class Student {
       uid: map['uid'] as String,
       firstname: map['firstname'] as String,
       lastname: map['lastname'] as String,
-      classid: map['classid'] as int,
+      classid: map['classid'] as String,
       totalTime: map['totalTime'] as int,
     );
   }

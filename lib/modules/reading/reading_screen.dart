@@ -203,10 +203,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
                         Expanded(
                           child: Slider(
                             value: viewModel.currentReadingSpeed,
-                            min: 0.1,
-                            max: 1.5,
-                            divisions: 14,
-                            label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(1)}x',
+                            min: 0.05,
+                            max: 1.2,
+                            divisions: 24,
+                            label: 'Speed: ${viewModel.currentReadingSpeed.toStringAsFixed(2)}x',
                             onChanged: viewModel.handleSpeedChange,
                             activeColor: Colors.teal,
                           ),

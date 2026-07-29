@@ -139,6 +139,7 @@ class TestSelectionScreen extends StatelessWidget {
     Color statusColor;
     Widget? progressIndicator;
     final textTheme = Theme.of(context).textTheme;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(testInfo.dateCreated);
 
@@ -184,8 +185,18 @@ class TestSelectionScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       child: InkWell(
         onTap: () {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          );
           final testFuture = context.read<RepoManager>().getTestDetailsAndQuestions(testInfo.id);
           testFuture.then((data) async {
+            Navigator.pop(context);
             if (context.mounted) {
               await Navigator.push(
                 context,
@@ -200,6 +211,10 @@ class TestSelectionScreen extends StatelessWidget {
               );
               viewModel.refreshData();
             }
+          }).catchError((e) {
+            Navigator.pop(context);
+            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể truy cập bài kiểm tra. Hãy kiểm tra kết nối internet của bạn.')));
+            debugPrint("Error loading test details: $e");
           });
         },
         borderRadius: BorderRadius.circular(10.0),
