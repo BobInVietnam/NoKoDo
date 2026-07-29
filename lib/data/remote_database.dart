@@ -42,39 +42,38 @@ class TestRemoteDatabase extends RemoteDatabase {
     return _database!;
   }
 
-  /// 1. Initializes the database connection.
-  /// This checks for a bundled asset database and copies it if necessary.
   Future<Database> _initDb() async {
     final String dbPath = await getDatabasesPath();
     final String path = join(dbPath, _dbFileName);
 
-    // --- MODIFICATION FOR TESTING ---
-    // Always delete the database if it exists to force a fresh copy.
-    // Use sqflite's `deleteDatabase` helper.
     if (await databaseExists(path)) {
       debugPrint("TESTING: Existing database found. Deleting...");
       await deleteDatabase(path);
     }
-    // --- END MODIFICATION ---
 
-    // This part now runs every time on first init
-    debugPrint("TESTING: Copying fresh database from assets...");
-    try {
-      await Directory(dirname(path)).create(recursive: true);
+    debugPrint("TESTING: Initializing sqlite database using SQL script...");
+    final Database db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        try {
+          final sqlScript = await rootBundle.loadString('assets/init.sql');
+          final statements = sqlScript.split(';\n');
+          for (var statement in statements) {
+            final trimmed = statement.trim();
+            if (trimmed.isNotEmpty) {
+              await db.execute(trimmed);
+            }
+          }
+          debugPrint("TESTING: Database initialized and seeded successfully from init.sql.");
+        } catch (e) {
+          debugPrint("TESTING: Error running init.sql: $e");
+          rethrow;
+        }
+      },
+    );
 
-      ByteData data = await rootBundle.load(join("assets", _dbFileName));
-      List<int> bytes =
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-
-      await File(path).writeAsBytes(bytes, flush: true);
-      debugPrint("TESTING: Fresh database copied successfully.");
-    } catch (e) {
-      debugPrint("TESTING: Error copying database from assets: $e");
-      throw Exception("Failed to copy bundled database. Error: $e");
-    }
-
-    // Open the brand new database
-    return await openDatabase(path);
+    return db;
   }
 
   @override
@@ -103,7 +102,6 @@ class TestRemoteDatabase extends RemoteDatabase {
     final List<Map<String, Object?>> maps = await db.query('Lesson');
     return maps.map((map) => {
       ...map,
-      'dateCreated': map['created_date'],
       'isDone': false,
     }).toList();
   }
@@ -117,14 +115,14 @@ class TestRemoteDatabase extends RemoteDatabase {
   SELECT 
       T.id, 
       T.name, 
-      T.date_created, 
-      T.time_limit,
-      T.allowed_attempts, 
+      T.dateCreated, 
+      T.timeLimit,
+      T.allowedAttempts, 
       T.difficulty,
       -- 4. Get the best score from the attached sessions
       MAX(SessionStats.result) as result, 
       -- 5. Count how many sessions exist (ignores NULLs automatically)
-      COUNT(SessionStats.sessionid) as attempts
+      COUNT(SessionStats.testid) as attempts
   FROM 
       student S
   -- 1. Link Student to Class and Class to Tests (The "Master List")
@@ -160,7 +158,6 @@ class TestRemoteDatabase extends RemoteDatabase {
       ''',
         [testId]
     );
-    debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
       final Map<String, Object?> mutableMap = Map<String, Object?>.from(maps.first);
       final List<Map<String, Object?>> attemptsList = await db.query(
@@ -169,6 +166,27 @@ class TestRemoteDatabase extends RemoteDatabase {
         whereArgs: [testId, studentId],
       );
       mutableMap['studentStatuses'] = attemptsList;
+      final List<Map<String, Object?>> questionsRaw = await db.query(
+        'question',
+        where: 'testid = ?',
+        whereArgs: [testId],
+      );
+      final List<Map<String, Object?>> questions = questionsRaw.map((q) {
+        final Map<String, Object?> questionMap = Map<String, Object?>.from(q);
+        final rawChoices = questionMap['choices'];
+        if (rawChoices is String && rawChoices.isNotEmpty) {
+          try {
+            questionMap['choices'] = jsonDecode(rawChoices);
+          } catch (e) {
+            questionMap['choices'] = [];
+          }
+        } else {
+          questionMap['choices'] = [];
+        }
+        return questionMap;
+      }).toList();
+      mutableMap['questions'] = questions;
+      debugPrint("TESTING: Map pulled : $mutableMap");
       return mutableMap;
     } else {
       debugPrint('TESTING: No test found.');
@@ -182,7 +200,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     debugPrint("TESTING: Querying database for TestSession...");
     final List<Map<String, Object?>> maps = await db.query(
       'student_test_status',
-      where: 'studentid = ? AND date_created = ?',
+      where: 'studentid = ? AND dateCreated = ?',
       whereArgs: [testSession.studentId, testSession.startTime]
     );
     debugPrint("TESTING: Map pulled : $maps");
@@ -203,8 +221,8 @@ class TestRemoteDatabase extends RemoteDatabase {
         {
           'studentid': testSession.studentId,
           'testid': testSession.testId,
-          'date_created': testSession.startTime,
-          'date_finished': testSession.endTime,
+          'dateCreated': testSession.startTime,
+          'dateFinished': testSession.endTime,
           'duration': testSession.endTime - testSession.startTime,
           'result': testSession.score
         },
@@ -213,13 +231,16 @@ class TestRemoteDatabase extends RemoteDatabase {
     return sessionId;
   }
 
+
   @override
   Future<void> sendTestAnswers(Map<String, Object?> answersList) async {
     final db = await database;
 
     debugPrint("TESTING: Posting test answers data...");
-    for (var answer in (answersList["answers"] as List<Map<String, Object?>>)) {
-      answer["date_created"] = answersList["startTime"];
+    for (var answer in (answersList["answers"] as List)) {
+      answer["dateCreated"] = answersList["startTime"];
+      answer["testid"] = answersList["testId"];
+      answer["studentid"] = answersList["studentId"];
       await db.insert('Student_Answer', answer,
           conflictAlgorithm: ConflictAlgorithm.replace);
     }
@@ -279,8 +300,30 @@ class TestRemoteDatabase extends RemoteDatabase {
 
   @override
   Future<Map<String, dynamic>> getDictionaryData() async {
-    debugPrint("TESTING: Mock getDictionaryData returned empty.");
-    return {"count": 0, "entries": []};
+    final db = await database;
+    try {
+      final List<Map<String, Object?>> maps = await db.query('dictionary_entry');
+      
+      final versionConfig = await db.query(
+        'system_config',
+        where: 'key = ?',
+        whereArgs: ['dictVersion'],
+        limit: 1
+      );
+      final version = versionConfig.isNotEmpty ? versionConfig.first['value'] as String : 'v1';
+
+      return {
+        "count": maps.length,
+        "entries": maps.map((entry) => {
+          ...entry,
+          "imageName": entry['imageName']
+        }).toList(),
+        "version": version,
+      };
+    } catch (e) {
+      debugPrint("TESTING: Mock getDictionaryData error: $e");
+      return {"count": 0, "entries": [], "version": "v1"};
+    }
   }
 
   @override

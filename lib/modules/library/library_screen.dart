@@ -404,32 +404,21 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                               TtsService(), // Calls your active singleton service provider
                             );
                           },
-                          leading: FutureBuilder<Directory>(
-                            future: getApplicationDocumentsDirectory(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return Container(width: 50, height: 50, color: Colors.grey.shade100);
-                              }
-
-                              // Construct the path pointer matching where we copied the file
-                              final String imagePath = p.join(snapshot.data!.path, wordItem.imageName);
-                              final File imageFile = File(imagePath);
-
-                              return Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.teal.shade50,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: imageFile.existsSync() // Fallback safety validation
-                                      ? Image.file(imageFile, fit: BoxFit.cover)
-                                      : const Icon(Icons.menu_book_rounded, color: Colors.teal),
-                                ),
-                              );
-                            },
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.teal.shade50,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image.asset(
+                                'assets/dict_images/${wordItem.imageName}',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.menu_book_rounded, color: Colors.teal),
+                              ),
+                            ),
                           ),
                           title: Text(
                             wordItem.word,

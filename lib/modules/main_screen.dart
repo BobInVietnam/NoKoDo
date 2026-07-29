@@ -166,7 +166,7 @@ class _MainScreenState extends State<MainScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
                                   create: (innerContext) => SimplifierViewModel(
-                                    simplifierService: LocalSimplifierService(token: _token),
+                                    simplifierService: MockSimplifierService(),
                                   ),
                                   child: const SimplifierScreen(),
                                 ),
@@ -207,7 +207,7 @@ class _MainScreenState extends State<MainScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
                                   create: (context) => FileToTextViewModel(
-                                      ocrService: LocalOCRService(token: _token),
+                                      ocrService: MockOCRService(),
                                       localDatabase: context.read<LocalDatabase>()
                                   ),
                                   child: const FileToTextScreen(),

@@ -31,7 +31,7 @@ Future<void> main() async {
     MultiProvider(providers: [
       ChangeNotifierProvider(
       create: (context) => RepoManager(
-          onlineDatabase: LocalhostRemoteDatabase(),
+          onlineDatabase: TestRemoteDatabase(),
           database: TestLocalDatabase())
     ),
       ChangeNotifierProvider<LocalDatabase>(

@@ -59,39 +59,22 @@ class DictionaryDetailDialog extends StatelessWidget {
             // --- STANDARD STATE: Valid Dictionary Entry Layout ---
 
             // 1. Dynamic Image Frame Loader from Internal App Storage
-            FutureBuilder<Directory>(
-              future: getApplicationDocumentsDirectory(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Container(
-                    height: 160,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: const Center(child: CircularProgressIndicator(color: Colors.teal)),
-                  );
-                }
-
-                final String imagePath = p.join(snapshot.data!.path, wordItem!.imageName);
-                final File imageFile = File(imagePath);
-
-                return Container(
-                  height: 300,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade50,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12.0),
-                    child: imageFile.existsSync()
-                        ? Image.file(imageFile, fit: BoxFit.cover, alignment: Alignment.center)
-                        : const Icon(Icons.menu_book_rounded, size: 60, color: Colors.teal),
-                  ),
-                );
-              },
+            Container(
+              height: 300,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.teal.shade50,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.asset(
+                  'assets/dict_images/${wordItem!.imageName}',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.menu_book_rounded, size: 60, color: Colors.teal),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 

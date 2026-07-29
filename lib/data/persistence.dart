@@ -77,7 +77,7 @@ class TestLocalDatabase extends LocalDatabase {
               "isDone INTEGER)");
       await db.execute(
           "CREATE TABLE DictionaryEntry ("
-              "id STRING PRIMARY KEY, "
+              "id TEXT PRIMARY KEY, "
               "word TEXT, "
               "description TEXT, "
               "imageName TEXT)");

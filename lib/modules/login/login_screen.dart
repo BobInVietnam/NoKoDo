@@ -169,12 +169,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: _submitDisabled ? const Text('Đang xử lý...') : const Text('Đăng nhập'),
               ),
-              const SizedBox(height: 15),
-              OutlinedButton(
+              const SizedBox(height: 20),
+              ElevatedButton(
                 onPressed: _submitDisabled ? null : _loginAsOffline,
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  side: const BorderSide(color: Colors.blue),
                   textStyle: const TextStyle(fontSize: 18),
                 ),
                 child: const Text('Sử dụng ngoại tuyến'),
