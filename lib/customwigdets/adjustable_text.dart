@@ -35,7 +35,8 @@ class AdjustableText extends StatelessWidget {
         color: settings.color,
         fontFamily: settings.fontFamily,
         letterSpacing: settings.letterSpacing,
-        wordSpacing: settings.wordSpacing
+        wordSpacing: settings.wordSpacing,
+        fontWeight: settings.fontWeight,
       ),
     );
   }
@@ -177,6 +178,7 @@ class SelectableAdjustableText extends StatelessWidget {
             fontFamily: settings.fontFamily,
             letterSpacing: settings.letterSpacing,
             wordSpacing: settings.wordSpacing,
+            fontWeight: settings.fontWeight,
           ),
           Colors.yellow[400]!, // Custom marker tint
           settings.highlights,

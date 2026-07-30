@@ -10,6 +10,8 @@ class TextStyleSettings extends ChangeNotifier {
   double _letterSpacing = 1.5;
   double _wordSpacing = 1.0;
   List<String> _highlights = [];
+  Color _backgroundColor = Colors.white;
+  int _fontWeightValue = 400;
 
   // Getters
   double get fontSize => _fontSize;
@@ -18,6 +20,23 @@ class TextStyleSettings extends ChangeNotifier {
   double get letterSpacing => _letterSpacing;
   double get wordSpacing => _wordSpacing;
   List<String> get highlights => _highlights;
+  Color get backgroundColor => _backgroundColor;
+  int get fontWeightValue => _fontWeightValue;
+
+  FontWeight get fontWeight {
+    switch (_fontWeightValue) {
+      case 100: return FontWeight.w100;
+      case 200: return FontWeight.w200;
+      case 300: return FontWeight.w300;
+      case 400: return FontWeight.w400;
+      case 500: return FontWeight.w500;
+      case 600: return FontWeight.w600;
+      case 700: return FontWeight.w700;
+      case 800: return FontWeight.w800;
+      case 900: return FontWeight.w900;
+      default: return FontWeight.w400;
+    }
+  }
 
   // Constructor: Triggers loading immediately when the provider is created
   TextStyleSettings([LocalDatabase? db]) {
@@ -76,6 +95,11 @@ class TextStyleSettings extends ChangeNotifier {
     int colorValue = prefs.getInt('colorValue') ?? Colors.black.toARGB32();
     _color = Color(colorValue);
 
+    int bgColorValue = prefs.getInt('backgroundColorValue') ?? Colors.white.toARGB32();
+    _backgroundColor = Color(bgColorValue);
+
+    _fontWeightValue = prefs.getInt('fontWeightValue') ?? 400;
+
     // Important: Tell the UI to rebuild with the loaded values
     notifyListeners();
   }
@@ -89,6 +113,8 @@ class TextStyleSettings extends ChangeNotifier {
     prefs.setDouble('wordSpacing', _wordSpacing);
     prefs.setString('fontFamily', _fontFamily);
     prefs.setInt('colorValue', _color.toARGB32()); // Save color as int
+    prefs.setInt('backgroundColorValue', _backgroundColor.toARGB32());
+    prefs.setInt('fontWeightValue', _fontWeightValue);
   }
 
   // --- SETTERS (Update variable -> Save -> Notify) ---
@@ -120,6 +146,18 @@ class TextStyleSettings extends ChangeNotifier {
   void setWordSpacing(double newSpacing) {
     _wordSpacing = newSpacing;
     _saveToPrefs(); // Auto-save
+    notifyListeners();
+  }
+
+  void setBackgroundColor(Color newColor) {
+    _backgroundColor = newColor;
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  void setFontWeightValue(int newValue) {
+    _fontWeightValue = newValue;
+    _saveToPrefs();
     notifyListeners();
   }
 }
