@@ -76,7 +76,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.watch<TextStyleSettings>().backgroundColor,
                       borderRadius: BorderRadius.circular(8.0),
                       border: Border.all(color: Colors.grey.shade300),
                       boxShadow: [
@@ -105,7 +105,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 4.0),
                               padding: const EdgeInsets.all(12.0),
                               decoration: BoxDecoration(
-                                color: isSelected ? Colors.white : Colors.grey.shade100,
+                                color: isSelected ? context.watch<TextStyleSettings>().backgroundColor : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(8.0),
                                 border: Border.all(
                                   color: isSelected ? Colors.teal : Colors.transparent,

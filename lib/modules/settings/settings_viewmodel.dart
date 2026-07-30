@@ -16,6 +16,8 @@ class SettingsViewModel extends ChangeNotifier {
   double get wordSpacing => _settings.wordSpacing;
   Color get color => _settings.color;
   String get fontFamily => _settings.fontFamily;
+  Color get backgroundColor => _settings.backgroundColor;
+  int get fontWeightValue => _settings.fontWeightValue;
 
   // Wrapped modification methods
   void updateFontSize(double value) {
@@ -36,6 +38,14 @@ class SettingsViewModel extends ChangeNotifier {
 
   void updateFontFamily(String family) {
     _settings.setFontFamily(family);
+  }
+
+  void updateBackgroundColor(Color newColor) {
+    _settings.setBackgroundColor(newColor);
+  }
+
+  void updateFontWeight(int value) {
+    _settings.setFontWeightValue(value);
   }
 
   @override
