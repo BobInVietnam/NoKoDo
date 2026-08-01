@@ -28,7 +28,7 @@ class TestDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: textTheme.displayMedium!.copyWith(color: Colors.black87),
+              style: textTheme.bodyLarge!.copyWith(color: Colors.black87),
               textAlign: TextAlign.right,
             ),
           ),

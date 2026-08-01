@@ -201,7 +201,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: <Widget>[
                         _buildMenuButton(
                           icon: Icons.settings_outlined, // Placeholder
-                          label: 'CHUYỂN FILE SANG VĂN BẢN',
+                          label: 'CHUYỂN ẢNH SANG VĂN BẢN',
                           onPressed: () {
                             Navigator.push(
                                 context,
