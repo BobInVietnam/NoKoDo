@@ -5,7 +5,7 @@ import '../../data/repository_manager.dart';
 class StatisticsViewmodel extends ChangeNotifier {
   int _testNumber = 0;
   int _testFinishedNumber = 0;
-  int _averageTestScore = 0;
+  double _averageTestScore = 0;
   int _lessonNumber = 0;
   int _lessonFinishedNumber = 0;
   List<int> _activityCounts = [];
@@ -14,7 +14,7 @@ class StatisticsViewmodel extends ChangeNotifier {
 
   int get testNumber => _testNumber;
   int get testFinishedNumber => _testFinishedNumber;
-  int get averageTestScore => _averageTestScore;
+  double get averageTestScore => _averageTestScore;
   int get lessonNumber => _lessonNumber;
   int get lessonFinishedNumber => _lessonFinishedNumber;
   List<int> get activityCounts => _activityCounts;
@@ -52,7 +52,7 @@ class StatisticsViewmodel extends ChangeNotifier {
       final Map<String, dynamic> data = await _repoManager.getRawStatistics();
       _testNumber = data['testNumber'] as int? ?? 0;
       _testFinishedNumber = data['testFinishedNumber'] as int? ?? 0;
-      _averageTestScore = data['averageTestScore'] as int? ?? 0;
+      _averageTestScore = (data['averageTestScore'] as num?)?.toDouble() ?? 0.0;
       _lessonNumber = data['lessonNumber'] as int? ?? 0;
       _lessonFinishedNumber = data['lessonFinishedNumber'] as int? ?? 0;
       _activityCounts = List<int>.from(data['activityCounts'] as List? ?? []);
