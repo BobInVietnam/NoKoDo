@@ -58,6 +58,7 @@ class LibraryViewModel extends ChangeNotifier {
 
   Future<void> _checkAndUpdateDictionary() async {
     final String localVersion = await localDatabase.getConfig('dictVersion') ?? '';
+    await repoManager.getSystemConfig();
     final String remoteVersion = repoManager.remoteDictVersion ?? 'v1';
 
     debugPrint("DICTIONARY SYNC CHECK: local: '$localVersion', remote: '$remoteVersion'");

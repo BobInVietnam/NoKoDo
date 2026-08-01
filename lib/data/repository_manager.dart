@@ -46,13 +46,7 @@ class RepoManager extends ChangeNotifier {
 
       currentStudent = Student.fromMap(currentUserMap);
 
-      try {
-        final configs = await onlineDatabase.getSystemConfig();
-        remoteDictVersion = configs['dictVersion'];
-        debugPrint("TESTING: Successfully loaded system config. remoteDictVersion: $remoteDictVersion");
-      } catch (e) {
-        debugPrint("TESTING: Failed to fetch system config during login: $e");
-      }
+      getSystemConfig();
 
       notifyListeners();
     } catch (e) {
@@ -121,6 +115,7 @@ class RepoManager extends ChangeNotifier {
       if (profile != null) {
         currentStudent = Student.fromMap(profile);
         await _secureStorage.write(key: 'last_active_time', value: now.toString());
+        getSystemConfig();
         notifyListeners();
         return true;
       }
@@ -128,6 +123,16 @@ class RepoManager extends ChangeNotifier {
     } catch (e) {
       debugPrint("TESTING: Auto-login failed: $e");
       return false;
+    }
+  }
+
+  Future<void> getSystemConfig() async {
+    try {
+      final configs = await onlineDatabase.getSystemConfig();
+      remoteDictVersion = configs['dictVersion'];
+      debugPrint("TESTING: Successfully loaded system config. remoteDictVersion: $remoteDictVersion");
+    } catch (e) {
+      debugPrint("TESTING: Failed to fetch system config: $e");
     }
   }
 
