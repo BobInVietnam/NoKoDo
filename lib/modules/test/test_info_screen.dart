@@ -98,7 +98,7 @@ class TestDetailScreen extends StatelessWidget {
                                   ),
                                   const Divider(height: 30, thickness: 1),
                                   _buildInfoRow("Tên bài:", test.name, context),
-                                  _buildInfoRow("Thời gian:", "${test.timeLimit} phút", context),
+                                  _buildInfoRow("Thời gian:", "${test.timeLimit} giây", context),
                                   _buildInfoRow("Lượt làm tối đa:", "${test.allowedAttempts}", context),
                                   _buildInfoRow("Lượt đã làm:", "${test.studentStatuses.length}", context),
                                   _buildInfoRow(

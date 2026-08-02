@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
@@ -8,14 +11,19 @@ class TestViewModel extends ChangeNotifier {
   final RepoManager _repoManager;
 
   final PageController pageController = PageController();
-  
+
+  Timer? _uiTimer;
+  int _remainingTime = -1;
   int _currentPage = 0;
   bool _isTrayExpanded = false;
+  bool _isTimeOutDialogOpen = false;
   final Map<String, String?> _answers = {};
   final Map<int, TextEditingController> _textControllers = {};
 
+  int get remainingTime => _remainingTime;
   int get currentPage => _currentPage;
   bool get isTrayExpanded => _isTrayExpanded;
+  bool get isTimeOutDialogOpen => _isTimeOutDialogOpen;
   Map<String, String?> get answers => _answers;
   Map<int, TextEditingController> get textControllers => _textControllers;
   List<Question> get questions => test.questions;
@@ -25,12 +33,21 @@ class TestViewModel extends ChangeNotifier {
     required this.testSession,
     required RepoManager repoManager,
   }) : _repoManager = repoManager {
+    _remainingTime = test.timeLimit;
     for (int i = 0; i < questions.length; i++) {
       _answers[questions[i].id] = null;
       if (questions[i] is FillBlankQuestion) {
         _textControllers[i] = TextEditingController();
       }
     }
+    _uiTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _remainingTime = remainingTime - 1;
+      if (remainingTime <= 0) {
+        _isTimeOutDialogOpen = true;
+        _uiTimer?.cancel();
+      }
+      notifyListeners();
+    });
   }
 
   void setCurrentPage(int index) {
@@ -69,7 +86,8 @@ class TestViewModel extends ChangeNotifier {
       testId: testSession.testId,
       studentId: testSession.studentId,
       startTime: testSession.startTime,
-      endTime: DateTime.now().millisecondsSinceEpoch,
+      endTime: min(DateTime.now().millisecondsSinceEpoch,
+          testSession.startTime + test.timeLimit * 1000),
       score: finalScore,
     );
     try {
@@ -83,6 +101,7 @@ class TestViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _uiTimer?.cancel();
     pageController.dispose();
     for (var controller in _textControllers.values) {
       controller.dispose();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/scheduler/binding.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/test.dart';
@@ -55,6 +56,51 @@ class TestScreen extends StatelessWidget {
     );
   }
 
+  void _timeOut(BuildContext context, TestViewModel viewModel) {
+    final textTheme = Theme.of(context).textTheme;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (confirmContext) => AlertDialog(
+        title: const Text('Hết giờ!'),
+        content: const Text('Đã hết thời gian làm bài rồi. Hệ thống nộp bài của bạn nhé!'),
+
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(confirmContext); // Close confirmation dialog
+
+              // Show a non-dismissible loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (loadingContext) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              try {
+                await viewModel.submitTest();
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  Navigator.pop(context); // Exit TestScreen
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
+              }
+            },
+            child: Text('Xác nhận', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -62,11 +108,20 @@ class TestScreen extends StatelessWidget {
     final viewModel = context.watch<TestViewModel>();
     final questions = viewModel.questions;
 
+    if (viewModel.isTimeOutDialogOpen) {
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _timeOut(context, viewModel)
+      );
+    }
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: Column(
+
           children: [
+            _buildTimerArea(context, viewModel),
             // --- QUESTION AREA ---
             Expanded(
               child: PageView.builder(
@@ -80,6 +135,8 @@ class TestScreen extends StatelessWidget {
             ),
 
             // --- BOTTOM TRAY ---
+            isKeyboardOpen ?
+            const SizedBox(height: 0) :
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOut,
@@ -104,42 +161,51 @@ class TestScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTimerArea(BuildContext context, TestViewModel viewModel) {
+    final textTheme = Theme.of(context).textTheme;
+    final minute = (viewModel.remainingTime / 60).toInt();
+    final second = viewModel.remainingTime % 60;
+    return Text("Thời gian còn lại: $minute:${'$second'.padLeft(2, '0')}",
+      style: textTheme.bodyLarge);
+  }
+
   Widget _buildQuestionPage(BuildContext context, TestViewModel viewModel, Question question, int index) {
     bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // Question Box
-          isKeyboardOpen
-              ? const SizedBox(height: 0)
-              : Container(
-                  width: double.infinity,
-                  height: 200,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      question.content,
-                      style: textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Question Box
+            isKeyboardOpen
+                ? const SizedBox(height: 0)
+                : Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  question.content,
+                  style: textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
                 ),
-          const SizedBox(height: 24),
+              ),
+            ),
+            const SizedBox(height: 24),
 
-          // Answer Area (Dynamic)
-          if (question is MultipleChoiceQuestion)
-            _buildMultipleChoiceOptions(context, viewModel, question),
-          if (question is FillBlankQuestion)
-            _buildTextInput(context, viewModel, question, index),
-        ],
-      ),
+            // Answer Area (Dynamic)
+            if (question is MultipleChoiceQuestion)
+              _buildMultipleChoiceOptions(context, viewModel, question),
+            if (question is FillBlankQuestion)
+              _buildTextInput(context, viewModel, question, index),
+          ],
+        ),
+      )
     );
   }
 
