@@ -24,7 +24,7 @@ class DictionaryEntry {
   // Deserialization mapping factory
   factory DictionaryEntry.fromMap(Map<String, Object?> map) {
     return DictionaryEntry(
-      id: map['id'] as String,
+      id: map['id'].toString(),
       word: map['word'] as String,
       description: map['description'] as String,
       imageName: (map['imageName'] ?? map['image_name']) as String,
