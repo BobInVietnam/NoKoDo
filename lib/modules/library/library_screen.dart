@@ -40,11 +40,13 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChange);
     _dictScrollController.addListener(_onDictScroll);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChange);
     _tabController.dispose();
     _dictScrollController.removeListener(_onDictScroll);
     _dictScrollController.dispose();
@@ -57,6 +59,11 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     if (_dictScrollController.position.pixels >= _dictScrollController.position.maxScrollExtent - 200) {
       context.read<LibraryViewModel>().loadNextDictionaryPage();
     }
+  }
+
+  void _onTabChange() {
+    debugPrint("LIBRARY SCREEN: TabController at index ${_tabController.index}");
+    context.read<LibraryViewModel>().checkTabControllerIndex(_tabController.index);
   }
 
   // Generic Placeholder Section UI Component (unchanged)
@@ -93,7 +100,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
 
     if (viewModel.isLibraryEmpty) {
       return _buildPlaceholderSection(
-        'Lịch sử Văn bản',
+        'Văn bản',
         'Các văn bản được chuyển đổi từ file sẽ được lưu tại đây.',
         Icons.history_edu_outlined,
       );
@@ -467,6 +474,70 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     );
   }
 
+  void _showCreateFileDialog(BuildContext context, LibraryViewModel viewModel) {
+    final TextEditingController nameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Tạo văn bản mới', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              hintText: 'Nhập tên văn bản...',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final String name = nameController.text.trim();
+                if (name.isEmpty) return;
+
+                Navigator.pop(dialogContext);
+
+                ConvertedFile? newFile = ConvertedFile(
+                  fileName: name,
+                  extractedText: 'Đây là văn bản mới.',
+                  dateConverted: DateTime.now(),
+                );
+
+                final fileId = await viewModel.localDatabase.insertConvertedFile(newFile);
+                newFile = await viewModel.localDatabase.getConvertedFileById(fileId);
+                await viewModel.loadSavedFiles();
+
+                // Navigate directly to the editor
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
+                        create: (providerContext) => EditableReadingViewModel(
+                            localDatabase: viewModel.localDatabase,
+                            ttsService: TtsService(),
+                            file: newFile!
+                        ),
+                        child: EditableReadingScreen(),
+                      ),
+                    ),
+                  ).then((_) => viewModel.loadSavedFiles());
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+              child: const Text('Tạo', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   String _formatDateNative(DateTime? date) {
     if (date == null) return 'Không rõ thời gian';
 
@@ -526,6 +597,9 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   ReturnButton(),
+                  if (viewModel.isAtConvertedFile) ElevatedButton.icon(
+                      onPressed: () => _showCreateFileDialog(context, viewModel),
+                      label: Text("Tạo file mới")),
                   SettingButton(),
                 ],
               ),

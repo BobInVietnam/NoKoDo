@@ -49,7 +49,7 @@ class TestLocalDatabase extends LocalDatabase {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDb(true);
+    _database = await _initDb(false);
     return _database!;
   }
 

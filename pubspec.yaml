@@ -40,8 +40,6 @@ dependencies:
   flutter_tts: ^4.2.3 # Check for the latest version on pub.dev
   provider: ^6.0.0
   percent_indicator: ^4.2.3
-  firebase_auth: ^6.1.1
-  firebase_core: ^4.2.0
   sqflite: ^2.4.2
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -76,6 +74,12 @@ flutter:
     - assets/
     - assets/dict_images/
 
+  fonts:
+    - family: VniAvo
+      fonts:
+        - asset: assets/UTM-Avo.ttf
+        - asset: assets/UTM-AvoBold.ttf
+          weight: 800
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

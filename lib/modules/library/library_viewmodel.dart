@@ -16,6 +16,7 @@ class LibraryViewModel extends ChangeNotifier {
 
   List<ConvertedFile> _savedFiles = [];
   bool _isLoading = false;
+  bool _isAtConvertedFile = true;
 
   // --- Dictionary State Variables ---
   List<DictionaryEntry> _dictionaryEntries = [];
@@ -37,6 +38,7 @@ class LibraryViewModel extends ChangeNotifier {
   List<ConvertedFile> get savedFiles => _savedFiles;
   bool get isLoading => _isLoading;
   bool get isLibraryEmpty => _savedFiles.isEmpty;
+  bool get isAtConvertedFile => _isAtConvertedFile;
 
   // Dictionary Getters
   List<DictionaryEntry> get dictionaryEntries => _dictionaryEntries;
@@ -56,6 +58,7 @@ class LibraryViewModel extends ChangeNotifier {
 
   Future<void> _checkAndUpdateDictionary() async {
     final String localVersion = await localDatabase.getConfig('dictVersion') ?? '';
+    await repoManager.getSystemConfig();
     final String remoteVersion = repoManager.remoteDictVersion ?? 'v1';
 
     debugPrint("DICTIONARY SYNC CHECK: local: '$localVersion', remote: '$remoteVersion'");
@@ -203,6 +206,11 @@ class LibraryViewModel extends ChangeNotifier {
       _isDictLoading = false;
       notifyListeners();
     }
+  }
+
+  void checkTabControllerIndex(int t) {
+    _isAtConvertedFile = t == 0;
+    notifyListeners();
   }
 
   @override

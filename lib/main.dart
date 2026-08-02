@@ -15,17 +15,12 @@ import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
 import 'modules/testing_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   TtsService();
   runApp(
     MultiProvider(providers: [
@@ -71,22 +66,26 @@ class NokodoApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Colors.teal[700],
           ),
-          displayMedium: GoogleFonts.notoSans(
+          displayMedium: TextStyle(
+            fontFamily: "VniAvo",
             fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: Colors.teal[800],
+            color: Colors.teal[700]
           ),
-          bodyLarge: GoogleFonts.notoSans(
-            fontSize: 30,
-            color: Colors.grey[700]
-          ),
-          bodyMedium: GoogleFonts.notoSans(
-              fontSize: 24,
+          bodyLarge: TextStyle(
+              fontFamily: "VniAvo",
+              fontSize: 28,
               color: Colors.grey[800]
           ),
-          bodySmall: GoogleFonts.notoSans(
-            fontSize: 18,
-            color: Colors.grey[800]
+          bodyMedium: TextStyle(
+            fontFamily: "VniAvo",
+            fontSize: 24,
+            color: Colors.grey[900]
+          ),
+          bodySmall: TextStyle(
+              fontFamily: "VniAvo",
+              fontSize: 16,
+              color: Colors.grey[900]
           ),
         ),
         tabBarTheme: TabBarThemeData(

@@ -101,8 +101,9 @@ class SettingsScreen extends StatelessWidget {
                     value: viewModel.fontFamily,
                     isExpanded: true,
                     items: [
-                      DropdownMenuItem(value: 'Roboto', child: Text("Standard (Roboto)", style: textTheme.bodySmall)),
-                      DropdownMenuItem(value: 'Serif', child: Text("Classic (Serif)", style: textTheme.bodySmall)),
+                      DropdownMenuItem(value: 'VniAvo', child: Text("VNI Avo", style: textTheme.bodySmall)),
+                      DropdownMenuItem(value: 'Roboto', child: Text("Roboto", style: textTheme.bodySmall)),
+                      DropdownMenuItem(value: 'Serif', child: Text("Serif", style: textTheme.bodySmall)),
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
