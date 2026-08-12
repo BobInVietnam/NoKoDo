@@ -139,7 +139,7 @@ class DictionaryDetailDialog extends StatelessWidget {
             }
             Navigator.pop(context);
           },
-          child: Text('Đóng', style: textTheme.bodyMedium),
+          child: Text('Đóng'),
         ),
       ],
     );

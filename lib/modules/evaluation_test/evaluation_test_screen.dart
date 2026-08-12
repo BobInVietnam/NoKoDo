@@ -93,15 +93,6 @@ class EvaluationTestScreen extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () => viewModel.startTest(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 4,
-              ),
               child: const Text(
                 "Bắt đầu kiểm tra",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -446,15 +437,6 @@ class EvaluationTestScreen extends StatelessWidget {
               label: const Text(
                 "Hoàn thành & Lưu cài đặt",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 4,
               ),
             ),
           ],

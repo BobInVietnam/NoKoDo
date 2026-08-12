@@ -39,7 +39,7 @@ class EditingScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext), // Close dialog safely
-              child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+              child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -69,11 +69,10 @@ class EditingScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+              child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
               child: const Text('Rời đi', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -109,7 +108,7 @@ class EditingScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+              child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -136,7 +135,6 @@ class EditingScreen extends StatelessWidget {
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
               child: const Text('Lưu bản sao', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -185,12 +183,6 @@ class EditingScreen extends StatelessWidget {
                       icon: const Icon(Icons.edit_note_outlined),
                       label: const Text('Đổi tên'),
                       onPressed: () => _showRenameDialog(context, viewModel),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.undo, color: viewModel.canUndo ? Colors.teal : Colors.grey),
@@ -281,11 +273,10 @@ class EditingScreen extends StatelessWidget {
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(dialogContext, false),
-                                      child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+                                      child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
                                     ),
                                     ElevatedButton(
                                       onPressed: () => Navigator.pop(dialogContext, true),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
                                       child: const Text('Đồng ý', style: TextStyle(color: Colors.white)),
                                     ),
                                   ],
@@ -295,13 +286,7 @@ class EditingScreen extends StatelessWidget {
                             if (confirm == true) {
                               viewModel.resetToDefault();
                             }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
+                          }
                         ),
                         // Central Action Pill (Mirrors the prominent placement of Read All / Stop)
                         ElevatedButton.icon(
@@ -324,26 +309,13 @@ class EditingScreen extends StatelessWidget {
                                 );
                               },
                             );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
+                          }
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.copy_outlined),
                           label: const Text('Lưu thành bản sao'),
                           onPressed: () => _showSaveAsCopyDialog(context, viewModel),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          ),
                         ),
-
                         const SettingButton()
                       ],
                     ),

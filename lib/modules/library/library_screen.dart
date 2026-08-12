@@ -191,7 +191,8 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   children: [
                     ElevatedButton.icon(
                       icon: const Icon(Icons.delete, size: 16),
-                      label: const Text('Xóa'),
+                      label: const Text('Xóa',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
@@ -203,7 +204,8 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text('Chỉnh sửa'),
+                      label: const Text('Chỉnh sửa',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
                         foregroundColor: Colors.white,
@@ -270,7 +272,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                 ),
-                child: const Text('Thêm'),
+                child: const Text('Thêm', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -610,7 +612,8 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   ReturnButton(),
                   if (viewModel.isAtConvertedFile) ElevatedButton.icon(
                       onPressed: () => _showCreateFileDialog(context, viewModel),
-                      label: Text("Tạo file mới")),
+                      label: Text("Tạo file mới",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                   SettingButton(),
                 ],
               ),

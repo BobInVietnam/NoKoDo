@@ -114,39 +114,6 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
 
-                  const Divider(height: 35),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChangeNotifierProvider(
-                              create: (context) => EvaluationTestViewModel(),
-                              child: const EvaluationTestScreen(),
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.assignment_turned_in, size: 24),
-                      label: const Text(
-                        "Làm bài kiểm tra đầu vào",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal[700],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
                 ],
               ),
             ),
@@ -199,15 +166,6 @@ class SettingsScreen extends StatelessWidget {
                     label: const Text(
                       "Làm bài kiểm tra đầu vào",
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal[700],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
                     ),
                   )
                 ],

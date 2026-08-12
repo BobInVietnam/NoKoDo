@@ -19,7 +19,7 @@ class TestScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(confirmContext),
-            child: Text('Huỷ', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+            child: Text('Huỷ', style: const TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () async {
@@ -49,7 +49,7 @@ class TestScreen extends StatelessWidget {
                 }
               }
             },
-            child: Text('Nộp bài', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+            child: Text('Nộp bài'),
           ),
         ],
       ),
@@ -94,7 +94,7 @@ class TestScreen extends StatelessWidget {
                 }
               }
             },
-            child: Text('Xác nhận', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+            child: Text('Xác nhận'),
           ),
         ],
       ),
@@ -374,14 +374,8 @@ class TestScreen extends StatelessWidget {
             children: [
               ReturnButton(),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  side: const BorderSide(color: Colors.green, width: 4),
-                  padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
-                  backgroundColor: Colors.grey[200],
-                  foregroundColor: Colors.teal,
-                ),
                 onPressed: () => _submitTest(context, viewModel),
-                child: Text("Nộp bài", style: textTheme.bodyMedium,),
+                child: Text("Nộp bài", style: const TextStyle(fontSize: 20)),
               ),
             ],
           )
