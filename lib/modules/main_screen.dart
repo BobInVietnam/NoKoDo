@@ -68,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
           },
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.black,
-            backgroundColor: Colors.teal[5],
+            backgroundColor: Colors.white,
             textStyle: const TextStyle(fontSize: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -304,7 +304,7 @@ class _MainScreenState extends State<MainScreen> {
           TextButton(
             // Just close the confirmation dialog
             onPressed: () => Navigator.pop(confirmContext),
-            child: Text('Huỷ', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+            child: Text('Huỷ', style: const TextStyle(color: Colors.black87)),
           ),
           TextButton(
             onPressed: () async {
@@ -341,7 +341,7 @@ class _MainScreenState extends State<MainScreen> {
                 }
               }
             },
-            child: Text('Đăng xuất', style: textTheme.bodySmall!.copyWith(color: Colors.teal[800])),
+            child: Text('Đăng xuất'),
           ),
         ],
       ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/modules/evaluation_test/evaluation_test_screen.dart';
+import 'package:nodyslexia/modules/evaluation_test/evaluation_test_viewmodel.dart';
 
 // Import your new ViewModel
 import 'package:nodyslexia/modules/settings/settings_viewmodel.dart';
@@ -26,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Text("Cỡ chữ", style: textTheme.displayMedium),
                   Slider(
-                    min: 20,
+                    min: 16,
                     max: 60,
                     value: viewModel.fontSize,
                     onChanged: viewModel.updateFontSize,
@@ -50,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 15),
                   Text("Dãn cách chữ", style: textTheme.displayMedium),
                   Slider(
-                    min: 1,
+                    min: 0,
                     max: 20,
                     value: viewModel.letterSpacing,
                     onChanged: viewModel.updateLetterSpacing,
@@ -61,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 15),
                   Text("Dãn cách từ", style: textTheme.displayMedium),
                   Slider(
-                    min: 1,
+                    min: 0,
                     max: 20,
                     value: viewModel.wordSpacing,
                     onChanged: viewModel.updateWordSpacing,
@@ -146,8 +148,26 @@ class SettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const <Widget>[
-                  ReturnButton(),
+                children: <Widget>[
+                  const ReturnButton(),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChangeNotifierProvider(
+                            create: (context) => EvaluationTestViewModel(),
+                            child: const EvaluationTestScreen(),
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.assignment_turned_in, size: 24),
+                    label: const Text(
+                      "Làm bài kiểm tra đầu vào",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  )
                 ],
               ),
             ),

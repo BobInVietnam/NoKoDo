@@ -87,9 +87,9 @@ class TextStyleSettings extends ChangeNotifier {
 
     // Load values, or use defaults if they don't exist
     _fontSize = prefs.getDouble('fontSize') ?? 20.0;
-    _letterSpacing = prefs.getDouble('letterSpacing') ?? 1.5;
-    _wordSpacing = prefs.getDouble('wordSpacing') ?? 1.0;
-    _fontFamily = prefs.getString('fontFamily') ?? 'Roboto';
+    _letterSpacing = prefs.getDouble('letterSpacing') ?? 0;
+    _wordSpacing = prefs.getDouble('wordSpacing') ?? 0;
+    _fontFamily = prefs.getString('fontFamily') ?? 'VniAvo';
 
     // Load Color (stored as an integer)
     int colorValue = prefs.getInt('colorValue') ?? Colors.black.toARGB32();

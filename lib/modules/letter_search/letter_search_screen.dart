@@ -181,6 +181,8 @@ class LetterSearchScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
+                width: 1200,
+                height: 440,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16.0),
@@ -193,6 +195,7 @@ class LetterSearchScreen extends StatelessWidget {
                   ],
                 ),
                 padding: const EdgeInsets.all(12.0),
+                alignment: Alignment.center,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(viewModel.currentGridHeight, (rowIndex) {
@@ -232,11 +235,12 @@ class LetterSearchScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               "Ký tự cần tìm: ${viewModel.target}",
               style: textTheme.displayMedium,
             ),
+            const SizedBox(height: 16),
             // Feedback status bar
             Container(
               height: 48,
@@ -259,8 +263,7 @@ class LetterSearchScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-            ),
-            const SizedBox(height: 20),
+            )
           ],
         );
 

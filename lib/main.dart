@@ -91,6 +91,31 @@ class NokodoApp extends StatelessWidget {
         tabBarTheme: TabBarThemeData(
 
         ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: "VniAvo"
+            )
+          )
+        )  ,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal[700],
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: "VniAvo"
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
+        ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: const LoginScreen()
@@ -142,7 +167,6 @@ class TestNokodoApp extends StatelessWidget {
           ),
         ),
         tabBarTheme: TabBarThemeData(
-
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
