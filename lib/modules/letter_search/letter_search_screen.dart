@@ -240,6 +240,7 @@ class LetterSearchScreen extends StatelessWidget {
               "Ký tự cần tìm: ${viewModel.target}",
               style: textTheme.displayMedium,
             ),
+            const SizedBox(height: 16),
             // Feedback status bar
             Container(
               height: 48,
@@ -262,8 +263,7 @@ class LetterSearchScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-            ),
-            const SizedBox(height: 20),
+            )
           ],
         );
 

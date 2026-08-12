@@ -19,6 +19,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "target": "d",
       "noise": ["b", "p", "q"],
       "chance": 0.35,
+      "gap": 0,
       "spacing": 0.0,
       "size": 42.0
     },
@@ -28,6 +29,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "target": "t",
       "noise": ["f", "l", "i"],
       "chance": 0.40,
+      "gap": 0,
       "spacing": 6.0,
       "size": 28.0
     },
@@ -37,6 +39,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "target": "n",
       "noise": ["u", "m", "h"],
       "chance": 0.45,
+      "gap": 0,
       "spacing": 2.0,
       "size": 56.0
     },
@@ -46,6 +49,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "target": "ă",
       "noise": ["a", "ã", "â"],
       "chance": 0.80,
+      "gap": 0,
       "spacing": 1.0,
       "size": 40.0
     },
@@ -55,6 +59,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "target": "ê",
       "noise": ["ẽ", "è", "é"],
       "chance": 0.80,
+      "gap": 0,
       "spacing": 3.0,
       "size": 66.0
     }
@@ -96,6 +101,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   double get currentSize => (_content[_currentRound]['size'] as num?)?.toDouble() ?? 22.0;
   int get currentGridHeight => _content[_currentRound]['height'] as int;
   int get currentGridWidth => _content[_currentRound]['width'] as int;
+  int get currentGap => (_content[_currentRound]['gap'] as num?)?.toInt() ?? 0;
 
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
@@ -159,23 +165,49 @@ class LetterSearchViewModel extends ChangeNotifier {
   void _loadSymbols() {
     final currentRoundData = _content[_currentRound];
     _target = currentRoundData['target'] as String;
-    final double chance = (currentRoundData['chance'] as num).toDouble();
+    final int gap = currentGap;
+    final double chance = (currentRoundData['chance'] as num?)?.toDouble() ?? 0.35;
     final List<String> noiseList = List<String>.from(currentRoundData['noise'] as List);
 
     final Random random = Random();
     _displayGrid = List.generate(currentGridHeight,
             (_) => List.filled(currentGridWidth, ""));
 
-    int targetRow = random.nextInt(currentGridHeight);
-    int targetCol = random.nextInt(currentGridWidth);
-    _displayGrid[targetRow][targetCol] = target;
+    if (gap == 0) {
+      int targetRow = random.nextInt(currentGridHeight);
+      int targetCol = random.nextInt(currentGridWidth);
+      _displayGrid[targetRow][targetCol] = target;
 
-    for (int r = 0; r < currentGridHeight; r++) {
-      for (int c = 0; c < currentGridWidth; c++) {
-        if (r == targetRow && c == targetCol) continue;
-        if (random.nextDouble() < chance) {
-          String selectedNoise = noiseList[random.nextInt(noiseList.length)];
-          _displayGrid[r][c] = selectedNoise;
+      for (int r = 0; r < currentGridHeight; r++) {
+        for (int c = 0; c < currentGridWidth; c++) {
+          if (r == targetRow && c == targetCol) continue;
+          if (random.nextDouble() < chance) {
+            String selectedNoise = noiseList[random.nextInt(noiseList.length)];
+            _displayGrid[r][c] = selectedNoise;
+          }
+        }
+      }
+    } else {
+      int totalCells = currentGridHeight * currentGridWidth;
+      int step = gap + 1;
+
+      List<int> validIndices = [];
+      for (int i = 0; i < totalCells; i += step) {
+        validIndices.add(i);
+      }
+
+      if (validIndices.isNotEmpty) {
+        int targetIndex = validIndices[random.nextInt(validIndices.length)];
+
+        for (int idx in validIndices) {
+          int r = idx ~/ currentGridWidth;
+          int c = idx % currentGridWidth;
+          if (idx == targetIndex) {
+            _displayGrid[r][c] = target;
+          } else {
+            String selectedNoise = noiseList[random.nextInt(noiseList.length)];
+            _displayGrid[r][c] = selectedNoise;
+          }
         }
       }
     }
