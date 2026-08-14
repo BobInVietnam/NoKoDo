@@ -55,7 +55,7 @@ class RepoManager extends ChangeNotifier {
     }
   }
 
-  void signOut() async {
+  Future<void> signOut() async {
     await _secureStorage.delete(key: 'jwt_token');
     await _secureStorage.delete(key: 'last_active_time');
     onlineDatabase.setToken(null);
@@ -127,6 +127,8 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> getSystemConfig() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+    
     try {
       final configs = await onlineDatabase.getSystemConfig();
       remoteDictVersion = configs['dictVersion'];
@@ -199,11 +201,15 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> sendTestSessionStatus(TestSession testSession) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan sending test session data...");
     await onlineDatabase.sendTestSessionStatus(testSession);
   }
 
   Future<void> sendTestAnswers(TestSession testSession, Map<String, dynamic> answersList) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
     debugPrint("TESTING: RepoMan sending test answers data...");
     Map<String, Object?> answersMapList = <String, Object?>{
       'studentId': testSession.studentId,
@@ -222,6 +228,7 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> sendUsageTime(int totalUsageTime) async {
+    if (currentStudent == null) return;
     debugPrint("TESTING: RepoMan sending usage time data...");
     final cached = await database.getConfig('statistics_${currentStudent!.uid}');
     if (cached != null) {

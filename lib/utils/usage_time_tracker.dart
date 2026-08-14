@@ -20,7 +20,8 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
   int get totalSecondsElapsed => _previouslyAccruedSeconds + _stopwatch.elapsed.inSeconds;
 
   void resumeWithUserData(int accruedSeconds) {
-    resetTracker();
+    _stopwatch.reset();
+    _previouslyAccruedSeconds = -1;
     debugPrint("Resuming tracking with accrued seconds = $accruedSeconds");
     _previouslyAccruedSeconds = accruedSeconds;
     _resumeTracking();
@@ -63,18 +64,18 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  void _pauseTracking() {
+  Future<void> _pauseTracking() async {
     _stopwatch.stop();
     _uiTimer?.cancel();
     notifyListeners(); // Final broadcast to ensure data synchronicity
     
     // Trigger background synchronization with the web server
-    _repoManager.sendUsageTime(totalSecondsElapsed);
+    await _repoManager.sendUsageTime(totalSecondsElapsed);
   }
 
   /// Optional hook: Use this to clear or increment baseline totals when saving to an external database
-  void resetTracker() {
-    _pauseTracking();
+  Future<void> resetTracker() async {
+    await _pauseTracking();
     _stopwatch.reset();
     _previouslyAccruedSeconds = -1;
     notifyListeners();
