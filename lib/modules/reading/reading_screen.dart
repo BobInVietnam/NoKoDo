@@ -9,6 +9,8 @@ import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 
+import '../../device_size.dart';
+
 class ReadingScreen extends StatefulWidget {
   const ReadingScreen({super.key});
 
@@ -45,6 +47,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact;
+    debugPrint("SCREENSIZE: reading_screen screen size: $screenSize");
     final viewModel = context.watch<ReadingViewModel>();
     final textTheme = Theme.of(context).textTheme;
 
@@ -229,7 +234,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
                           icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
                               ? Icons.stop_circle_outlined
                               : Icons.play_circle_outline),
-                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
+                          label: Text(
+                              isSmall
+                                  ? ""
+                                  : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
                               style: textTheme.bodySmall!.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white
@@ -246,7 +254,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
                           icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
                               ? Icons.stop_circle_outlined
                               : Icons.menu_book_outlined),
-                          label: Text(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
+                          label: Text(
+                              isSmall
+                                  ? ""
+                                  : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
                               style: textTheme.bodySmall!.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white

@@ -39,6 +39,9 @@ class TestDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+    bool useVerticalLayout = screenSize.width < screenSize.height;
+
     final textTheme = Theme.of(context).textTheme;
     final colorTheme = Theme.of(context).colorScheme;
     final viewModel = context.watch<TestDetailViewModel>();
@@ -60,7 +63,213 @@ class TestDetailScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Row(
+              child: useVerticalLayout
+                  ? Column(
+                children: <Widget>[
+                  // Left Container - Test Information details
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    width: 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.teal.withOpacity(0.05),
+                                      spreadRadius: 2,
+                                      blurRadius: 6,
+                                    )
+                                  ]
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                              margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: <Widget>[
+                                    Text(
+                                      "Thông tin bài kiểm tra",
+                                      style: textTheme.displayMedium,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const Divider(height: 30, thickness: 1),
+                                    _buildInfoRow("Tên bài:", test.name, context),
+                                    _buildInfoRow("Thời gian:", "${test.timeLimit} giây", context),
+                                    _buildInfoRow("Lượt làm tối đa:", "${test.allowedAttempts}", context),
+                                    _buildInfoRow("Lượt đã làm:", "${test.studentStatuses.length}", context),
+                                    _buildInfoRow(
+                                      "Điểm cao nhất:",
+                                      maxScore != null ? "${maxScore.toStringAsFixed(1)} điểm" : "Chưa làm",
+                                      context,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ]
+                      )
+                    ),
+                  Expanded(
+                    flex: 6,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(16.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.teal.withOpacity(0.05),
+                              spreadRadius: 2,
+                              blurRadius: 6,
+                            )
+                          ]
+                      ),
+                      padding: const EdgeInsets.all(20.0),
+                      margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            "Lịch sử làm bài",
+                            style: textTheme.displayMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const Divider(height: 24, thickness: 1),
+                          Expanded(
+                            child: test.studentStatuses.isEmpty
+                                ? Center(
+                              child: Text(
+                                "Bạn chưa thực hiện lượt làm bài nào.",
+                                style: GoogleFonts.poppins(
+                                  color: Colors.grey[500],
+                                  fontSize: 15,
+                                ),
+                              ),
+                            )
+                                : ListView.builder(
+                              itemCount: test.studentStatuses.length,
+                              itemBuilder: (context, index) {
+                                final attempt = test.studentStatuses[index];
+                                return Card(
+                                  elevation: 1,
+                                  margin: const EdgeInsets.symmetric(vertical: 6.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(color: Colors.teal.shade50),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor: Colors.teal.shade100,
+                                          foregroundColor: Colors.teal.shade900,
+                                          child: Text(
+                                            "${index + 1}",
+                                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Lần làm thứ ${index + 1}",
+                                                style: textTheme.displayMedium,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                "Bắt đầu: ${viewModel.formatTimestamp(attempt.startTime)}",
+                                                style: textTheme.bodyMedium,
+                                              ),
+                                              Text(
+                                                "Thời gian làm: ${viewModel.formatDuration(attempt.startTime, attempt.endTime)}",
+                                                style: textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          "${attempt.score.toStringAsFixed(1)}đ",
+                                          style: textTheme.displayMedium!.copyWith(color: Colors.teal),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const Divider(height: 24, thickness: 1),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                // Show a loading indicator dialog while initiating session
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                                );
+                                try {
+                                  final testSession = await viewModel.startNewSession();
+                                  if (context.mounted) {
+                                    Navigator.pop(context); // Close loader
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (innerContext) => ChangeNotifierProvider(
+                                          create: (providerContext) => TestViewModel(
+                                            test: test,
+                                            testSession: testSession,
+                                            repoManager: providerContext.read<RepoManager>(),
+                                          ),
+                                          child: const TestScreen(),
+                                        ),
+                                      ),
+                                    );
+                                    await viewModel.refreshDetails();
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    Navigator.pop(context); // Close loader
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('$e')),
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14.0),
+                                textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: Text("BẮT ĐẦU", style: textTheme.displayMedium!.copyWith(color: Colors.white)),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  ]
+                )
+                  : Row(
                 children: <Widget>[
                   // Left Container - Test Information details
                   Expanded(

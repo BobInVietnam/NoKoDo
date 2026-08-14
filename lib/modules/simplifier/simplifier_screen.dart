@@ -45,6 +45,9 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.sizeOf(context);
+
+    bool useVerticalLayout = screenSize.width < screenSize.height;
     final viewModel = context.watch<SimplifierViewModel>();
     final textTheme = Theme.of(context).textTheme;
 
@@ -72,7 +75,103 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
 
               // Side-by-side Input and Output Panel
               Expanded(
-                child: Row(
+                child: useVerticalLayout
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Left Box (Input Panel)
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blueAccent.withOpacity(0.5), width: 2),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _inputController,
+                                maxLines: null,
+                                decoration: const InputDecoration(
+                                  hintText: 'Câu chưa được đơn giản hóa được viết ở đây',
+                                  border: InputBorder.none,
+                                ),
+                                style: textTheme.bodyMedium,
+                              ),
+                            ),
+                            if (viewModel.inputText.isNotEmpty)
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: TextButton.icon(
+                                  icon: const Icon(Icons.clear, size: 18),
+                                  label: const Text('Xóa'),
+                                  onPressed: () {
+                                    viewModel.clearInput();
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Central Arrow Icon/Button
+                    const Divider(),
+                    // Right Box (Output Panel)
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blueAccent.withOpacity(0.5), width: 2),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: viewModel.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: SelectionArea(
+                                  child: Text(
+                                      viewModel.simplifiedText.isNotEmpty
+                                          ? viewModel.simplifiedText
+                                          : 'Câu đã được đơn giản hóa',
+                                      style: textTheme.bodyMedium!.copyWith(
+                                          color: viewModel.simplifiedText.isNotEmpty
+                                              ? Colors.grey[700] : Colors.grey[400]
+                                      )
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (viewModel.simplifiedText.isNotEmpty)
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _copyToClipboard(viewModel.simplifiedText),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.teal[50],
+                                    foregroundColor: Colors.teal[800],
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.copy, size: 16),
+                                  label: const Text('Sao chép kết quả'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+                    : Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Left Box (Input Panel)
