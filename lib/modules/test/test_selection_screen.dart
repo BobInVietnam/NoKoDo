@@ -5,6 +5,7 @@ import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/modules/test/test_info_viewmodel.dart';
 import 'package:provider/provider.dart';
+import '../../device_size.dart';
 import 'test_info_screen.dart';
 import 'test_selection_viewmodel.dart';
 
@@ -37,6 +38,8 @@ class TestSelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final viewModel = context.watch<TestSelectionViewModel>();
@@ -108,7 +111,7 @@ class TestSelectionScreen extends StatelessWidget {
                           itemCount: viewModel.filteredTests.length,
                           itemBuilder: (context, index) {
                             final testInfo = viewModel.filteredTests[index];
-                            return _buildTestCard(context, testInfo, viewModel);
+                            return _buildTestCard(context, testInfo, viewModel, isSmall);
                           },
                         ),
             ),
@@ -133,7 +136,12 @@ class TestSelectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTestCard(BuildContext context, TestInfo testInfo, TestSelectionViewModel viewModel) {
+  Widget _buildTestCard(
+      BuildContext context,
+      TestInfo testInfo,
+      TestSelectionViewModel viewModel,
+      bool isSmall
+      ) {
     String statusText;
     String difficultyText;
     Color statusColor;
@@ -220,7 +228,42 @@ class TestSelectionScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
-          child: Row(
+          child: isSmall
+              ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+                  Text(
+                    testInfo.name,
+                    style: textTheme.displayMedium,
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    statusText,
+                    style: textTheme.bodyMedium?.copyWith(
+                        color: statusColor
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Độ khó: $difficultyText',
+                            style: textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Ngày thêm: ${createdDate.day}/${createdDate.month}/${createdDate.year}',
+                            style: textTheme.bodyMedium,
+                          ),
+                        ],
+                      )
+                    ]
+                  )
+            ],
+          )
+              : Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               // Left Column
@@ -258,9 +301,6 @@ class TestSelectionScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  if (progressIndicator != null)
-                    progressIndicator
-                  else
                     Text(
                       statusText,
                       style: textTheme.bodyMedium?.copyWith(

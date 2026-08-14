@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:nodyslexia/modules/practice/practice_details_screen.dart';
 import 'package:nodyslexia/modules/practice/practice_details_viewmodel.dart';
 
+import '../../device_size.dart';
+
 class PracticeSelectionScreen extends StatefulWidget {
   const PracticeSelectionScreen({super.key});
 
@@ -64,6 +66,8 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
     final viewModel = context.watch<PracticeSelectionViewModel>();
     final textTheme = Theme.of(context).textTheme;
     final Color primaryColor = Theme.of(context).colorScheme.primary;
@@ -140,7 +144,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                           itemCount: viewModel.filteredLessons.length,
                           itemBuilder: (context, index) {
                             final lesson = viewModel.filteredLessons[index];
-                            return _buildLessonCard(context, lesson);
+                            return _buildLessonCard(context, lesson, isSmall);
                           },
                         ),
             ),
@@ -163,16 +167,18 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
     );
   }
 
-  Widget _buildLessonCard(BuildContext context, Lesson lesson) {
+  Widget _buildLessonCard(
+      BuildContext context,
+      Lesson lesson,
+      bool isSmall
+      ) {
     final textTheme = Theme.of(context).textTheme;
     String statusText;
     Color statusColor;
-    Widget? progressIndicator;
 
     if (lesson.isDone) {
       statusText = 'Đã hoàn thành';
       statusColor = Colors.green.shade600;
-      progressIndicator = Icon(Icons.check_circle, color: statusColor, size: 20);
     } else {
       statusText = 'Chưa bắt đầu';
       statusColor = Colors.grey.shade600;
@@ -245,6 +251,12 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      isSmall ? Text(
+                        statusText,
+                        style: textTheme.bodyMedium?.copyWith(
+                            color: statusColor
+                        ),
+                      ) : Container(),
                       Text(
                         'Độ khó: $difficultyText',
                         style: textTheme.bodyMedium,
@@ -256,7 +268,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                       ),
                     ],
                   ),
-                  Column(
+                  isSmall ? Container() : Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
@@ -265,11 +277,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                             color: statusColor
                         ),
                       ),
-                      if (progressIndicator != null) ...[
-                        const SizedBox(height: 4),
-                        progressIndicator,
-                      ]
-                    ],
+                    ]
                   )
                 ],
               ),
