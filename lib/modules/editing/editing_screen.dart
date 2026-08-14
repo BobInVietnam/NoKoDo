@@ -8,6 +8,8 @@ import 'package:nodyslexia/customwigdets/settings_button.dart';
 // Import your ViewModel
 import 'package:nodyslexia/modules/editing/editing_viewmodel.dart';
 
+import '../../device_size.dart';
+
 class EditingScreen extends StatelessWidget {
   const EditingScreen({super.key});
 
@@ -145,9 +147,13 @@ class EditingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
+    debugPrint("SCREENSIZE: editing_screen screen size: $screenSize");
     final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<EditingViewModel>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return PopScope(
       canPop: !viewModel.hasUnsavedChanges,
@@ -168,7 +174,9 @@ class EditingScreen extends StatelessWidget {
           child: Column(
             children: <Widget>[
               // --- Top Menu Bar: File Info & Actions ---
-              Padding(
+              isKeyboardOpen
+                  ? Container()
+                  : Padding(
                 padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                 child: Row(
                   children: [
@@ -262,7 +270,8 @@ class EditingScreen extends StatelessWidget {
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.restore),
-                          label: const Text('Trở về ban đầu'),
+                          label: Text(
+                              isSmall ? "" : 'Trở về ban đầu'),
                           onPressed: () async {
                             final confirm = await showDialog<bool>(
                               context: context,
@@ -291,7 +300,8 @@ class EditingScreen extends StatelessWidget {
                         // Central Action Pill (Mirrors the prominent placement of Read All / Stop)
                         ElevatedButton.icon(
                           icon: const Icon(Icons.save_as_outlined),
-                          label: const Text('Lưu lại'),
+                          label: Text(
+                              isSmall ? "" : 'Lưu lại'),
                           onPressed: () {
                             viewModel.saveDocument();
                             showDialog(
@@ -313,7 +323,8 @@ class EditingScreen extends StatelessWidget {
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.copy_outlined),
-                          label: const Text('Lưu thành bản sao'),
+                          label: Text(
+                              isSmall ? "" : 'Lưu thành bản sao'),
                           onPressed: () => _showSaveAsCopyDialog(context, viewModel),
                         ),
                         const SettingButton()

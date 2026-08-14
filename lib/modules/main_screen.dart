@@ -18,6 +18,8 @@ import 'package:provider/provider.dart';
 import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
 import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
 import 'package:nodyslexia/utils/simplifier_service.dart';
+import '../customwigdets/return_button.dart';
+import '../device_size.dart';
 import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
 import 'library/library_viewmodel.dart';
@@ -48,46 +50,148 @@ class _MainScreenState extends State<MainScreen> {
     required IconData icon,
     required String label,
     VoidCallback? onPressed,
+    bool expand = true,
   }) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton.icon(
-          icon: Icon(icon, size: 42),
-          label: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 20.0), // Add padding to make button taller
-            child: Text(label,
-                style: textTheme.displayMedium,
-                textAlign: TextAlign.center),
+    final buttonWidget = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton.icon(
+        icon: Icon(icon, size: 42),
+        label: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 20.0), // Add padding to make button taller
+          child: Text(label,
+              style: textTheme.displayMedium,
+              textAlign: TextAlign.center),
+        ),
+        onPressed: onPressed ?? () {
+          // Placeholder action
+          print('$label button pressed');
+        },
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.black,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(
+              color: Colors.teal,
+              width: 8,
+            )
           ),
-          onPressed: onPressed ?? () {
-            // Placeholder action
-            print('$label button pressed');
-          },
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.black,
-            backgroundColor: Colors.white,
-            textStyle: const TextStyle(fontSize: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(
-                color: Colors.teal,
-                width: 8,
-              )
-            ),
-            elevation: 3,
-          ),
+          elevation: 3,
         ),
       ),
+    );
+
+    if (expand) {
+      return Expanded(child: buttonWidget);
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: buttonWidget,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSingleColumn = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
+    debugPrint("SCREENSIZE: main_screen screen size: $screenSize (single column: $isSingleColumn)");
+
     final textTheme = Theme.of(context).textTheme;
     final username = context.watch<RepoManager>().currentStudent?.firstname;
+
+    final practiceBtnAction = () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider(
+            create: (innerContext) => PracticeSelectionViewModel(
+              repoManager: innerContext.read<RepoManager>(),
+            ),
+            child: const PracticeSelectionScreen(),
+          ),
+        ),
+      );
+    };
+
+    final testBtnAction = () {
+      if (context.read<RepoManager>().currentStudent == null) {
+        _showOfflineWarning(context);
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (innerContext) => ChangeNotifierProvider(
+            create: (providerContext) => TestSelectionViewModel(
+              repoManager: providerContext.read<RepoManager>(),
+            ),
+            child: const TestSelectionScreen(),
+          ),
+        ),
+      );
+    };
+
+    final simplifierBtnAction = () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
+            create: (innerContext) => SimplifierViewModel(
+              simplifierService: LocalSimplifierService(token: _token),
+            ),
+            child: const SimplifierScreen(),
+          ),
+        ),
+      );
+    };
+
+    final libraryBtnAction = () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
+            create: (innerContext) => LibraryViewModel(
+              localDatabase: innerContext.read<LocalDatabase>(),
+              repoManager: innerContext.read<RepoManager>(),
+            ),
+            child: const LibraryScreen(),
+          ),
+        ),
+      );
+    };
+
+    final ocrBtnAction = () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+          create: (context) => FileToTextViewModel(
+              ocrService: LocalOCRService(token: _token),
+              localDatabase: context.read<LocalDatabase>()
+          ),
+          child: const FileToTextScreen(),
+        ))
+      );
+    };
+
+    final statsBtnAction = () {
+      if (context.read<RepoManager>().currentStudent == null) {
+        _showOfflineWarning(context);
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+          create: (context) => StatisticsViewmodel(
+              repoManager: context.read<RepoManager>(),
+              usageTimeTracker: context.read<UsageTimeTracker>()
+          ),
+          child: const StatisticsScreen(),
+        ))
+      );
+    };
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -101,7 +205,7 @@ class _MainScreenState extends State<MainScreen> {
             children: <Widget>[
               // App Title
               Padding(
-                padding: const EdgeInsets.only(top: 40.0, bottom: 30.0), // Added more top padding
+                padding: const EdgeInsets.only(top: 10.0, bottom: 20.0), // Added more top padding
                 child: Text(
                     'Nokodo',
                     style: textTheme.titleLarge
@@ -112,164 +216,134 @@ class _MainScreenState extends State<MainScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center, // Center the buttons column vertically
-                    children: <Widget>[
-                      // Row 1 (1 button)
-                      Row(
-                        children: <Widget>[
-                          _buildMenuButton(
-                              icon: Icons.play_circle_outline, // Placeholder
-                              label: 'LUYỆN TẬP',
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChangeNotifierProvider(
-                                      create: (innerContext) => PracticeSelectionViewModel(
-                                        repoManager: innerContext.read<RepoManager>(),
-                                      ),
-                                      child: const PracticeSelectionScreen(),
-                                    ),
-                                  ),
-                                );
-                              }
+                  child: isSingleColumn
+                      ? SingleChildScrollView(
+                          child: Column(
+                            children: <Widget>[
+                              _buildMenuButton(
+                                icon: Icons.play_circle_outline,
+                                label: 'LUYỆN TẬP',
+                                expand: false,
+                                onPressed: practiceBtnAction,
+                              ),
+                              const SizedBox(height: 10),
+                              _buildMenuButton(
+                                icon: Icons.book_outlined,
+                                label: 'LÀM BÀI KIỂM TRA',
+                                expand: false,
+                                onPressed: testBtnAction,
+                              ),
+                              const SizedBox(height: 10),
+                              _buildMenuButton(
+                                icon: Icons.abc_outlined,
+                                label: 'ĐƠN GIẢN HÓA CÂU TỪ',
+                                expand: false,
+                                onPressed: simplifierBtnAction,
+                              ),
+                              const SizedBox(height: 10),
+                              _buildMenuButton(
+                                icon: Icons.bar_chart_outlined,
+                                label: 'THƯ VIỆN',
+                                expand: false,
+                                onPressed: libraryBtnAction,
+                              ),
+                              const SizedBox(height: 10),
+                              _buildMenuButton(
+                                icon: Icons.settings_outlined,
+                                label: 'CHUYỂN ẢNH SANG VĂN BẢN',
+                                expand: false,
+                                onPressed: ocrBtnAction,
+                              ),
+                              const SizedBox(height: 10),
+                              _buildMenuButton(
+                                icon: Icons.help_outline,
+                                label: 'THEO DÕI TIẾN ĐỘ',
+                                expand: false,
+                                onPressed: statsBtnAction,
+                              ),
+                            ],
                           ),
-                          _buildMenuButton(
-                            icon: Icons.book_outlined, // Placeholder
-                            label: 'LÀM BÀI KIỂM TRA',
-                            onPressed: () {
-                              if (context.read<RepoManager>().currentStudent == null) {
-                                _showOfflineWarning(context);
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (innerContext) => ChangeNotifierProvider(
-                                    create: (providerContext) => TestSelectionViewModel(
-                                      repoManager: providerContext.read<RepoManager>(),
-                                    ),
-                                    child: const TestSelectionScreen(),
+                        )
+                      : SingleChildScrollView(
+                          child: Column(
+                            children: <Widget>[
+                              // Row 1 (2 buttons)
+                              Row(
+                                children: <Widget>[
+                                  _buildMenuButton(
+                                    icon: Icons.play_circle_outline,
+                                    label: 'LUYỆN TẬP',
+                                    expand: true,
+                                    onPressed: practiceBtnAction,
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
+                                  _buildMenuButton(
+                                    icon: Icons.book_outlined,
+                                    label: 'LÀM BÀI KIỂM TRA',
+                                    expand: true,
+                                    onPressed: testBtnAction,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
 
-                      // Row 2 (2 buttons)a
-                      Row(
-                        children: <Widget>[
-                          _buildMenuButton(
-                            icon: Icons.abc_outlined, // Placeholder
-                            label: 'ĐƠN GIẢN HÓA CÂU TỪ',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChangeNotifierProvider<SimplifierViewModel>(
-                                    create: (innerContext) => SimplifierViewModel(
-                                      simplifierService: LocalSimplifierService(token: _token),
-                                    ),
-                                    child: const SimplifierScreen(),
+                              // Row 2 (2 buttons)
+                              Row(
+                                children: <Widget>[
+                                  _buildMenuButton(
+                                    icon: Icons.abc_outlined,
+                                    label: 'ĐƠN GIẢN HÓA CÂU TỪ',
+                                    expand: true,
+                                    onPressed: simplifierBtnAction,
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          _buildMenuButton(
-                            icon: Icons.bar_chart_outlined, // Placeholder
-                            label: 'THƯ VIỆN',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChangeNotifierProvider<LibraryViewModel>(
-                                    create: (innerContext) => LibraryViewModel(
-                                      localDatabase: innerContext.read<LocalDatabase>(),
-                                      repoManager: innerContext.read<RepoManager>(),
-                                    ),
-                                    child: const LibraryScreen(),
+                                  _buildMenuButton(
+                                    icon: Icons.bar_chart_outlined,
+                                    label: 'THƯ VIỆN',
+                                    expand: true,
+                                    onPressed: libraryBtnAction,
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
 
-                    // Row 3 (2 buttons)
-                    Row(
-                      children: <Widget>[
-                        _buildMenuButton(
-                          icon: Icons.settings_outlined, // Placeholder
-                          label: 'CHUYỂN ẢNH SANG VĂN BẢN',
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
-                                  create: (context) => FileToTextViewModel(
-                                      ocrService: LocalOCRService(token: _token),
-                                      localDatabase: context.read<LocalDatabase>()
+                              // Row 3 (2 buttons)
+                              Row(
+                                children: <Widget>[
+                                  _buildMenuButton(
+                                    icon: Icons.settings_outlined,
+                                    label: 'CHUYỂN ẢNH SANG VĂN BẢN',
+                                    expand: true,
+                                    onPressed: ocrBtnAction,
                                   ),
-                                  child: const FileToTextScreen(),
-                                )
-                                )
-                            );
-                          },
-                        ),
-                        _buildMenuButton(
-                          icon: Icons.help_outline, // Placeholder
-                          label: 'THEO DÕI TIẾN ĐỘ',
-                          onPressed: () {
-                            if (context.read<RepoManager>().currentStudent == null) {
-                              _showOfflineWarning(context);
-                              return;
-                            }
-                            Navigator.push(
-                              context,
-                                MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
-                                  create: (context) => StatisticsViewmodel(
-                                      repoManager: context.read<RepoManager>(),
-                                      usageTimeTracker: context.read<UsageTimeTracker>()
+                                  _buildMenuButton(
+                                    icon: Icons.help_outline,
+                                    label: 'THEO DÕI TIẾN ĐỘ',
+                                    expand: true,
+                                    onPressed: statsBtnAction,
                                   ),
-                                  child: const StatisticsScreen(),
-                                )
-                                )
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const Spacer(), // Pushes content above it up slightly if there's extra space
-                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
                 ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      _logOut(); // Go back to the previous screen
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                      backgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.black54,
-                    ),
-                    child: const Icon(Icons.arrow_back, size: 28),
+                  ReturnButton(
+                    onReturn: (context) {
+                      _logOut();
+                    }
                   ),
                   Expanded(child: Container()),
-                   Text(username != null? "Xin chào $username" : "Sử dụng ngoại tuyến",
-                   style: textTheme.bodyMedium),
+                  screenSize == ScreenSize.Compact
+                    ? Container()
+                    : Text(
+                      username != null? "Xin chào $username" : "Sử dụng ngoại tuyến",
+                      style: textTheme.bodyMedium
+                    ),
                   SizedBox(width: 10),
                   SettingButton()
                 ],

@@ -164,7 +164,7 @@ class SettingsScreen extends StatelessWidget {
                     },
                     icon: const Icon(Icons.assignment_turned_in, size: 24),
                     label: const Text(
-                      "Làm bài kiểm tra đầu vào",
+                      "Kiểm tra đầu vào",
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   )

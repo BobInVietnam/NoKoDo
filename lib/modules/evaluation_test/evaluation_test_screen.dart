@@ -354,7 +354,7 @@ class EvaluationTestScreen extends StatelessWidget {
                       Icon(Icons.analytics, color: Colors.teal[700], size: 28),
                       const SizedBox(width: 10),
                       Text(
-                        "Khả năng nhận diện chữ cái",
+                        "Khả năng nhận diện chữ",
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal[800]),
                       ),
                     ],

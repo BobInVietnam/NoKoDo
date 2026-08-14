@@ -11,6 +11,7 @@ import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 // Import your ViewModel
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 
+import '../../device_size.dart';
 import '../../models/converted_file.dart';
 import '../reading/editable_reading_viewmodel.dart';
 
@@ -48,7 +49,12 @@ class FileToTextScreen extends StatelessWidget {
   }
 
   // Action Button Builder remains mostly the same, just streamlined
-  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onPressed}) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required bool isSmall})
+  {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -65,9 +71,9 @@ class FileToTextScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Icon(icon, size: 56),
+                Icon(icon, size: isSmall ? 32 : 56),
                 const SizedBox(height: 8),
-                Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 32)),
+                Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: isSmall ? 24 : 32)),
               ],
             ),
           ),
@@ -78,6 +84,9 @@ class FileToTextScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact;
+    debugPrint("SCREENSIZE: ftt_screen screen size: $screenSize");
     final textTheme = Theme.of(context).textTheme;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     // Watch the ViewModel for UI updates (like loading states or history changes)
@@ -89,11 +98,14 @@ class FileToTextScreen extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 8.0),
-              child: Text('Chuyển file sang văn bản', style: textTheme.displayLarge, textAlign: TextAlign.center),
+              child: Text('Chuyển file sang văn bản',
+                  style: textTheme.displayLarge, textAlign: TextAlign.center),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Text('Hãy chọn phương thức nhập ảnh hoặc tài liệu PDF', style: textTheme.bodyMedium, textAlign: TextAlign.center),
+              child: Text('Hãy chọn phương thức nhập ảnh',
+                  style: isSmall ? textTheme.bodySmall : textTheme.bodyMedium,
+                  textAlign: TextAlign.center),
             ),
             const SizedBox(height: 30),
 
@@ -109,11 +121,13 @@ class FileToTextScreen extends StatelessWidget {
                     _buildActionButton(
                       icon: Icons.camera_alt_outlined,
                       label: 'Chụp ảnh',
+                      isSmall: isSmall,
                       onPressed: () => _handleImageAction(context, 0), // 0 for Camera
                     ),
                     _buildActionButton(
                       icon: Icons.folder_open_outlined,
                       label: 'Nhập từ máy',
+                      isSmall: isSmall,
                       onPressed: () => _handleImageAction(context, 1), // 1 for Gallery
                     ),
                   ],
@@ -144,7 +158,8 @@ class FileToTextScreen extends StatelessWidget {
                   ),
                   child: viewModel.history.isEmpty
                       ? Center(
-                    child: Text('Lịch sử chuyển đổi sẽ xuất hiện ở đây.', style: textTheme.bodyMedium),
+                    child: Text('Lịch sử chuyển đổi sẽ xuất hiện ở đây.',
+                        style: isSmall? textTheme.bodySmall : textTheme.bodyMedium),
                   )
                       : ListView.builder(
                     itemCount: viewModel.history.length,

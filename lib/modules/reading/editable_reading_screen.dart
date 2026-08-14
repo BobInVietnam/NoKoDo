@@ -12,6 +12,7 @@ import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 
 import '../../data/persistence.dart';
+import '../../device_size.dart';
 import '../../models/converted_file.dart';
 import '../editing/editing_screen.dart';
 import '../editing/editing_viewmodel.dart';
@@ -24,6 +25,9 @@ class EditableReadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = getSize(context);
+    final isSmall = screenSize == ScreenSize.Compact;
+    debugPrint("SCREENSIZE: reading_screen screen size: $screenSize");
     final viewModel = context.watch<EditableReadingViewModel>();
     final textTheme = Theme.of(context).textTheme;
 
@@ -193,7 +197,9 @@ class EditableReadingScreen extends StatelessWidget {
                             ? Icons.stop_circle_outlined
                             : Icons.play_circle_outline),
                         label: Text(
-                            viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
+                            isSmall
+                            ? ""
+                            : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
                             style: textTheme.bodySmall!.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.white
@@ -211,7 +217,9 @@ class EditableReadingScreen extends StatelessWidget {
                             ? Icons.stop_circle_outlined
                             : Icons.menu_book_outlined),
                         label: Text(
-                            viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
+                            isSmall
+                            ? ""
+                            : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
                             style: textTheme.bodySmall!.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white
@@ -226,7 +234,10 @@ class EditableReadingScreen extends StatelessWidget {
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit_outlined),
-                        label: Text('Chỉnh sửa',
+                        label: Text(
+                            isSmall
+                                ? ""
+                                : 'Chỉnh sửa',
                             style: textTheme.bodySmall!.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white
