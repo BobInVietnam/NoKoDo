@@ -96,18 +96,22 @@ class EvaluationTestViewModel extends ChangeNotifier {
         List<String> noiseList = List<String>.from(_currentQuestion!["noise"] ?? ["a"]);
         String target = currentTarget;
 
-        int targetCount = random.nextInt(3) + 1; // 1, 2, or 3 targets
-        for (int i = 0; i < 10; i++) {
-          bool isTarget = i < targetCount;
-          String letter = isTarget ? target : noiseList[random.nextInt(noiseList.length)];
-          String font = fontList[random.nextInt(fontList.length)];
-          double size = sizeList[random.nextInt(sizeList.length)];
-
+        for (String f in fontList) {
+          for (double s in sizeList) {
+            displayAnswerList.add({
+              "letter": target,
+              "font": f,
+              "size": s
+            });
+          }
+        }
+        noiseList.add(target);
+        while (displayAnswerList.length < 10) {
+          final letter = noiseList[random.nextInt(noiseList.length)];
           displayAnswerList.add({
             "letter": letter,
-            "font": font,
-            "size": size,
-            "is_target": isTarget,
+            "font": fontList[random.nextInt(fontList.length)],
+            "size": sizeList[random.nextInt(sizeList.length)]
           });
         }
         displayAnswerList.shuffle();

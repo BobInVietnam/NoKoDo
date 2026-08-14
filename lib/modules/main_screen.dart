@@ -88,71 +88,77 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final username = context.watch<RepoManager>().currentStudent?.firstname;
-    return Scaffold(
-      // No AppBar here
-      body: SafeArea( // Ensures content is not obscured by system UI (like notches)
-        child: Column(
-          children: <Widget>[
-            // App Title
-            Padding(
-              padding: const EdgeInsets.only(top: 40.0, bottom: 30.0), // Added more top padding
-              child: Text(
-                'Nokodo',
-                style: textTheme.titleLarge
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _logOut();
+      },
+      child: Scaffold(
+        // No AppBar here
+        body: SafeArea( // Ensures content is not obscured by system UI (like notches)
+          child: Column(
+            children: <Widget>[
+              // App Title
+              Padding(
+                padding: const EdgeInsets.only(top: 40.0, bottom: 30.0), // Added more top padding
+                child: Text(
+                    'Nokodo',
+                    style: textTheme.titleLarge
+                ),
               ),
-            ),
 
-            // Buttons Area
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // Center the buttons column vertically
-                  children: <Widget>[
-                    // Row 1 (1 button)
-                    Row(
-                      children: <Widget>[
-                        _buildMenuButton(
-                          icon: Icons.play_circle_outline, // Placeholder
-                          label: 'LUYỆN TẬP',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChangeNotifierProvider(
-                                  create: (innerContext) => PracticeSelectionViewModel(
-                                    repoManager: innerContext.read<RepoManager>(),
+              // Buttons Area
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center, // Center the buttons column vertically
+                    children: <Widget>[
+                      // Row 1 (1 button)
+                      Row(
+                        children: <Widget>[
+                          _buildMenuButton(
+                              icon: Icons.play_circle_outline, // Placeholder
+                              label: 'LUYỆN TẬP',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChangeNotifierProvider(
+                                      create: (innerContext) => PracticeSelectionViewModel(
+                                        repoManager: innerContext.read<RepoManager>(),
+                                      ),
+                                      child: const PracticeSelectionScreen(),
+                                    ),
                                   ),
-                                  child: const PracticeSelectionScreen(),
-                                ),
-                              ),
-                            );
-                          }
-                        ),
-                        _buildMenuButton(
-                          icon: Icons.book_outlined, // Placeholder
-                          label: 'LÀM BÀI KIỂM TRA',
-                          onPressed: () {
-                            if (context.read<RepoManager>().currentStudent == null) {
-                              _showOfflineWarning(context);
-                              return;
-                            }
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (innerContext) => ChangeNotifierProvider(
-                                  create: (providerContext) => TestSelectionViewModel(
-                                    repoManager: providerContext.read<RepoManager>(),
+                                );
+                              }
+                          ),
+                          _buildMenuButton(
+                            icon: Icons.book_outlined, // Placeholder
+                            label: 'LÀM BÀI KIỂM TRA',
+                            onPressed: () {
+                              if (context.read<RepoManager>().currentStudent == null) {
+                                _showOfflineWarning(context);
+                                return;
+                              }
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (innerContext) => ChangeNotifierProvider(
+                                    create: (providerContext) => TestSelectionViewModel(
+                                      repoManager: providerContext.read<RepoManager>(),
+                                    ),
+                                    child: const TestSelectionScreen(),
                                   ),
-                                  child: const TestSelectionScreen(),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
 
                     // Row 2 (2 buttons)a
                     Row(
@@ -185,16 +191,16 @@ class _MainScreenState extends State<MainScreen> {
                                   create: (innerContext) => LibraryViewModel(
                                       localDatabase: innerContext.read<LocalDatabase>(),
                                       repoManager: innerContext.read<RepoManager>(),
+                                    ),
+                                    child: const LibraryScreen(),
                                   ),
-                                  child: const LibraryScreen(),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
 
                     // Row 3 (2 buttons)
                     Row(
@@ -272,6 +278,7 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
+    )
     );
   }
 
@@ -323,21 +330,21 @@ class _MainScreenState extends State<MainScreen> {
               try {
                 final currentRepoManager = context.read<RepoManager>();
                 final usageTimeTracker = context.read<UsageTimeTracker>();
-                usageTimeTracker.resetTracker();
-                currentRepoManager.signOut();
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
+                await usageTimeTracker.resetTracker();
+                await currentRepoManager.signOut();
               } catch (e) {
                 // Handle error: Close loader and show error
-                if (context.mounted) {
+                if (mounted) {
                   Navigator.pop(context); // Close loader
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
+                }
+              }
+              finally {
+                if (mounted) {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 }
               }
             },

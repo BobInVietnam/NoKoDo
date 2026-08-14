@@ -85,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final repoManager = context.read<RepoManager>();
       repoManager.signOut();
       if (!mounted) return;
-      context.read<UsageTimeTracker>().resumeWithUserData(0);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
