@@ -6,7 +6,7 @@ enum TtsState { playing, stopped, paused }
 class TtsService {
   static final TtsService _instance = TtsService._internal();
 
-  // 2. Expose a public factory constructor that always returns the same instance
+  // Expose a public factory constructor that always returns the same instance
   factory TtsService() => _instance;
 
   late FlutterTts _flutterTts;

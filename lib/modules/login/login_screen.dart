@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +15,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _urlController = TextEditingController();
   String _displayMessage = '';
   bool _submitDisabled = false;
   bool _isAutoLoggingIn = true;
@@ -96,15 +98,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _saveUrlToPrefs() async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final urlProvider = UrlProvider();
+    await urlProvider.setUrl(_urlController.text);
+    scaffoldMessenger.showSnackBar(SnackBar(content: Text("Đã lưu URL ${urlProvider.url}")));
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _urlController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final textTheme = Theme.of(context).textTheme;
 
     if (_isAutoLoggingIn) {
@@ -126,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Text(
-                'Chào mừng đến với Nokodo', // Added a title to login screen
+                isKeyboardOpen ? "" : 'Chào mừng đến với Nokodo', // Added a title to login screen
                 textAlign: TextAlign.center,
                 style: textTheme.titleLarge
               ),
@@ -178,6 +189,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: const Text('Sử dụng ngoại tuyến'),
               ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _urlController,
+                decoration: const InputDecoration(
+                  labelText: 'Url',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                keyboardType: TextInputType.text,
+              ),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: _saveUrlToPrefs,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  textStyle: textTheme.displayMedium,
+                ),
+                child: const Text('Lưu URL'),
+              )
             ],
           ),
         ),

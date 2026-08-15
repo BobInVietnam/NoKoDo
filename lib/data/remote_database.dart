@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/test.dart';
@@ -314,19 +315,14 @@ class TestRemoteDatabase extends RemoteDatabase {
 class LocalhostRemoteDatabase extends RemoteDatabase {
   String? _token;
 
+
   @override
   void setToken(String? token) {
     _token = token;
   }
 
   String get _baseUrl {
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the special loopback interface pointing directly to your development computer's localhost
-      return 'http://10.0.2.2:3000';
-    } else {
-      // iOS Simulators share the same network interface as your host Mac
-      return 'http://localhost:3000';
-    }
+    return UrlProvider().url;
   }
 
   Future<http.Response> _get(Uri url) async {

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:nodyslexia/utils/url_provider.dart';
 
 abstract class SimplifierService {
   /// Takes a string and returns the simplified text version.
@@ -20,7 +21,7 @@ class LocalSimplifierService implements SimplifierService {
   Future<String?> simplifyText(String text) async {
     // Handling localhost: Android Emulator uses 10.0.2.2, iOS/Others use 127.0.0.1
     // The Next.js API server runs on port 3000
-    final String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://127.0.0.1:3000';
+    final String baseUrl = UrlProvider().url;
     final uri = Uri.parse('$baseUrl/api/simplify');
 
     try {

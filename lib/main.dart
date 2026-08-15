@@ -10,6 +10,7 @@ import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
+import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
@@ -22,6 +23,7 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   TtsService();
+  UrlProvider();
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(
