@@ -65,8 +65,7 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   Future<void> _initializeTts() async {
     try {
-      // Ensure the engine is fully awake before configuring
-      await _ttsService.setSpeechRate(_currentReadingSpeed);
+      _ttsService.addListener(_onTtsChanged);
       _ttsService.onWordProgress = (text, start, end, word) {
         _currentWordStart = start + _currentOffset;
         _currentWordEnd = end + _currentOffset;
@@ -75,6 +74,10 @@ class EditableReadingViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("TTS Initialization failed: $e");
     }
+  }
+
+  void _onTtsChanged() {
+    notifyListeners();
   }
 
   void toggleTtsParagraph() {
@@ -166,12 +169,6 @@ class EditableReadingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void handleSpeedChange(double speed) {
-    _currentReadingSpeed = speed;
-    _ttsService.setSpeechRate(speed);
-    notifyListeners();
-  }
-
   void updateSelection(String? selection, int offset) {
     if (selection == null) {
       if (ttsState == TtsState.playing) {
@@ -191,6 +188,7 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _ttsService.removeListener(_onTtsChanged);
     _ttsService.stop();
     // Ensure overlay entries are safely detached out of global stack references
     _selectionMenuOverlay?.remove();

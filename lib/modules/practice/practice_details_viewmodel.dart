@@ -25,7 +25,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
           builder: (innerContext) => ChangeNotifierProvider(
             create: (providerContext) => ReadingViewModel(
               text: textContent,
-              ttsService: TtsService(),
+              ttsService: providerContext.read<TtsService>(),
               localDatabase: providerContext.read<LocalDatabase>(),
               lessonId: lesson.id,
               repoManager: providerContext.read<RepoManager>(),

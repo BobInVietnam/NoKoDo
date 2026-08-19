@@ -22,7 +22,7 @@ class AdjustableText extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. Listen to the global settings
     // This triggers a rebuild whenever settings change
-    final settings = context.watch<TextStyleSettings>();
+    final settings = context.watch<NokodoSettings>();
 
     // 2. Return a standard Text widget with the global style applied
     return Text(
@@ -163,7 +163,7 @@ class SelectableAdjustableText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1. Listen to the global settings
-    final settings = context.watch<TextStyleSettings>();
+    final settings = context.watch<NokodoSettings>();
 
     // 2. Return a SelectableText.rich widget
     return SelectableText.rich(

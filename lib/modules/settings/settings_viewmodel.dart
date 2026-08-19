@@ -1,13 +1,18 @@
-// viewmodels/settings_viewmodel.dart
 import 'package:flutter/material.dart';
-import 'package:nodyslexia/modules/settings/text_settings.dart'; // Adjust path if needed
+import 'package:nodyslexia/modules/settings/text_settings.dart';
+import 'package:nodyslexia/utils/tts_service.dart';
 
 class SettingsViewModel extends ChangeNotifier {
-  final TextStyleSettings _settings;
+  final NokodoSettings _settings;
+  final TtsService _ttsService;
 
-  SettingsViewModel({required TextStyleSettings settings}) : _settings = settings {
-    // Listen to changes in the underlying model to alert the view layer
+  SettingsViewModel({
+    required NokodoSettings settings,
+    required TtsService ttsService,
+  })  : _settings = settings,
+        _ttsService = ttsService {
     _settings.addListener(notifyListeners);
+    _ttsService.addListener(notifyListeners);
   }
 
   // Expose values safely to the View
@@ -18,6 +23,8 @@ class SettingsViewModel extends ChangeNotifier {
   String get fontFamily => _settings.fontFamily;
   Color get backgroundColor => _settings.backgroundColor;
   int get fontWeightValue => _settings.fontWeightValue;
+  double get speechRate => _settings.ttsSpeechRate;
+  double get volume => _settings.ttsVolume;
 
   // Wrapped modification methods
   void updateFontSize(double value) {
@@ -48,10 +55,22 @@ class SettingsViewModel extends ChangeNotifier {
     _settings.setFontWeightValue(value);
   }
 
+  Future<void> updateSpeechRate(double value)async {
+    _settings.setTtsSpeechRate(value);
+  }
+
+  Future<void> updateVolume(double value) async {
+    _settings.setTtsVolume(value);
+  }
+
+  void playTestSound() {
+    _ttsService.speak("Xin chào");
+  }
+
   @override
   void dispose() {
-    // Remove the listener to prevent memory leaks when screen is destroyed
     _settings.removeListener(notifyListeners);
+    _ttsService.removeListener(notifyListeners);
     super.dispose();
   }
 }

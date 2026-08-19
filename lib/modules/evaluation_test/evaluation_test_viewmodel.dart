@@ -308,7 +308,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
     return mostFrequent;
   }
 
-  void applyPreferredSettings(TextStyleSettings textSettings) {
+  void applyPreferredSettings(NokodoSettings textSettings) {
     textSettings.setFontFamily(preferredFontFamily);
     textSettings.setFontSize(preferredFontSize);
     textSettings.setWordSpacing(preferredWordSpacing);

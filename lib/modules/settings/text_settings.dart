@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/persistence.dart';
 
-class TextStyleSettings extends ChangeNotifier {
+class NokodoSettings extends ChangeNotifier {
   // Default values
   double _fontSize = 20.0;
   Color _color = Colors.black;
@@ -12,8 +12,9 @@ class TextStyleSettings extends ChangeNotifier {
   List<String> _highlights = [];
   Color _backgroundColor = Colors.white;
   int _fontWeightValue = 400;
+  double _ttsVolume = 1.0;
+  double _ttsSpeechRate = 0.5;
 
-  // Getters
   double get fontSize => _fontSize;
   Color get color => _color;
   String get fontFamily => _fontFamily;
@@ -22,6 +23,9 @@ class TextStyleSettings extends ChangeNotifier {
   List<String> get highlights => _highlights;
   Color get backgroundColor => _backgroundColor;
   int get fontWeightValue => _fontWeightValue;
+  double get ttsSpeechRate => _ttsSpeechRate;
+  double get ttsVolume => _ttsVolume;
+
 
   FontWeight get fontWeight {
     switch (_fontWeightValue) {
@@ -39,7 +43,7 @@ class TextStyleSettings extends ChangeNotifier {
   }
 
   // Constructor: Triggers loading immediately when the provider is created
-  TextStyleSettings([LocalDatabase? db]) {
+  NokodoSettings([LocalDatabase? db]) {
     _loadFromPrefs();
     if (db != null) {
       _loadHighlightsFromDb(db);
@@ -97,8 +101,10 @@ class TextStyleSettings extends ChangeNotifier {
 
     int bgColorValue = prefs.getInt('backgroundColorValue') ?? Colors.white.toARGB32();
     _backgroundColor = Color(bgColorValue);
-
     _fontWeightValue = prefs.getInt('fontWeightValue') ?? 400;
+
+    _ttsVolume = prefs.getDouble('ttsVolume') ?? 1.0;
+    _ttsSpeechRate = prefs.getDouble('ttsSpeechRate') ?? 0.5;
 
     // Important: Tell the UI to rebuild with the loaded values
     notifyListeners();
@@ -115,6 +121,8 @@ class TextStyleSettings extends ChangeNotifier {
     prefs.setInt('colorValue', _color.toARGB32()); // Save color as int
     prefs.setInt('backgroundColorValue', _backgroundColor.toARGB32());
     prefs.setInt('fontWeightValue', _fontWeightValue);
+    prefs.setDouble('ttsVolume', _ttsVolume);
+    prefs.setDouble('ttsSpeechRate', _ttsSpeechRate);
   }
 
   // --- SETTERS (Update variable -> Save -> Notify) ---
@@ -157,6 +165,18 @@ class TextStyleSettings extends ChangeNotifier {
 
   void setFontWeightValue(int newValue) {
     _fontWeightValue = newValue;
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  void setTtsVolume(double newValue) {
+    _ttsVolume = newValue;
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  void setTtsSpeechRate(double newValue) {
+    _ttsSpeechRate = newValue;
     _saveToPrefs();
     notifyListeners();
   }

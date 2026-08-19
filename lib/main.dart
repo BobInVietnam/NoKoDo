@@ -22,24 +22,26 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  TtsService();
   UrlProvider();
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(
-      create: (context) => RepoManager(
-          onlineDatabase: LocalhostRemoteDatabase(),
-          database: TestLocalDatabase())
-    ),
+        create: (context) => RepoManager(
+            onlineDatabase: LocalhostRemoteDatabase(),
+            database: TestLocalDatabase())
+      ),
       ChangeNotifierProvider<LocalDatabase>(
         create: (context) => TestLocalDatabase()
       ),
       ChangeNotifierProvider(
-        create: (context) => TextStyleSettings(context.read<LocalDatabase>())
+        create: (context) => NokodoSettings(context.read<LocalDatabase>())
       ),
       ChangeNotifierProvider(
-          create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())
-      )
+        create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())
+      ),
+      ChangeNotifierProvider<TtsService>(
+        create: (context) => TtsService(settings: context.read<NokodoSettings>()),
+      ),
       ],
     child: const NokodoApp())
   );

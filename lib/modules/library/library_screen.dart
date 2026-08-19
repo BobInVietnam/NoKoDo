@@ -166,7 +166,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                           builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
                             create: (providerContext) => EditableReadingViewModel(
                               file: fileItem,
-                              ttsService: TtsService(),
+                              ttsService: viewModel.ttsService,
                               localDatabase: viewModel.localDatabase
                             ),
                             child: EditableReadingScreen(),
@@ -238,7 +238,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildHighlightsSection(LibraryViewModel viewModel, TextStyleSettings textStyleSettings, TextTheme textTheme) {
+  Widget _buildHighlightsSection(LibraryViewModel viewModel, NokodoSettings textStyleSettings, TextTheme textTheme) {
     final highlights = textStyleSettings.highlights;
 
     return Column(
@@ -410,7 +410,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                             DictionaryDetailDialog.show(
                               context,
                               wordItem,
-                              TtsService(), // Calls your active singleton service provider
+                              viewModel.ttsService, // Calls your active singleton service provider
                             );
                           },
                           leading: FutureBuilder<Directory>(
@@ -533,7 +533,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                       builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
                         create: (providerContext) => EditableReadingViewModel(
                             localDatabase: viewModel.localDatabase,
-                            ttsService: TtsService(),
+                            ttsService: viewModel.ttsService,
                             file: newFile!
                         ),
                         child: EditableReadingScreen(),
@@ -597,7 +597,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                 controller: _tabController,
                 children: <Widget>[
                   _buildHistorySection(viewModel, textTheme),
-                  _buildHighlightsSection(viewModel, context.watch<TextStyleSettings>(), textTheme),
+                  _buildHighlightsSection(viewModel, context.watch<NokodoSettings>(), textTheme),
                   _buildDictionarySection(viewModel, textTheme), // Injected dynamic dictionary page section
                 ],
               ),

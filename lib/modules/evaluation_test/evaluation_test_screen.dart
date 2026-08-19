@@ -428,7 +428,7 @@ class EvaluationTestScreen extends StatelessWidget {
 
             ElevatedButton.icon(
               onPressed: () {
-                final textSettings = context.read<TextStyleSettings>();
+                final textSettings = context.read<NokodoSettings>();
                 viewModel.applyPreferredSettings(textSettings);
                 viewModel.resetTest();
                 Navigator.of(context).maybePop();

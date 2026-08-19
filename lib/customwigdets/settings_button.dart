@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:nodyslexia/modules/settings/settings_screen.dart";
+import "package:nodyslexia/utils/tts_service.dart";
 import "package:provider/provider.dart";
 
 import "../modules/settings/settings_viewmodel.dart";
@@ -17,7 +18,8 @@ class SettingButton extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ChangeNotifierProvider(
               create: (context) => SettingsViewModel(
-                settings: context.read<TextStyleSettings>(),
+                settings: context.read<NokodoSettings>(),
+                ttsService: context.read<TtsService>(),
               ),
               child: const SettingsScreen(),
             ),

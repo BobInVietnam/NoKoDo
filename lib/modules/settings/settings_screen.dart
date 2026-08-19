@@ -26,6 +26,49 @@ class SettingsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  Text("Hệ thống đọc văn bản", style: textTheme.displayMedium!.copyWith(
+                    fontSize: 36,
+                    color: Colors.teal[800]
+                  )),
+                  const SizedBox(height: 15),
+                  Text("Tốc độ đọc", style: textTheme.displayMedium),
+                  Slider(
+                    min: 0.05,
+                    max: 1.2,
+                    divisions: 23,
+                    value: viewModel.speechRate,
+                    onChanged: viewModel.updateSpeechRate,
+                    activeColor: Colors.teal,
+                  ),
+                  Text("Hiện tại: ${viewModel.speechRate.toStringAsFixed(2)}x", style: textTheme.bodyMedium),
+
+                  const SizedBox(height: 15),
+                  Text("Âm lượng đọc", style: textTheme.displayMedium),
+                  Slider(
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 20,
+                    value: viewModel.volume,
+                    onChanged: viewModel.updateVolume,
+                    activeColor: Colors.teal,
+                  ),
+                  Text("Hiện tại: ${(viewModel.volume * 100).toInt()}%", style: textTheme.bodyMedium),
+
+                  const SizedBox(height: 15),
+                  
+                  ElevatedButton.icon(
+                      onPressed: viewModel.playTestSound,
+                      icon: const Icon(Icons.volume_up, size: 24),
+                      label: const Text(
+                        "Nghe thử",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ) ),
+                  const Divider(height: 30),
+                  Text("Định dạng văn bản", style: textTheme.displayMedium!.copyWith(
+                      fontSize: 36,
+                      color: Colors.teal[800]
+                  )),
+                  const SizedBox(height: 15),
                   Text("Cỡ chữ", style: textTheme.displayMedium),
                   Slider(
                     min: 16,
@@ -37,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
                   Text("Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}",
                   style: textTheme.bodyMedium),
 
-                  const Divider(height: 30),
+                  const SizedBox(height: 15),
                   Text("Độ dày chữ", style: textTheme.displayMedium),
                   Slider(
                     min: 100,
@@ -71,7 +114,8 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Text("Hiện tại: ${viewModel.wordSpacing.toStringAsFixed(1)}"),
 
-                  const Divider(height: 30),
+                  const SizedBox(height: 15),
+
                   Text("Màu chữ", style: textTheme.displayMedium),
                   const SizedBox(height: 10),
                   Wrap(
@@ -85,7 +129,8 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const Divider(height: 30),
+                  const SizedBox(height: 15),
+
                   Text("Màu nền đọc sách", style: textTheme.displayMedium),
                   const SizedBox(height: 10),
                   Wrap(
@@ -97,7 +142,8 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const Divider(height: 30),
+                  const SizedBox(height: 15),
+
                   Text("Phông chữ", style: textTheme.displayMedium),
                   DropdownButton<String>(
                     value: viewModel.fontFamily,

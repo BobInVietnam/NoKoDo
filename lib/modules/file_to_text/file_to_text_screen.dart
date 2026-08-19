@@ -35,7 +35,7 @@ class FileToTextScreen extends StatelessWidget {
           builder: (context) => ChangeNotifierProvider(
             create: (context) => EditableReadingViewModel(
                 file: result,
-                ttsService: TtsService(),
+                ttsService: context.read<TtsService>(),
                 localDatabase: context.read<LocalDatabase>()),
             child: EditableReadingScreen(),
           ),
@@ -184,7 +184,7 @@ class FileToTextScreen extends StatelessWidget {
                                         create: (context) =>
                                             EditableReadingViewModel(
                                                 file: file!,
-                                                ttsService: TtsService(),
+                                                ttsService: context.read<TtsService>(),
                                                 localDatabase: context.read<LocalDatabase>()),
                                         child: EditableReadingScreen(),
                                       ),

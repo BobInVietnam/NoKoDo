@@ -12,6 +12,7 @@ import 'package:nodyslexia/modules/test/test_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
 
@@ -155,6 +156,7 @@ class _MainScreenState extends State<MainScreen> {
             create: (innerContext) => LibraryViewModel(
               localDatabase: innerContext.read<LocalDatabase>(),
               repoManager: innerContext.read<RepoManager>(),
+              ttsService: innerContext.read<TtsService>()
             ),
             child: const LibraryScreen(),
           ),

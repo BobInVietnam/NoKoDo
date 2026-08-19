@@ -6,6 +6,7 @@ import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
+import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LibraryViewModel extends ChangeNotifier {
   final LocalDatabase localDatabase;
   final RepoManager repoManager;
+  final TtsService ttsService;
 
   List<ConvertedFile> _savedFiles = [];
   bool _isLoading = false;
@@ -51,7 +53,7 @@ class LibraryViewModel extends ChangeNotifier {
   double get dictUpdateProgress => _dictUpdateProgress;
   String get dictUpdateStatus => _dictUpdateStatus;
 
-  LibraryViewModel({required this.localDatabase, required this.repoManager}) {
+  LibraryViewModel({required this.localDatabase, required this.repoManager, required this.ttsService}) {
     loadSavedFiles();
     _checkAndUpdateDictionary();
   }
