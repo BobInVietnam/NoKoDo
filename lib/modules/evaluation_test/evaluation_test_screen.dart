@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/modules/evaluation_test/evaluation_test_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:provider/provider.dart';
@@ -430,6 +431,12 @@ class EvaluationTestScreen extends StatelessWidget {
               onPressed: () {
                 final textSettings = context.read<NokodoSettings>();
                 viewModel.applyPreferredSettings(textSettings);
+                try {
+                  final repoManager = context.read<RepoManager>();
+                  repoManager.saveStudentSettings(textSettings.toMap());
+                } catch (e) {
+                  debugPrint("EVALUATION: Settings sync failed: $e");
+                }
                 viewModel.resetTest();
                 Navigator.of(context).maybePop();
               },

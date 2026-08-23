@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/models/lesson.dart';
+import 'package:nodyslexia/models/session.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 
@@ -13,6 +17,7 @@ class RepoManager extends ChangeNotifier {
   final _secureStorage = const FlutterSecureStorage();
 
   Student? currentStudent;
+  Session? currentSession;
   String? remoteDictVersion;
 
   // Constructor Injection: Pass the dependencies here
@@ -20,6 +25,76 @@ class RepoManager extends ChangeNotifier {
     required this.onlineDatabase,
     required this.database,
   });
+
+  Future<Session?> createSession({
+    String? examinerId,
+    String? siteId,
+    required double screenWidth,
+    required double screenHeight,
+  }) async {
+    if (currentStudent == null) return null;
+
+    final now = DateTime.now();
+    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+    final prefsKey = "session_count_${currentStudent!.sid}_$dateStr";
+
+    final prefs = await SharedPreferences.getInstance();
+    final currentCount = (prefs.getInt(prefsKey) ?? 0) + 1;
+    await prefs.setInt(prefsKey, currentCount);
+
+    final String formattedSid = currentStudent!.sid.toString().padLeft(4, '0');
+    final String sessionId = "S${formattedSid}_${dateStr}_$currentCount";
+
+    final String deviceOs = kIsWeb ? 'web' : Platform.operatingSystem;
+
+    currentSession = Session(
+      studentId: currentStudent!.uid,
+      sessionId: sessionId,
+      sessionStartTime: now,
+      examinerId: (examinerId != null && examinerId.trim().isNotEmpty) ? examinerId.trim() : null,
+      siteId: (siteId != null && siteId.trim().isNotEmpty) ? siteId.trim() : null,
+      device: deviceOs,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      completed: false,
+    );
+
+    debugPrint("SESSION: Created session ${currentSession!.sessionId}");
+    await database.saveSession(currentSession!);
+    try {
+      await onlineDatabase.sendSession(currentSession!);
+    } catch (e) {
+      debugPrint("SESSION: Online sync failed: $e");
+    }
+    notifyListeners();
+    return currentSession;
+  }
+
+  Future<void> completeCurrentSession() async {
+    if (currentSession != null && !currentSession!.completed) {
+      currentSession!.sessionEndTime = DateTime.now();
+      currentSession!.completed = true;
+      debugPrint("SESSION: Completed session ${currentSession!.sessionId} at ${currentSession!.sessionEndTime}");
+      await database.saveSession(currentSession!);
+      try {
+        await onlineDatabase.sendSession(currentSession!);
+      } catch (e) {
+        debugPrint("SESSION: Online completion sync failed: $e");
+      }
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveStudentSettings(Map<String, dynamic> settingsMap) async {
+    if (currentStudent == null) return;
+    currentStudent!.settings = settingsMap;
+    try {
+      await onlineDatabase.sendUserSettings(currentStudent!.uid, settingsMap);
+      debugPrint("SETTINGS: Online settings synced successfully for ${currentStudent!.uid}");
+    } catch (e) {
+      debugPrint("SETTINGS: Failed to sync settings online: $e");
+    }
+  }
 
   Future<void> signIn({
     required String email,
@@ -56,10 +131,12 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    completeCurrentSession();
     await _secureStorage.delete(key: 'jwt_token');
     await _secureStorage.delete(key: 'last_active_time');
     onlineDatabase.setToken(null);
     currentStudent = null;
+    currentSession = null;
     notifyListeners();
   }
 

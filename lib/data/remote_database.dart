@@ -8,6 +8,7 @@ import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/test.dart';
+import '../models/session.dart';
 
 abstract class RemoteDatabase {
   Future<bool> testConnection();
@@ -17,6 +18,8 @@ abstract class RemoteDatabase {
   Future<void> sendTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
   Future<void> sendUsageTime(int totalUsageTime, String uid);
+  Future<void> sendSession(Session session);
+  Future<void> sendUserSettings(String uid, Map<String, dynamic> settings);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
@@ -256,6 +259,16 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendUsageTime(int totalUsageTime, String uid) async {
     debugPrint("TESTING: Mock sendUsageTime updating: $totalUsageTime seconds for $uid");
+  }
+
+  @override
+  Future<void> sendSession(Session session) async {
+    debugPrint("TESTING: Mock sendSession saved: ${session.sessionId}");
+  }
+
+  @override
+  Future<void> sendUserSettings(String uid, Map<String, dynamic> settings) async {
+    debugPrint("TESTING: Mock sendUserSettings saved for $uid: $settings");
   }
 
   @override
@@ -609,6 +622,52 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit usage time payload. Details: $error');
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendSession(Session session) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/session');
+
+    try {
+      debugPrint('HTTP REQUEST: Syncing session (${session.sessionId}) to $targetUrl...');
+
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode(session.toMap()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Intervention session data synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected session sync payload with status code: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session payload. Details: $error');
+    }
+  }
+
+  @override
+  Future<void> sendUserSettings(String uid, Map<String, dynamic> settings) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
+
+    try {
+      debugPrint('HTTP REQUEST: Syncing settings to $targetUrl...');
+
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode({
+          'settings': settings,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+        debugPrint('HTTP SUCCESS: Student personal settings synced online successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected settings payload with status code: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit settings payload. Details: $error');
     }
   }
 

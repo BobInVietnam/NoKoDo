@@ -180,4 +180,57 @@ class NokodoSettings extends ChangeNotifier {
     _saveToPrefs();
     notifyListeners();
   }
+
+  void updateFromMap(Map<String, dynamic> settingsMap) {
+    if (settingsMap.isEmpty) return;
+
+    if (settingsMap['fontSize'] != null) {
+      _fontSize = (settingsMap['fontSize'] as num).toDouble();
+    }
+    if (settingsMap['letterSpacing'] != null) {
+      _letterSpacing = (settingsMap['letterSpacing'] as num).toDouble();
+    }
+    if (settingsMap['wordSpacing'] != null) {
+      _wordSpacing = (settingsMap['wordSpacing'] as num).toDouble();
+    }
+    if (settingsMap['fontFamily'] != null && (settingsMap['fontFamily'] as String).isNotEmpty) {
+      _fontFamily = settingsMap['fontFamily'] as String;
+    }
+    if (settingsMap['colorValue'] != null) {
+      _color = Color(settingsMap['colorValue'] as int);
+    } else if (settingsMap['color'] != null) {
+      _color = Color(settingsMap['color'] as int);
+    }
+    if (settingsMap['backgroundColorValue'] != null) {
+      _backgroundColor = Color(settingsMap['backgroundColorValue'] as int);
+    } else if (settingsMap['backgroundColor'] != null) {
+      _backgroundColor = Color(settingsMap['backgroundColor'] as int);
+    }
+    if (settingsMap['fontWeightValue'] != null) {
+      _fontWeightValue = (settingsMap['fontWeightValue'] as num).toInt();
+    }
+    if (settingsMap['ttsVolume'] != null) {
+      _ttsVolume = (settingsMap['ttsVolume'] as num).toDouble();
+    }
+    if (settingsMap['ttsSpeechRate'] != null) {
+      _ttsSpeechRate = (settingsMap['ttsSpeechRate'] as num).toDouble();
+    }
+
+    _saveToPrefs();
+    notifyListeners();
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'fontSize': _fontSize,
+      'colorValue': _color.value,
+      'fontFamily': _fontFamily,
+      'letterSpacing': _letterSpacing,
+      'wordSpacing': _wordSpacing,
+      'backgroundColorValue': _backgroundColor.value,
+      'fontWeightValue': _fontWeightValue,
+      'ttsVolume': _ttsVolume,
+      'ttsSpeechRate': _ttsSpeechRate,
+    };
+  }
 }

@@ -113,7 +113,7 @@ class TestScreen extends StatelessWidget {
           (_) => _timeOut(context, viewModel)
       );
     }
-    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -146,7 +146,7 @@ class TestScreen extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 10,
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     offset: const Offset(0, -5),
                   )
                 ],
@@ -170,7 +170,7 @@ class TestScreen extends StatelessWidget {
   }
 
   Widget _buildQuestionPage(BuildContext context, TestViewModel viewModel, Question question, int index) {
-    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final textTheme = Theme.of(context).textTheme;
     return SingleChildScrollView(
       child: Padding(
@@ -394,7 +394,7 @@ class TestScreen extends StatelessWidget {
     Border? border = Border.all(color: Colors.green, width: 2);
 
     if (isAnswered) {
-      color = Colors.green.withOpacity(0.5);
+      color = Colors.green.withValues(alpha: 0.5);
     }
     if (isCurrent) {
       border = Border.all(color: colorScheme.primary, width: 3);

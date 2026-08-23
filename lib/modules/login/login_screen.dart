@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/modules/main_screen.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'package:provider/provider.dart';
@@ -31,11 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final repoManager = context.read<RepoManager>();
       final success = await repoManager.tryAutoLogin();
       if (success && mounted) {
-        context.read<UsageTimeTracker>().resumeWithUserData(repoManager.currentStudent?.totalTime ?? 0);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        await _onLoginSuccess(repoManager);
+        return;
       }
     } catch (e) {
       debugPrint("Auto login error: $e");
@@ -59,6 +57,32 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> _onLoginSuccess(RepoManager repoManager) async {
+    // 1. Sync student settings if present
+    if (repoManager.currentStudent?.settings != null) {
+      try {
+        final textSettings = context.read<NokodoSettings>();
+        textSettings.updateFromMap(repoManager.currentStudent!.settings);
+      } catch (e) {
+        debugPrint("LOGIN: Personal settings sync failed: $e");
+      }
+    }
+
+    // 2. Start usage time tracking
+    context.read<UsageTimeTracker>().resumeWithUserData(repoManager.currentStudent?.totalTime ?? 0);
+
+    // 3. Navigate directly to MainScreen (MainScreen handles session dialog if needed)
+    _navigateToMainScreen();
+  }
+
+  void _navigateToMainScreen() {
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MainScreen()),
+    );
+  }
+
   Future<void> _submitLogin() async {
     try {
       _setSubmitDisabled(true);
@@ -68,11 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _passwordController.text
       );
       if (!mounted) return;
-      context.read<UsageTimeTracker>().resumeWithUserData(currentRepoManager.currentStudent?.totalTime ?? 0);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      await _onLoginSuccess(currentRepoManager);
     } catch (e) {
       final String msg = e.toString().replaceFirst('Exception: ', '').replaceFirst('Exception', '');
       _setDisplayMessage(msg);
@@ -87,10 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final repoManager = context.read<RepoManager>();
       repoManager.signOut();
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      _navigateToMainScreen();
     } catch (e) {
       debugPrint("Offline mode error: $e");
     } finally {
@@ -115,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final textTheme = Theme.of(context).textTheme;
 
     if (_isAutoLoggingIn) {

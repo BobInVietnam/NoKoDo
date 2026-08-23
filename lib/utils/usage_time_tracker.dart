@@ -42,12 +42,17 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    if (state == AppLifecycleState.paused) {
-      // App minimized or screen locked -> Pause background timing leak
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      // App minimized, closed, or detached -> Pause background timing leak and mark session complete
       _pauseTracking();
     } else if (state == AppLifecycleState.resumed && _previouslyAccruedSeconds >= 0) {
       // App brought back to foreground focus -> Restart tracking seamlessly
       _resumeTracking();
+    }
+
+    if (state == AppLifecycleState.detached) {
+      debugPrint("USAGE_TRACKER: Saving current session...");
+      _repoManager.completeCurrentSession();
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/converted_file.dart';
 import '../models/dictionary_entry.dart';
 import '../models/lesson.dart';
+import '../models/session.dart';
 
 abstract class LocalDatabase extends ChangeNotifier{
   Future<void> test();
@@ -37,6 +38,12 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<void> saveLessons(List<Lesson> lessons);
   /// Retrieves all lessons from the local database.
   Future<List<Lesson>> getAllLessons();
+  /// Saves or updates a Session locally with ConflictAlgorithm.replace.
+  Future<void> saveSession(Session session);
+  /// Retrieves a Session by sessionId.
+  Future<Session?> getSessionById(String sessionId);
+  /// Retrieves all Sessions stored locally.
+  Future<List<Session>> getAllSessions();
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -96,11 +103,24 @@ class TestLocalDatabase extends LocalDatabase {
           "CREATE TABLE Highlight ("
               "id INTEGER PRIMARY KEY AUTOINCREMENT, "
               "text TEXT UNIQUE)");
+      await db.execute(
+          "CREATE TABLE Session ("
+              "sessionId TEXT PRIMARY KEY, "
+              "studentId TEXT, "
+              "sessionStartTime TEXT, "
+              "sessionEndTime TEXT, "
+              "examinerId TEXT, "
+              "siteId TEXT, "
+              "device TEXT, "
+              "screenWidth REAL, "
+              "screenHeight REAL, "
+              "completed INTEGER)");
     }
     final db = await openDatabase(path, version: 1, onCreate: onCreate);
     await db.execute("CREATE TABLE IF NOT EXISTS Lesson (id TEXT PRIMARY KEY, name TEXT, type INTEGER, description TEXT, content TEXT, difficulty INTEGER, dateCreated INTEGER, isDone INTEGER)");
     await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
     await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
+    await db.execute("CREATE TABLE IF NOT EXISTS Session (sessionId TEXT PRIMARY KEY, studentId TEXT, sessionStartTime TEXT, sessionEndTime TEXT, examinerId TEXT, siteId TEXT, device TEXT, screenWidth REAL, screenHeight REAL, completed INTEGER)");
     return db;
   }
 
@@ -288,5 +308,36 @@ class TestLocalDatabase extends LocalDatabase {
     final db = await database;
     final List<Map<String, Object?>> maps = await db.query('Lesson');
     return List.generate(maps.length, (i) => Lesson.fromMap(maps[i]));
+  }
+
+  @override
+  Future<void> saveSession(Session session) async {
+    final db = await database;
+    await db.insert(
+      'Session',
+      session.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    debugPrint("DATABASE: Saved/replaced session ${session.sessionId} (completed: ${session.completed})");
+  }
+
+  @override
+  Future<Session?> getSessionById(String sessionId) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'Session',
+      where: 'sessionId = ?',
+      whereArgs: [sessionId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return Session.fromMap(maps.first);
+  }
+
+  @override
+  Future<List<Session>> getAllSessions() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('Session');
+    return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
   }
 }

@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
 import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
 import 'package:nodyslexia/utils/simplifier_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../customwigdets/return_button.dart';
 import '../device_size.dart';
 import '../utils/ocr_service.dart';
@@ -40,10 +41,123 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _getToken();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowSessionDialog();
+    });
   }
 
   Future<void> _getToken() async {
     _token = await _secureStorage.read(key: "jwt_token");
+  }
+
+  Future<void> _checkAndShowSessionDialog() async {
+    final repoManager = context.read<RepoManager>();
+    // Only show if user is logged in as a student (not offline mode) and no active session initialized yet
+    if (repoManager.currentStudent != null && repoManager.currentSession == null) {
+      await _showSessionInfoDialog(context, repoManager);
+    }
+  }
+
+  Future<void> _showSessionInfoDialog(BuildContext context, RepoManager repoManager) async {
+    final student = repoManager.currentStudent;
+    if (student == null) return;
+
+    final textTheme = Theme.of(context).textTheme;
+    final examinerController = TextEditingController();
+    final siteController = TextEditingController();
+
+    final now = DateTime.now();
+    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
+    final prefsKey = "session_count_${student.sid}_$dateStr";
+    final prefs = await SharedPreferences.getInstance();
+    final currentCount = (prefs.getInt(prefsKey) ?? 0) + 1;
+
+    final formattedSid = student.sid.toString().padLeft(4, '0');
+    final previewSessionId = "S${formattedSid}_${dateStr}_$currentCount";
+    final formattedStartTime = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            "Thông tin phiên làm việc",
+            style: textTheme.displayMedium,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Mã học sinh: ${student.sid}",
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Mã phiên: $previewSessionId",
+                  style: textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Thời gian bắt đầu: $formattedStartTime",
+                  style: textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: examinerController,
+                  style: textTheme.bodyMedium,
+                  decoration: InputDecoration(
+                    labelText: "Mã người kiểm tra (examinerId)",
+                    labelStyle: textTheme.bodySmall,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: siteController,
+                  style: textTheme.bodyMedium,
+                  decoration: InputDecoration(
+                    labelText: "Mã địa điểm (siteId)",
+                    labelStyle: textTheme.bodySmall,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                "Bỏ qua",
+                style: const TextStyle(color: Colors.black87),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                final size = MediaQuery.sizeOf(dialogContext);
+                await repoManager.createSession(
+                  examinerId: examinerController.text,
+                  siteId: siteController.text,
+                  screenWidth: size.width,
+                  screenHeight: size.height,
+                );
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+              child: Text(
+                "Lưu thông tin phiên",
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Helper function to create styled buttons

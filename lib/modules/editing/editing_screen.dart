@@ -153,7 +153,7 @@ class EditingScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<EditingViewModel>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return PopScope(
       canPop: !viewModel.hasUnsavedChanges,
@@ -216,7 +216,7 @@ class EditingScreen extends StatelessWidget {
                       border: Border.all(color: Colors.grey.shade300),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           spreadRadius: 1,
                           blurRadius: 3,
                           offset: const Offset(0, 1),
