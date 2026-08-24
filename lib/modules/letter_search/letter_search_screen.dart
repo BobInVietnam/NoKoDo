@@ -215,7 +215,12 @@ class LetterSearchScreen extends StatelessWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(4.0),
-                                onTap: () => viewModel.handleCellTap(rowIndex, colIndex),
+                                onTapDown: (details) => viewModel.handleCellTap(
+                                  rowIndex,
+                                  colIndex,
+                                  details.globalPosition.dx,
+                                  details.globalPosition.dy,
+                                ),
                                 child: Center(
                                   child: Text(
                                     char,

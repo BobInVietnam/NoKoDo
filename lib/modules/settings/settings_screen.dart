@@ -10,14 +10,41 @@ import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/modules/settings/settings_viewmodel.dart';
 
+/// Check if SettingsScreen was opened from ReadingScreen or EditableReadingScreen.
+bool isOpenedFromReadingScreen(BuildContext context) {
+  bool isFromReading = false;
+
+  Navigator.of(context).popUntil((route) {
+    final routeName = route.settings.name;
+    if (routeName == 'ReadingScreen' || routeName == 'EditableReadingScreen') {
+      isFromReading = true;
+    }
+    return true; // Return true immediately so NO routes are popped
+  });
+
+  return isFromReading;
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  void _syncSettingsOnline(BuildContext context) {
+  void _syncSettingsOnline(BuildContext context, Map<String, dynamic> initialSettings) {
     try {
       final textSettings = context.read<NokodoSettings>();
       final repoManager = context.read<RepoManager>();
-      repoManager.saveStudentSettings(textSettings.toMap());
+      final newSettings = textSettings.toMap();
+      repoManager.saveStudentSettings(newSettings);
+
+      if (repoManager.trialLogger.currentTrial != null) {
+        repoManager.trialLogger.logEvent(
+          eventType: 'SETTINGS_CHANGED',
+          eventCode: 'settings',
+          payload: {
+            'from': initialSettings,
+            'to': newSettings,
+          },
+        );
+      }
     } catch (e) {
       debugPrint("SETTINGS: Exit sync error: $e");
     }
@@ -28,11 +55,12 @@ class SettingsScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     // Watch the view model for adjustments instead of the raw data class
     final viewModel = context.watch<SettingsViewModel>();
+    final initialSettings = context.read<NokodoSettings>().toMap();
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          _syncSettingsOnline(context);
+          _syncSettingsOnline(context, initialSettings);
         }
       },
       child: Scaffold(
@@ -219,7 +247,9 @@ class SettingsScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => ChangeNotifierProvider(
-                              create: (context) => EvaluationTestViewModel(),
+                              create: (context) => EvaluationTestViewModel(
+                                repoManager: context.read<RepoManager>(),
+                              ),
                               child: const EvaluationTestScreen(),
                             ),
                           ),

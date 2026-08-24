@@ -223,11 +223,11 @@ class NokodoSettings extends ChangeNotifier {
   Map<String, dynamic> toMap() {
     return {
       'fontSize': _fontSize,
-      'colorValue': _color.value,
+      'colorValue': _color.toARGB32(),
       'fontFamily': _fontFamily,
       'letterSpacing': _letterSpacing,
       'wordSpacing': _wordSpacing,
-      'backgroundColorValue': _backgroundColor.value,
+      'backgroundColorValue': _backgroundColor.toARGB32(),
       'fontWeightValue': _fontWeightValue,
       'ttsVolume': _ttsVolume,
       'ttsSpeechRate': _ttsSpeechRate,

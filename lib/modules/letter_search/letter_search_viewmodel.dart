@@ -127,6 +127,10 @@ class LetterSearchViewModel extends ChangeNotifier {
   void startGame() {
     _currentRound = 0;
     _results = [];
+    repoManager?.trialLogger.startTrial(
+      trialType: 'LETTER_SEARCH',
+      trialCode: 's',
+    );
     _startCountdown();
   }
 
@@ -188,11 +192,9 @@ class LetterSearchViewModel extends ChangeNotifier {
         }
       }
     } else {
-      int totalCells = currentGridHeight * currentGridWidth;
-      int step = gap + 1;
-
       List<int> validIndices = [];
-      for (int i = 0; i < totalCells; i += step) {
+      int totalCells = currentGridHeight * currentGridWidth;
+      for (int i = 0; i < totalCells; i += (gap + 1)) {
         validIndices.add(i);
       }
 
@@ -212,9 +214,32 @@ class LetterSearchViewModel extends ChangeNotifier {
       }
     }
     notifyListeners();
+
+    if (repoManager != null) {
+      repoManager!.trialLogger.logEvent(
+        eventType: 'STIMULUS_SHOWN',
+        eventCode: 'shown',
+        payload: {
+          'layout': _displayGrid,
+          'x': 16.0,
+          'y': 120.0,
+          'w': 320.0,
+          'h': 320.0,
+          'target': _target,
+          'noise': noiseList,
+          'rowNum': currentGridHeight,
+          'colNum': currentGridWidth,
+          'textSize': currentSize,
+          'textSpacing': currentSpacing,
+          'randomMode': currentGap == 0,
+          'randomChance': currentGap == 0 ? chance : null,
+          'generationSkip': currentGap != 0 ? currentGap : null,
+        },
+      );
+    }
   }
 
-  void handleCellTap(int row, int col) {
+  void handleCellTap(int row, int col, [double tapX = 0.0, double tapY = 0.0]) {
     if (_currentState != GameState.IN_PROGRESS) return;
 
     final tappedChar = _displayGrid[row][col];
@@ -224,6 +249,18 @@ class LetterSearchViewModel extends ChangeNotifier {
       _feedbackMessage = "Chính xác!";
       _gameTimer?.cancel();
       notifyListeners();
+
+      repoManager?.trialLogger.logEvent(
+        eventType: 'CORRECT_LETTER',
+        eventCode: 'correct',
+        payload: {
+          'response': tappedChar,
+          'x': tapX,
+          'y': tapY,
+          'coordRow': row + 1,
+          'coordCol': col + 1,
+        },
+      );
 
       _results.add({
         "round": _currentRound + 1,
@@ -239,6 +276,7 @@ class LetterSearchViewModel extends ChangeNotifier {
         } else {
           _currentState = GameState.FINISHED;
           notifyListeners();
+          repoManager?.trialLogger.endTrial();
         }
       });
     } else {
@@ -246,12 +284,25 @@ class LetterSearchViewModel extends ChangeNotifier {
         _attempts++;
         _feedbackMessage = "Sai rồi! Hãy tìm tiếp.";
         notifyListeners();
+
+        repoManager?.trialLogger.logEvent(
+          eventType: 'INCORRECT_LETTER',
+          eventCode: 'incorrect',
+          payload: {
+            'response': tappedChar,
+            'x': tapX,
+            'y': tapY,
+            'coordRow': row + 1,
+            'coordCol': col + 1,
+          },
+        );
       }
     }
   }
 
   @override
   void dispose() {
+    repoManager?.trialLogger.endTrial();
     _countdownTimer?.cancel();
     _gameTimer?.cancel();
     super.dispose();

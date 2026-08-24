@@ -22,6 +22,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
       Navigator.push(
         context,
         MaterialPageRoute(
+          settings: const RouteSettings(name: 'ReadingScreen'),
           builder: (innerContext) => ChangeNotifierProvider(
             create: (providerContext) => ReadingViewModel(
               text: textContent,

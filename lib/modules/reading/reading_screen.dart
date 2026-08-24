@@ -153,10 +153,21 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                               final String text = viewModel.currentSelection!;
                                               final settings = context.read<NokodoSettings>();
                                               final db = context.read<LocalDatabase>();
-                                              if (settings.highlights.contains(text.trim())) {
+                                              final isHighlighted = settings.highlights.contains(text.trim());
+                                              if (isHighlighted) {
                                                 settings.removeHighlight(db, text);
+                                                viewModel.repoManager?.trialLogger.logEvent(
+                                                  eventType: 'UNHIGHLIGHT_TEXT',
+                                                  eventCode: 'unhighlight',
+                                                  payload: {'content': text},
+                                                );
                                               } else {
                                                 settings.addHighlight(db, text);
+                                                viewModel.repoManager?.trialLogger.logEvent(
+                                                  eventType: 'HIGHLIGHT_TEXT',
+                                                  eventCode: 'highlight',
+                                                  payload: {'content': text},
+                                                );
                                               }
                                             }
                                           },

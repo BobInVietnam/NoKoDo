@@ -11,6 +11,7 @@ import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 // Import your ViewModel
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 
+import '../../data/repository_manager.dart';
 import '../../device_size.dart';
 import '../../models/converted_file.dart';
 import '../reading/editable_reading_viewmodel.dart';
@@ -32,11 +33,13 @@ class FileToTextScreen extends StatelessWidget {
       final editedFile = await Navigator.push<ConvertedFile>(
         context,
         MaterialPageRoute(
+          settings: const RouteSettings(name: 'EditableReadingScreen'),
           builder: (context) => ChangeNotifierProvider(
             create: (context) => EditableReadingViewModel(
                 file: result,
                 ttsService: context.read<TtsService>(),
-                localDatabase: context.read<LocalDatabase>()),
+                localDatabase: context.read<LocalDatabase>(),
+                repoManager: context.read<RepoManager>()),
             child: EditableReadingScreen(),
           ),
         ),
@@ -179,13 +182,15 @@ class FileToTextScreen extends StatelessWidget {
                                   ConvertedFile>(
                                 context,
                                 MaterialPageRoute(
+                                  settings: const RouteSettings(name: 'EditableReadingScreen'),
                                   builder: (context) =>
                                       ChangeNotifierProvider(
                                         create: (context) =>
                                             EditableReadingViewModel(
                                                 file: file!,
                                                 ttsService: context.read<TtsService>(),
-                                                localDatabase: context.read<LocalDatabase>()),
+                                                localDatabase: context.read<LocalDatabase>(),
+                                                repoManager: context.read<RepoManager>()),
                                         child: EditableReadingScreen(),
                                       ),
                                 ),

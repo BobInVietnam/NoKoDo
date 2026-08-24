@@ -10,11 +10,14 @@ import 'package:nodyslexia/models/lesson.dart';
 import 'package:nodyslexia/models/session.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
+import 'package:nodyslexia/utils/trial_logger.dart';
 
 class RepoManager extends ChangeNotifier {
   final RemoteDatabase onlineDatabase;
   final LocalDatabase database;
   final _secureStorage = const FlutterSecureStorage();
+
+  late final TrialLogger trialLogger = TrialLogger(this);
 
   Student? currentStudent;
   Session? currentSession;

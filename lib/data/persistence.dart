@@ -7,6 +7,8 @@ import '../models/converted_file.dart';
 import '../models/dictionary_entry.dart';
 import '../models/lesson.dart';
 import '../models/session.dart';
+import '../models/trial_log.dart';
+import '../models/event_log.dart';
 
 abstract class LocalDatabase extends ChangeNotifier{
   Future<void> test();
@@ -44,6 +46,16 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<Session?> getSessionById(String sessionId);
   /// Retrieves all Sessions stored locally.
   Future<List<Session>> getAllSessions();
+  /// Saves or updates a TrialLog locally.
+  Future<void> saveTrialLog(TrialLog trial);
+  /// Retrieves a TrialLog by trialId.
+  Future<TrialLog?> getTrialLogById(String trialId);
+  /// Retrieves all TrialLogs for a specific session.
+  Future<List<TrialLog>> getTrialLogsBySession(String sessionId);
+  /// Saves or updates an EventLog locally.
+  Future<void> saveEventLog(EventLog event);
+  /// Retrieves all EventLogs for a specific trial.
+  Future<List<EventLog>> getEventLogsByTrial(String trialId);
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -121,6 +133,8 @@ class TestLocalDatabase extends LocalDatabase {
     await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
     await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
     await db.execute("CREATE TABLE IF NOT EXISTS Session (sessionId TEXT PRIMARY KEY, studentId TEXT, sessionStartTime TEXT, sessionEndTime TEXT, examinerId TEXT, siteId TEXT, device TEXT, screenWidth REAL, screenHeight REAL, completed INTEGER)");
+    await db.execute("CREATE TABLE IF NOT EXISTS TrialLog (sessionId TEXT, trialId TEXT PRIMARY KEY, trialType TEXT, trialStartTime INTEGER, trialEndTime INTEGER, conditionId TEXT, conditionName TEXT, comment TEXT, validTrial INTEGER, assistanceGiven INTEGER, interrupted INTEGER, technicalIssue INTEGER, invalidReason TEXT)");
+    await db.execute("CREATE TABLE IF NOT EXISTS EventLog (trialId TEXT, eventId TEXT PRIMARY KEY, eventType TEXT, eventTimestamp INTEGER, payloadJson TEXT)");
     return db;
   }
 
@@ -339,5 +353,64 @@ class TestLocalDatabase extends LocalDatabase {
     final db = await database;
     final List<Map<String, Object?>> maps = await db.query('Session');
     return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+  }
+
+  @override
+  Future<void> saveTrialLog(TrialLog trial) async {
+    final db = await database;
+    await db.insert(
+      'TrialLog',
+      trial.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    debugPrint("DATABASE: Saved/replaced TrialLog ${trial.trialId}");
+  }
+
+  @override
+  Future<TrialLog?> getTrialLogById(String trialId) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'TrialLog',
+      where: 'trialId = ?',
+      whereArgs: [trialId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return TrialLog.fromMap(maps.first);
+  }
+
+  @override
+  Future<List<TrialLog>> getTrialLogsBySession(String sessionId) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'TrialLog',
+      where: 'sessionId = ?',
+      whereArgs: [sessionId],
+      orderBy: 'trialStartTime ASC',
+    );
+    return List.generate(maps.length, (i) => TrialLog.fromMap(maps[i]));
+  }
+
+  @override
+  Future<void> saveEventLog(EventLog event) async {
+    final db = await database;
+    await db.insert(
+      'EventLog',
+      event.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    debugPrint("DATABASE: Saved EventLog ${event.eventId}");
+  }
+
+  @override
+  Future<List<EventLog>> getEventLogsByTrial(String trialId) async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'EventLog',
+      where: 'trialId = ?',
+      whereArgs: [trialId],
+      orderBy: 'eventTimestamp ASC',
+    );
+    return List.generate(maps.length, (i) => EventLog.fromMap(maps[i]));
   }
 }

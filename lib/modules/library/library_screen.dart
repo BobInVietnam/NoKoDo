@@ -20,6 +20,7 @@ import 'package:nodyslexia/modules/editing/editing_screen.dart';
 import 'package:nodyslexia/modules/editing/editing_viewmodel.dart';
 
 import '../../customwigdets/dictionary_entry_display.dart';
+import '../../data/repository_manager.dart';
 import '../../models/dictionary_entry.dart';
 import '../../utils/tts_service.dart';
 import '../reading/editable_reading_viewmodel.dart';
@@ -163,11 +164,13 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+                          settings: const RouteSettings(name: 'EditableReadingScreen'),
                           builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
                             create: (providerContext) => EditableReadingViewModel(
                               file: fileItem,
                               ttsService: viewModel.ttsService,
-                              localDatabase: viewModel.localDatabase
+                              localDatabase: viewModel.localDatabase,
+                              repoManager: providerContext.read<RepoManager>(),
                             ),
                             child: EditableReadingScreen(),
                           ),
@@ -530,11 +533,13 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   Navigator.push(
                     context,
                     MaterialPageRoute(
+                      settings: const RouteSettings(name: 'EditableReadingScreen'),
                       builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
                         create: (providerContext) => EditableReadingViewModel(
                             localDatabase: viewModel.localDatabase,
                             ttsService: viewModel.ttsService,
-                            file: newFile!
+                            file: newFile!,
+                            repoManager: providerContext.read<RepoManager>(),
                         ),
                         child: EditableReadingScreen(),
                       ),

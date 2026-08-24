@@ -7,6 +7,8 @@ import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
+import 'package:nodyslexia/data/repository_manager.dart';
+
 enum TtsMode { none, paragraph, all, selection }
 
 class EditableReadingViewModel extends ChangeNotifier {
@@ -15,6 +17,7 @@ class EditableReadingViewModel extends ChangeNotifier {
   int _fileId = 0;
   final TtsService _ttsService;
   final LocalDatabase _localDatabase;
+  final RepoManager? repoManager;
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
   int _currentOffset = 0;
@@ -41,7 +44,15 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   void selectParagraph(int index) {
     if (index >= 0 && index < paragraphs.length) {
+      final oldIndex = _selectedParagraphIndex;
       _selectedParagraphIndex = index;
+      if (repoManager != null && oldIndex != index) {
+        repoManager!.trialLogger.logEvent(
+          eventType: 'PARAGRAPH_CHANGE',
+          eventCode: 'pgchange',
+          payload: {'from': oldIndex, 'to': index},
+        );
+      }
       notifyListeners();
     }
   }
@@ -49,11 +60,27 @@ class EditableReadingViewModel extends ChangeNotifier {
   EditableReadingViewModel({
     required ConvertedFile file,
     required TtsService ttsService,
-    required LocalDatabase localDatabase})
-      : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
+    required LocalDatabase localDatabase,
+    this.repoManager,
+  })  : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
     _extractedText = _file.extractedText;
     _fileId = _file.id!;
     _initializeTts();
+
+    if (repoManager != null) {
+      repoManager!.trialLogger.startTrial(
+        trialType: 'READING_LOCAL',
+        trialCode: 'rl',
+      );
+      repoManager!.trialLogger.logEvent(
+        eventType: 'STIMULUS_SHOWN',
+        eventCode: 'shown',
+        payload: {
+          'content': _extractedText,
+          'initialSettings': repoManager!.currentStudent?.settings ?? {},
+        },
+      );
+    }
   }
 
   void refreshContent(ConvertedFile file) {
@@ -86,16 +113,32 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
+        repoManager?.trialLogger.logEvent(
+          eventType: 'TTS_STOP',
+          eventCode: 'ttsstop',
+          payload: {},
+        );
       }
       _currentTtsMode = TtsMode.paragraph;
       _currentOffset = 0;
       _currentWordStart = -1;
       _currentWordEnd = -1;
       if (paragraphs.isNotEmpty && _selectedParagraphIndex < paragraphs.length) {
-        _ttsService.speak(paragraphs[_selectedParagraphIndex], onComplete: () {
+        final textToRead = paragraphs[_selectedParagraphIndex];
+        repoManager?.trialLogger.logEvent(
+          eventType: 'TTS_START',
+          eventCode: 'ttsstart',
+          payload: {'content': textToRead},
+        );
+        _ttsService.speak(textToRead, onComplete: () {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
+          repoManager?.trialLogger.logEvent(
+            eventType: 'TTS_STOP',
+            eventCode: 'ttsstop',
+            payload: {},
+          );
           notifyListeners();
         });
       }
@@ -109,15 +152,31 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
+        repoManager?.trialLogger.logEvent(
+          eventType: 'TTS_STOP',
+          eventCode: 'ttsstop',
+          payload: {},
+        );
       }
       if (currentSelection != null) {
         _currentTtsMode = TtsMode.selection;
         _currentWordStart = -1;
         _currentWordEnd = -1;
-        _ttsService.speak(currentSelection!, onComplete: () {
+        final textToRead = currentSelection!;
+        repoManager?.trialLogger.logEvent(
+          eventType: 'TTS_START',
+          eventCode: 'ttsstart',
+          payload: {'content': textToRead},
+        );
+        _ttsService.speak(textToRead, onComplete: () {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
+          repoManager?.trialLogger.logEvent(
+            eventType: 'TTS_STOP',
+            eventCode: 'ttsstop',
+            payload: {},
+          );
           notifyListeners();
         });
         notifyListeners();
@@ -131,9 +190,19 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
+        repoManager?.trialLogger.logEvent(
+          eventType: 'TTS_STOP',
+          eventCode: 'ttsstop',
+          payload: {},
+        );
       }
       selectParagraph(0);
       _currentTtsMode = TtsMode.all;
+      repoManager?.trialLogger.logEvent(
+        eventType: 'TTS_START',
+        eventCode: 'ttsstart',
+        payload: {'content': _extractedText},
+      );
       _readParagraphSequentially(_selectedParagraphIndex);
     }
   }
@@ -153,6 +222,11 @@ class EditableReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
+          repoManager?.trialLogger.logEvent(
+            eventType: 'TTS_STOP',
+            eventCode: 'ttsstop',
+            payload: {},
+          );
           notifyListeners();
         }
       });
@@ -162,6 +236,13 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   void handleStopReading() {
+    if (ttsState == TtsState.playing) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'TTS_STOP',
+        eventCode: 'ttsstop',
+        payload: {},
+      );
+    }
     _ttsService.stop();
     _currentTtsMode = TtsMode.none;
     _currentWordStart = -1;
@@ -183,11 +264,23 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   Future<DictionaryEntry?>  getWordDefinition() async {
-    return await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
+    final entry = await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
+    if (repoManager != null && currentSelection != null) {
+      repoManager!.trialLogger.logEvent(
+        eventType: 'DICTIONARY_LOOKUP',
+        eventCode: 'dictlookup',
+        payload: {
+          'content': currentSelection,
+          'success': entry != null,
+        },
+      );
+    }
+    return entry;
   }
 
   @override
   void dispose() {
+    repoManager?.trialLogger.endTrial();
     _ttsService.removeListener(_onTtsChanged);
     _ttsService.stop();
     // Ensure overlay entries are safely detached out of global stack references

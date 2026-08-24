@@ -9,6 +9,8 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/test.dart';
 import '../models/session.dart';
+import '../models/trial_log.dart';
+import '../models/event_log.dart';
 
 abstract class RemoteDatabase {
   Future<bool> testConnection();
@@ -20,6 +22,9 @@ abstract class RemoteDatabase {
   Future<void> sendUsageTime(int totalUsageTime, String uid);
   Future<void> sendSession(Session session);
   Future<void> sendUserSettings(String uid, Map<String, dynamic> settings);
+  Future<void> sendTrialLog(TrialLog trial);
+  Future<void> sendEventLog(EventLog event);
+  Future<void> sendEventLogsBatch(List<EventLog> events);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
@@ -269,6 +274,21 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendUserSettings(String uid, Map<String, dynamic> settings) async {
     debugPrint("TESTING: Mock sendUserSettings saved for $uid: $settings");
+  }
+
+  @override
+  Future<void> sendTrialLog(TrialLog trial) async {
+    debugPrint("TESTING: Mock sendTrialLog saved: ${trial.trialId}");
+  }
+
+  @override
+  Future<void> sendEventLog(EventLog event) async {
+    debugPrint("TESTING: Mock sendEventLog saved: ${event.eventId}");
+  }
+
+  @override
+  Future<void> sendEventLogsBatch(List<EventLog> events) async {
+    debugPrint("TESTING: Mock sendEventLogsBatch saved (${events.length} events)");
   }
 
   @override
@@ -668,6 +688,64 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit settings payload. Details: $error');
+    }
+  }
+
+  @override
+  Future<void> sendTrialLog(TrialLog trial) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/trial');
+    try {
+      debugPrint('HTTP REQUEST: Syncing TrialLog (${trial.trialId}) to $targetUrl...');
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode(trial.toMap()),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: TrialLog synced online successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected TrialLog: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit TrialLog payload. Details: $error');
+    }
+  }
+
+  @override
+  Future<void> sendEventLog(EventLog event) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/event');
+    try {
+      debugPrint('HTTP REQUEST: Syncing EventLog (${event.eventId}) to $targetUrl...');
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode(event.toMap()),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: EventLog synced online successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected EventLog: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit EventLog payload. Details: $error');
+    }
+  }
+
+  @override
+  Future<void> sendEventLogsBatch(List<EventLog> events) async {
+    if (events.isEmpty) return;
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/event');
+    try {
+      debugPrint('HTTP REQUEST: Syncing ${events.length} EventLogs batch to $targetUrl...');
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode(events.map((e) => e.toMap()).toList()),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Batch of ${events.length} EventLogs synced online successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected EventLog batch: ${response.statusCode}, ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit EventLog batch payload. Details: $error');
     }
   }
 

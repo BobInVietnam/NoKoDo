@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 
+import 'package:nodyslexia/data/repository_manager.dart';
+
 enum EvalTestState {
   START,
   IN_PROGRESS,
@@ -12,6 +14,8 @@ enum EvalTestState {
 }
 
 class EvaluationTestViewModel extends ChangeNotifier {
+  final RepoManager? repoManager;
+
   List<Map<String, dynamic>> _evaluationTestList = [];
   int _currentIndex = 0;
   int _currentRepeat = 0;
@@ -28,7 +32,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
   int _wrongAttemptsCount = 0;
   final Stopwatch _stopwatch = Stopwatch();
 
-  EvaluationTestViewModel() {
+  EvaluationTestViewModel({this.repoManager}) {
     _loadTestContents();
   }
 
@@ -51,6 +55,12 @@ class EvaluationTestViewModel extends ChangeNotifier {
     errorMessage = null;
     _wrongAttemptsCount = 0;
     currentState = EvalTestState.IN_PROGRESS;
+
+    repoManager?.trialLogger.startTrial(
+      trialType: 'EVALUATION_TEST',
+      trialCode: 'e',
+    );
+
     _setupQuestion();
   }
 
@@ -183,12 +193,24 @@ class EvaluationTestViewModel extends ChangeNotifier {
   }
 
   void selectAnswer(Map<String, dynamic> selectedOption) {
+    final selectedIndex = displayAnswerList.indexOf(selectedOption);
+    final position = selectedIndex >= 0 ? selectedIndex + 1 : 1;
+    final String optionContent = selectedOption['letter'] ?? selectedOption['font'] ?? (selectedOption['bg_color'] is Color ? (selectedOption['bg_color'] as Color).value.toString() : '');
+
     if (currentType == 0) {
       bool isCorrect = selectedOption["letter"] == currentTarget;
 
       if (!isCorrect) {
         _wrongAttemptsCount++;
         errorMessage = "Chưa chính xác, em hãy thử lại nhé!";
+        repoManager?.trialLogger.logEvent(
+          eventType: 'INCORRECT',
+          eventCode: 'incorrect',
+          payload: {
+            'content': optionContent,
+            'position': position,
+          },
+        );
         notifyListeners();
         return; // Prompt user to try again without advancing
       }
@@ -196,6 +218,15 @@ class EvaluationTestViewModel extends ChangeNotifier {
       _stopwatch.stop();
       int elapsedMs = _stopwatch.elapsedMilliseconds;
       errorMessage = null;
+
+      repoManager?.trialLogger.logEvent(
+        eventType: 'CORRECT',
+        eventCode: 'correct',
+        payload: {
+          'content': optionContent,
+          'position': position,
+        },
+      );
 
       results.add({
         "type": 0,
@@ -208,6 +239,15 @@ class EvaluationTestViewModel extends ChangeNotifier {
 
       _wrongAttemptsCount = 0;
     } else if (currentType == 1) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
       results.add({
         "type": 1,
         "font": selectedOption["font"],
@@ -216,6 +256,15 @@ class EvaluationTestViewModel extends ChangeNotifier {
         "letter_spacing": (selectedOption["letter_spacing"] as num).toDouble(),
       });
     } else if (currentType == 2) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
       results.add({
         "type": 2,
         "bg_color": selectedOption["bg_color"],
@@ -241,6 +290,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
   void _finishTest() {
     currentState = EvalTestState.END;
     notifyListeners();
+    repoManager?.trialLogger.endTrial();
   }
 
   // --- RESULT METRICS ---
@@ -314,5 +364,11 @@ class EvaluationTestViewModel extends ChangeNotifier {
     textSettings.setWordSpacing(preferredWordSpacing);
     textSettings.setLetterSpacing(preferredLetterSpacing);
     textSettings.setBackgroundColor(preferredBackgroundColor);
+  }
+
+  @override
+  void dispose() {
+    repoManager?.trialLogger.endTrial();
+    super.dispose();
   }
 }
