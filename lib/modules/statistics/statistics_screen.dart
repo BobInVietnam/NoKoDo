@@ -143,6 +143,60 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
+  void _handleExportCsv(BuildContext context, StatisticsViewmodel viewModel) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (loadingContext) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final filePaths = await viewModel.exportCsvFiles();
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Xuất CSV thành công'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Đã xuất thành công 3 tệp CSV (Sessions, Trials, Events):'),
+                  const SizedBox(height: 12),
+                  for (final path in filePaths)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6.0),
+                      child: Text(
+                        '• ${path.split('/').last}\n  ($path)',
+                        style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Đóng'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi xuất tệp CSV: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -209,7 +263,47 @@ class StatisticsScreen extends StatelessWidget {
                       value: viewModel.formattedUsageTime,
                       icon: Icons.timer_outlined,
                     ),
-                    // You can add more statistics cards here
+                    Card(
+                      elevation: 2.0,
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                      color: Colors.teal[50],
+                      child: InkWell(
+                        onTap: () => _handleExportCsv(context, viewModel),
+                        borderRadius: BorderRadius.circular(12.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.file_download_outlined, size: 30, color: Colors.teal[800]),
+                              const SizedBox(width: 16.0),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Xuất dữ liệu 3 tệp CSV',
+                                      style: textTheme.bodyMedium!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.teal[900],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    Text(
+                                      'Sessions, Trials & Event Logs',
+                                      style: textTheme.bodyMedium!.copyWith(
+                                        color: Colors.teal[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.chevron_right, color: Colors.teal[800]),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
             ),

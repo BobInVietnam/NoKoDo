@@ -52,10 +52,14 @@ abstract class LocalDatabase extends ChangeNotifier{
   Future<TrialLog?> getTrialLogById(String trialId);
   /// Retrieves all TrialLogs for a specific session.
   Future<List<TrialLog>> getTrialLogsBySession(String sessionId);
+  /// Retrieves all TrialLogs stored locally.
+  Future<List<TrialLog>> getAllTrialLogs();
   /// Saves or updates an EventLog locally.
   Future<void> saveEventLog(EventLog event);
   /// Retrieves all EventLogs for a specific trial.
   Future<List<EventLog>> getEventLogsByTrial(String trialId);
+  /// Retrieves all EventLogs stored locally.
+  Future<List<EventLog>> getAllEventLogs();
 }
 
 class TestLocalDatabase extends LocalDatabase {
@@ -392,6 +396,13 @@ class TestLocalDatabase extends LocalDatabase {
   }
 
   @override
+  Future<List<TrialLog>> getAllTrialLogs() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('TrialLog');
+    return List.generate(maps.length, (i) => TrialLog.fromMap(maps[i]));
+  }
+
+  @override
   Future<void> saveEventLog(EventLog event) async {
     final db = await database;
     await db.insert(
@@ -411,6 +422,13 @@ class TestLocalDatabase extends LocalDatabase {
       whereArgs: [trialId],
       orderBy: 'eventTimestamp ASC',
     );
+    return List.generate(maps.length, (i) => EventLog.fromMap(maps[i]));
+  }
+
+  @override
+  Future<List<EventLog>> getAllEventLogs() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query('EventLog');
     return List.generate(maps.length, (i) => EventLog.fromMap(maps[i]));
   }
 }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/scheduler/binding.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
-import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/modules/test/test_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +8,6 @@ class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
 
   void _submitTest(BuildContext context, TestViewModel viewModel) {
-    final textTheme = Theme.of(context).textTheme;
     showDialog(
       context: context,
       builder: (confirmContext) => AlertDialog(
@@ -57,7 +54,6 @@ class TestScreen extends StatelessWidget {
   }
 
   void _timeOut(BuildContext context, TestViewModel viewModel) {
-    final textTheme = Theme.of(context).textTheme;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -101,6 +97,28 @@ class TestScreen extends StatelessWidget {
     );
   }
 
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (confirmContext) => AlertDialog(
+        title: const Text('Thoát bài kiểm tra?'),
+        content: const Text('Bài làm của bạn chưa được nộp. Bạn có chắc chắn muốn thoát không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(confirmContext, false),
+            child: const Text('Ở lại', style: TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(confirmContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Thoát'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -115,47 +133,57 @@ class TestScreen extends StatelessWidget {
     }
     bool isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: SafeArea(
-        child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _showExitConfirmationDialog(context);
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[200],
+        body: SafeArea(
+          child: Column(
 
-          children: [
-            _buildTimerArea(context, viewModel),
-            // --- QUESTION AREA ---
-            Expanded(
-              child: PageView.builder(
-                controller: viewModel.pageController,
-                itemCount: questions.length,
-                onPageChanged: viewModel.setCurrentPage,
-                itemBuilder: (context, index) {
-                  return _buildQuestionPage(context, viewModel, questions[index], index);
-                },
+            children: [
+              _buildTimerArea(context, viewModel),
+              // --- QUESTION AREA ---
+              Expanded(
+                child: PageView.builder(
+                  controller: viewModel.pageController,
+                  itemCount: questions.length,
+                  onPageChanged: viewModel.setCurrentPage,
+                  itemBuilder: (context, index) {
+                    return _buildQuestionPage(context, viewModel, questions[index], index);
+                  },
+                ),
               ),
-            ),
 
-            // --- BOTTOM TRAY ---
-            isKeyboardOpen ?
-            const SizedBox(height: 0) :
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              height: viewModel.isTrayExpanded ? 450 : 150,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withValues(alpha: 0.1),
-                    offset: const Offset(0, -5),
-                  )
-                ],
+              // --- BOTTOM TRAY ---
+              isKeyboardOpen ?
+              const SizedBox(height: 0) :
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                height: viewModel.isTrayExpanded ? 450 : 150,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10,
+                      color: Colors.black.withValues(alpha: 0.1),
+                      offset: const Offset(0, -5),
+                    )
+                  ],
+                ),
+                child: viewModel.isTrayExpanded
+                    ? _buildExpandedTrayContent(context, viewModel, textTheme, colorScheme)
+                    : _buildCollapsedTrayContent(context, viewModel, textTheme, colorScheme),
               ),
-              child: viewModel.isTrayExpanded
-                  ? _buildExpandedTrayContent(context, viewModel, textTheme, colorScheme)
-                  : _buildCollapsedTrayContent(context, viewModel, textTheme, colorScheme),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -211,6 +239,8 @@ class TestScreen extends StatelessWidget {
 
   Widget _buildMultipleChoiceOptions(BuildContext context, TestViewModel viewModel, MultipleChoiceQuestion question) {
     final textTheme = Theme.of(context).textTheme;
+    final currentAnswer = viewModel.answers[question.id];
+
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -223,19 +253,36 @@ class TestScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final option = question.options[index];
+        final isSelected = (currentAnswer == option);
+
         return InkWell(
           onTap: () => viewModel.registerAnswer(question.id, option),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.blue, width: 2),
+              color: isSelected ? Colors.blue.shade100 : Colors.white,
+              border: Border.all(
+                color: isSelected ? Colors.blue.shade800 : Colors.blue,
+                width: isSelected ? 3.5 : 2,
+              ),
               borderRadius: BorderRadius.circular(8),
+              boxShadow: isSelected ? [
+                BoxShadow(
+                  color: Colors.blue.withValues(alpha: 0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                )
+              ] : null,
             ),
             child: Center(
               child: Text(
                 option,
                 textAlign: TextAlign.center,
-                style: textTheme.bodyMedium,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.blue.shade900 : Colors.black87,
+                ),
               ),
             ),
           ),
@@ -355,24 +402,37 @@ class TestScreen extends StatelessWidget {
           ),
           // Question Grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 12,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: questions.length,
-              itemBuilder: (context, index) {
-                return _buildQuestionIndicator(viewModel, index, colorScheme);
-              },
-            ),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                double widgetWidth = constraints.maxWidth;
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: (widgetWidth / 74).floor(),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: questions.length,
+                  itemBuilder: (context, index) {
+                  return _buildQuestionIndicator(viewModel, index, colorScheme);
+                  }
+                );
+              }
+            )
           ),
           // Bottom Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ReturnButton(),
+              ReturnButton(
+                onReturn: (ctx) async {
+                  final shouldPop = await _showExitConfirmationDialog(context);
+                  if (shouldPop && context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
               ElevatedButton(
                 onPressed: () => _submitTest(context, viewModel),
                 child: Text("Nộp bài", style: const TextStyle(fontSize: 20)),
