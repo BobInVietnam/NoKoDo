@@ -9,6 +9,7 @@ enum TtsMode { none, paragraph, all, selection }
 
 class ReadingViewModel extends ChangeNotifier {
   final String? lessonId;
+  final String lessonName;
   final RepoManager? repoManager;
 
   String _extractedText = "";
@@ -64,6 +65,7 @@ class ReadingViewModel extends ChangeNotifier {
     required TtsService ttsService,
     required LocalDatabase localDatabase,
     this.lessonId,
+    required this.lessonName,
     this.repoManager,
   })  : _ttsService = ttsService,
         _extractedText = text,
@@ -75,6 +77,7 @@ class ReadingViewModel extends ChangeNotifier {
       repoManager!.trialLogger.startTrial(
         trialType: 'READING',
         trialCode: 'r',
+        trialName: lessonName
       );
       repoManager!.trialLogger.logEvent(
         eventType: 'STIMULUS_SHOWN',

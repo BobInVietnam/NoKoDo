@@ -77,6 +77,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _navigateToMainScreen() {
     if (!mounted) return;
+    setState(() {
+      _isAutoLoggingIn = false;
+    });
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const MainScreen()),

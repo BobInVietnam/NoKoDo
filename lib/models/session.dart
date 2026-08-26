@@ -8,6 +8,8 @@ class Session {
   final String device;
   final double screenWidth;
   final double screenHeight;
+  final String appVersion;
+  final String webVersion;
   bool completed;
 
   Session({
@@ -21,6 +23,8 @@ class Session {
     required this.screenWidth,
     required this.screenHeight,
     this.completed = false,
+    required this.appVersion,
+    required this.webVersion,
   });
 
   Map<String, dynamic> toMap() {
@@ -35,6 +39,8 @@ class Session {
       'screenWidth': screenWidth,
       'screenHeight': screenHeight,
       'completed': completed ? 1 : 0,
+      'appVersion': appVersion,
+      'webVersion': webVersion
     };
   }
 
@@ -49,6 +55,8 @@ class Session {
       device: map['device'] as String,
       screenWidth: (map['screenWidth'] as num).toDouble(),
       screenHeight: (map['screenHeight'] as num).toDouble(),
+      appVersion: map['appVersion'] as String,
+      webVersion: map['webVersion'] as String,
       completed: map['completed'] == 1 || map['completed'] == true,
     );
   }

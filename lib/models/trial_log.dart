@@ -2,6 +2,7 @@ class TrialLog {
   final String sessionId;
   final String trialId;
   final String trialType; // READING (r), LETTER_SEARCH (s), READING_LOCAL (rl), EVALUATION_TEST (e)
+  final String trialName;
   final int trialStartTime; // millisecondsSinceEpoch
   int? trialEndTime; // millisecondsSinceEpoch
   String? conditionId;
@@ -17,6 +18,7 @@ class TrialLog {
     required this.sessionId,
     required this.trialId,
     required this.trialType,
+    required this.trialName,
     required this.trialStartTime,
     this.trialEndTime,
     this.conditionId,
@@ -34,6 +36,7 @@ class TrialLog {
       'sessionId': sessionId,
       'trialId': trialId,
       'trialType': trialType,
+      'trialName': trialName,
       'trialStartTime': trialStartTime,
       'trialEndTime': trialEndTime,
       'conditionId': conditionId,
@@ -52,6 +55,7 @@ class TrialLog {
       sessionId: map['sessionId'] as String,
       trialId: map['trialId'] as String,
       trialType: map['trialType'] as String,
+      trialName: map['trialName'] as String,
       trialStartTime: (map['trialStartTime'] as num).toInt(),
       trialEndTime: map['trialEndTime'] != null ? (map['trialEndTime'] as num).toInt() : null,
       conditionId: map['conditionId'] as String?,

@@ -71,6 +71,7 @@ class EditableReadingViewModel extends ChangeNotifier {
       repoManager!.trialLogger.startTrial(
         trialType: 'READING_LOCAL',
         trialCode: 'rl',
+        trialName: file.fileName
       );
       repoManager!.trialLogger.logEvent(
         eventType: 'STIMULUS_SHOWN',

@@ -59,6 +59,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
     repoManager?.trialLogger.startTrial(
       trialType: 'EVALUATION_TEST',
       trialCode: 'e',
+      trialName: 'Evaluation Test'
     );
 
     _setupQuestion();

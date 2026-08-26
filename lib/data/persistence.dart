@@ -88,56 +88,13 @@ class TestLocalDatabase extends LocalDatabase {
     onCreate(Database db, int version) async {
       debugPrint("DATABASE: Loading database...");
       await db.execute('PRAGMA foreign_keys = ON');
-      await db.execute(
-          "CREATE TABLE Lesson ("
-              "id TEXT PRIMARY KEY, "
-              "name TEXT, "
-              "type INTEGER, "
-              "description TEXT, "
-              "content TEXT, "
-              "difficulty INTEGER, "
-              "dateCreated INTEGER, "
-              "isDone INTEGER)");
-      await db.execute(
-          "CREATE TABLE DictionaryEntry ("
-              "id STRING PRIMARY KEY, "
-              "word TEXT, "
-              "description TEXT, "
-              "imageName TEXT)");
-      await db.execute("CREATE INDEX idx_dictionary_word ON DictionaryEntry (word)");
-      await db.execute(
-          "CREATE TABLE ConvertedFile ("
-              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-              "name STRING, "
-              "extractedText TEXT, "
-              "createdDate INTEGER)");
-      await db.execute(
-          "CREATE TABLE SystemConfig ("
-              "key TEXT PRIMARY KEY, "
-              "value TEXT)");
-      await db.execute(
-          "CREATE TABLE Highlight ("
-              "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-              "text TEXT UNIQUE)");
-      await db.execute(
-          "CREATE TABLE Session ("
-              "sessionId TEXT PRIMARY KEY, "
-              "studentId TEXT, "
-              "sessionStartTime TEXT, "
-              "sessionEndTime TEXT, "
-              "examinerId TEXT, "
-              "siteId TEXT, "
-              "device TEXT, "
-              "screenWidth REAL, "
-              "screenHeight REAL, "
-              "completed INTEGER)");
     }
     final db = await openDatabase(path, version: 1, onCreate: onCreate);
     await db.execute("CREATE TABLE IF NOT EXISTS Lesson (id TEXT PRIMARY KEY, name TEXT, type INTEGER, description TEXT, content TEXT, difficulty INTEGER, dateCreated INTEGER, isDone INTEGER)");
     await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
     await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
-    await db.execute("CREATE TABLE IF NOT EXISTS Session (sessionId TEXT PRIMARY KEY, studentId TEXT, sessionStartTime TEXT, sessionEndTime TEXT, examinerId TEXT, siteId TEXT, device TEXT, screenWidth REAL, screenHeight REAL, completed INTEGER)");
-    await db.execute("CREATE TABLE IF NOT EXISTS TrialLog (sessionId TEXT, trialId TEXT PRIMARY KEY, trialType TEXT, trialStartTime INTEGER, trialEndTime INTEGER, conditionId TEXT, conditionName TEXT, comment TEXT, validTrial INTEGER, assistanceGiven INTEGER, interrupted INTEGER, technicalIssue INTEGER, invalidReason TEXT)");
+    await db.execute("CREATE TABLE IF NOT EXISTS Session (sessionId TEXT PRIMARY KEY, studentId TEXT, sessionStartTime TEXT, sessionEndTime TEXT, examinerId TEXT, siteId TEXT, device TEXT, screenWidth REAL, screenHeight REAL, appVersion TEXT, webVersion TEXT, completed INTEGER)");
+    await db.execute("CREATE TABLE IF NOT EXISTS TrialLog (sessionId TEXT, trialId TEXT PRIMARY KEY, trialType TEXT, trialName TEXT, trialStartTime INTEGER, trialEndTime INTEGER, conditionId TEXT, conditionName TEXT, comment TEXT, validTrial INTEGER, assistanceGiven INTEGER, interrupted INTEGER, technicalIssue INTEGER, invalidReason TEXT)");
     await db.execute("CREATE TABLE IF NOT EXISTS EventLog (trialId TEXT, eventId TEXT PRIMARY KEY, eventType TEXT, eventTimestamp INTEGER, payloadJson TEXT)");
     return db;
   }

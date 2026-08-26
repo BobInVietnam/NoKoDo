@@ -188,7 +188,7 @@ class _NetworkTestScreenState extends State<NetworkTestScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider(
-                          create: (context) => LetterSearchViewModel(lessonId: ''),
+                          create: (context) => LetterSearchViewModel(lessonId: '', lessonName: ''),
                           child: const LetterSearchScreen(),
                         ),
                       ),

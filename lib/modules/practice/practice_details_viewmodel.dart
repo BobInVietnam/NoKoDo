@@ -29,6 +29,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
               ttsService: providerContext.read<TtsService>(),
               localDatabase: providerContext.read<LocalDatabase>(),
               lessonId: lesson.id,
+              lessonName: lesson.name,
               repoManager: providerContext.read<RepoManager>(),
             ),
             child: ReadingScreen(),
@@ -48,6 +49,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
             create: (providerContext) => LetterSearchViewModel(
               content: customCases,
               lessonId: lesson.id,
+              lessonName: lesson.name,
               repoManager: providerContext.read<RepoManager>(),
             ),
             child: const LetterSearchScreen(),

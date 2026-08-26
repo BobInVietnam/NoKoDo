@@ -67,6 +67,7 @@ class LetterSearchViewModel extends ChangeNotifier {
 
   final List<Map<String, dynamic>> _content;
   final String lessonId;
+  final String lessonName;
   final RepoManager? repoManager;
 
   int _currentRound = 0;
@@ -106,6 +107,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
     required this.lessonId,
+    required this.lessonName,
     this.repoManager,
   }) : _content = content ?? defaultMockContent {
     _totalRounds = _content.length;
@@ -130,6 +132,7 @@ class LetterSearchViewModel extends ChangeNotifier {
     repoManager?.trialLogger.startTrial(
       trialType: 'LETTER_SEARCH',
       trialCode: 's',
+      trialName: lessonName
     );
     _startCountdown();
   }

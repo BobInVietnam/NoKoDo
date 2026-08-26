@@ -22,6 +22,8 @@ class RepoManager extends ChangeNotifier {
   Student? currentStudent;
   Session? currentSession;
   String? remoteDictVersion;
+  String appVersion = "undefined";
+  String webVersion = "undefined";
 
   // Constructor Injection: Pass the dependencies here
   RepoManager({
@@ -38,15 +40,10 @@ class RepoManager extends ChangeNotifier {
     if (currentStudent == null) return null;
 
     final now = DateTime.now();
-    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
-    final prefsKey = "session_count_${currentStudent!.sid}_$dateStr";
-
-    final prefs = await SharedPreferences.getInstance();
-    final currentCount = (prefs.getInt(prefsKey) ?? 0) + 1;
-    await prefs.setInt(prefsKey, currentCount);
+    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
 
     final String formattedSid = currentStudent!.sid.toString().padLeft(4, '0');
-    final String sessionId = "S${formattedSid}_${dateStr}_$currentCount";
+    final String sessionId = "S${formattedSid}_$dateStr";
 
     final String deviceOs = kIsWeb ? 'web' : Platform.operatingSystem;
 
@@ -59,6 +56,8 @@ class RepoManager extends ChangeNotifier {
       device: deviceOs,
       screenWidth: screenWidth,
       screenHeight: screenHeight,
+      appVersion: appVersion,
+      webVersion: webVersion,
       completed: false,
     );
 
@@ -212,7 +211,10 @@ class RepoManager extends ChangeNotifier {
     try {
       final configs = await onlineDatabase.getSystemConfig();
       remoteDictVersion = configs['dictVersion'];
-      debugPrint("TESTING: Successfully loaded system config. remoteDictVersion: $remoteDictVersion");
+      appVersion = configs['appVersion']!;
+      webVersion = configs['webVersion']!;
+      debugPrint("TESTING: Successfully loaded system config. "
+          "remoteDictVersion: $remoteDictVersion, appVersion: $appVersion, webVersion: $webVersion");
     } catch (e) {
       debugPrint("TESTING: Failed to fetch system config: $e");
     }

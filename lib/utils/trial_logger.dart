@@ -30,6 +30,7 @@ class TrialLogger {
   TrialLog? startTrial({
     required String trialType,
     required String trialCode,
+    required String trialName,
     String? conditionId,
     String? conditionName,
     String? comment,
@@ -56,6 +57,7 @@ class TrialLogger {
       conditionId: conditionId,
       conditionName: conditionName,
       comment: comment,
+      trialName: trialName,
     );
 
     debugPrint("TRIAL_LOGGER: Started trial $trialId ($trialType)");

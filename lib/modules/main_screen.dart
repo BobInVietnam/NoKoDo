@@ -67,13 +67,11 @@ class _MainScreenState extends State<MainScreen> {
     final siteController = TextEditingController();
 
     final now = DateTime.now();
-    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}";
-    final prefsKey = "session_count_${student.sid}_$dateStr";
-    final prefs = await SharedPreferences.getInstance();
-    final currentCount = (prefs.getInt(prefsKey) ?? 0) + 1;
+    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
 
-    final formattedSid = student.sid.toString().padLeft(4, '0');
-    final previewSessionId = "S${formattedSid}_${dateStr}_$currentCount";
+    final String formattedSid = student.sid.toString().padLeft(4, '0');
+    final String sessionId = "S${formattedSid}_$dateStr";
+
     final formattedStartTime = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 
     await showDialog(
@@ -82,7 +80,7 @@ class _MainScreenState extends State<MainScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(
-            "Thông tin phiên làm việc",
+            "Thông tin phiên can thiệp",
             style: textTheme.displayMedium,
           ),
           content: SingleChildScrollView(
@@ -96,7 +94,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Mã phiên: $previewSessionId",
+                  "Mã phiên: $sessionId",
                   style: textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
