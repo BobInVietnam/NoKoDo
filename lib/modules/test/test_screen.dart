@@ -32,7 +32,10 @@ class TestScreen extends StatelessWidget {
               );
 
               try {
-                await viewModel.submitTest();
+                await viewModel.submitTest().timeout(
+                    Duration(seconds: 30),
+                    onTimeout: () => throw Exception("Submit test timed out.")
+                );
                 if (context.mounted) {
                   Navigator.pop(context); // Close loading dialog
                   Navigator.pop(context); // Exit TestScreen
@@ -76,7 +79,12 @@ class TestScreen extends StatelessWidget {
               );
 
               try {
-                await viewModel.submitTest();
+                await viewModel.submitTest().timeout(
+                    Duration(seconds: 30),
+                    onTimeout: () {
+                      throw Exception("Submit test timed out.");
+                    }
+                );
                 if (context.mounted) {
                   Navigator.pop(context); // Close loading dialog
                   Navigator.pop(context); // Exit TestScreen
@@ -84,6 +92,7 @@ class TestScreen extends StatelessWidget {
               } catch (e) {
                 if (context.mounted) {
                   Navigator.pop(context); // Close loading dialog
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -97,7 +106,7 @@ class TestScreen extends StatelessWidget {
     );
   }
 
-  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+  Future<bool> _showExitConfirmationDialog(BuildContext context, TestViewModel viewModel) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (confirmContext) => AlertDialog(
@@ -109,7 +118,37 @@ class TestScreen extends StatelessWidget {
             child: const Text('Ở lại', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(confirmContext, true),
+            onPressed: () async {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (loadingContext) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              try {
+                await viewModel.submitTest(isValid: false).timeout(
+                    Duration(seconds: 30),
+                    onTimeout: () {
+                      throw Exception("Submit test timed out.");
+                    }
+                );
+                if (confirmContext.mounted) {
+                  Navigator.pop(confirmContext);
+                  Navigator.pop(confirmContext, true);
+                }
+              }
+              catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading dialog
+                  Navigator.pop(confirmContext, true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
+              }
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Thoát'),
           ),
@@ -137,7 +176,7 @@ class TestScreen extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final shouldPop = await _showExitConfirmationDialog(context);
+        final shouldPop = await _showExitConfirmationDialog(context, viewModel);
         if (shouldPop && context.mounted) {
           Navigator.of(context).pop();
         }
@@ -427,7 +466,7 @@ class TestScreen extends StatelessWidget {
             children: [
               ReturnButton(
                 onReturn: (ctx) async {
-                  final shouldPop = await _showExitConfirmationDialog(context);
+                  final shouldPop = await _showExitConfirmationDialog(context, viewModel);
                   if (shouldPop && context.mounted) {
                     Navigator.of(context).pop();
                   }

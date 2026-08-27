@@ -2,6 +2,8 @@ abstract class Question {
   final String id;
   final String content;
   final String correctAnswer;
+  String get type;
+  List<String>? get options;
 
   Question(this.id, this.content, this.correctAnswer);
   factory Question.fromMap(Map<String, Object?> map) {
@@ -40,6 +42,7 @@ abstract class Question {
 
 class MultipleChoiceQuestion extends Question{
 
+  @override
   final List<String> options;
 
   MultipleChoiceQuestion(super.id, super.content, this.options, super.correctAnswer);
@@ -48,6 +51,9 @@ class MultipleChoiceQuestion extends Question{
   bool isAnswerCorrect(String answer) {
     return options.contains(answer);
   }
+
+  @override
+  String get type => "MULTIPLE_CHOICES";
 }
 
 class FillBlankQuestion extends Question{
@@ -58,6 +64,12 @@ class FillBlankQuestion extends Question{
   bool isAnswerCorrect(String answer) {
     return answer == this.correctAnswer.toLowerCase();
   }
+
+  @override
+  String get type => "FILL_BLANK";
+
+  @override
+  List<String>? get options => null;
 }
 
 enum QuestState {UNANSWERED, CORRECT, INCORRECT}

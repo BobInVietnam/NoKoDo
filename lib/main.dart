@@ -15,6 +15,7 @@ import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
+import 'modules/login/login_viewmodel.dart';
 import 'modules/testing_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -122,7 +123,14 @@ class NokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
-      home: const LoginScreen()
+      home: ChangeNotifierProvider(
+          create: (context) => LoginViewModel(
+            repoManager: context.read<RepoManager>(),
+            textSettings: context.read<NokodoSettings>(),
+            usageTimeTracker: context.read<UsageTimeTracker>(),
+          ),
+          child: const LoginScreen()
+      )
     );
   }
 }

@@ -189,6 +189,18 @@ class EvaluationTestViewModel extends ChangeNotifier {
       default:
         break;
     }
+    for (int i = 1; i <= displayAnswerList.length; i++) {
+      displayAnswerList[i - 1]["index"] = i;
+    }
+    repoManager?.trialLogger.logEvent(
+      eventType: 'STIMULUS_SHOWN',
+      eventCode: 'shown',
+      payload: {
+        'optionList': displayAnswerList,
+        'isDyslexiaTest': currentType == 0,
+        'target': currentType == 0 ? currentTarget : null
+      },
+    );
 
     notifyListeners();
   }

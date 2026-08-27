@@ -82,7 +82,11 @@ class _LoginContentState extends State<_LoginContent> {
     final viewModel = context.watch<LoginViewModel>();
 
     if (viewModel.state == LoginState.success) {
-      _navigateToMainScreen(viewModel);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _navigateToMainScreen(viewModel);
+        }
+      });
     }
 
     if (viewModel.isCheckingAutoLogin) {

@@ -133,7 +133,7 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    completeCurrentSession();
+    await completeCurrentSession();
     await _secureStorage.delete(key: 'jwt_token');
     await _secureStorage.delete(key: 'last_active_time');
     onlineDatabase.setToken(null);
