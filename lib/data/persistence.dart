@@ -80,23 +80,115 @@ class TestLocalDatabase extends LocalDatabase {
     final String dbPath = await getDatabasesPath();
     final String path = join(dbPath, _dbFileName);
 
-    if (await databaseExists(path)) {
-      if (overwrite) {
-        await deleteDatabase(path);
-      }
+    if (overwrite && await databaseExists(path)) {
+      await deleteDatabase(path);
     }
-    onCreate(Database db, int version) async {
-      debugPrint("DATABASE: Loading database...");
-      await db.execute('PRAGMA foreign_keys = ON');
-    }
-    final db = await openDatabase(path, version: 1, onCreate: onCreate);
-    await db.execute("CREATE TABLE IF NOT EXISTS Lesson (id TEXT PRIMARY KEY, name TEXT, type INTEGER, description TEXT, content TEXT, difficulty INTEGER, dateCreated INTEGER, isDone INTEGER)");
-    await db.execute("CREATE TABLE IF NOT EXISTS SystemConfig (key TEXT PRIMARY KEY, value TEXT)");
-    await db.execute("CREATE TABLE IF NOT EXISTS Highlight (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)");
-    await db.execute("CREATE TABLE IF NOT EXISTS Session (sessionId TEXT PRIMARY KEY, studentId TEXT, sessionStartTime TEXT, sessionEndTime TEXT, examinerId TEXT, siteId TEXT, device TEXT, screenWidth REAL, screenHeight REAL, appVersion TEXT, webVersion TEXT, completed INTEGER)");
-    await db.execute("CREATE TABLE IF NOT EXISTS TrialLog (sessionId TEXT, trialId TEXT PRIMARY KEY, trialType TEXT, trialName TEXT, trialStartTime INTEGER, trialEndTime INTEGER, conditionId TEXT, conditionName TEXT, comment TEXT, validTrial INTEGER, assistanceGiven INTEGER, interrupted INTEGER, technicalIssue INTEGER, invalidReason TEXT)");
-    await db.execute("CREATE TABLE IF NOT EXISTS EventLog (trialId TEXT, eventId TEXT PRIMARY KEY, eventType TEXT, eventTimestamp INTEGER, payloadJson TEXT)");
-    return db;
+
+    return openDatabase(
+      path,
+      version: 1,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
+      onCreate: (db, version) async {
+        debugPrint("DATABASE: Creating initial schema...");
+        final batch = db.batch();
+
+        batch.execute('''
+        CREATE TABLE Lesson (
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          type INTEGER,
+          description TEXT,
+          content TEXT,
+          difficulty INTEGER,
+          dateCreated INTEGER,
+          isDone INTEGER
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE DictionaryEntry (
+          id TEXT PRIMARY KEY,
+          word TEXT,
+          description TEXT,
+          imageName TEXT
+        )
+      ''');
+        batch.execute('CREATE INDEX idx_dictionary_word ON DictionaryEntry (word)');
+
+        batch.execute('''
+        CREATE TABLE ConvertedFile (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          extractedText TEXT,
+          createdDate INTEGER
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE SystemConfig (
+          key TEXT PRIMARY KEY,
+          value TEXT
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE Highlight (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT UNIQUE
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE Session (
+          sessionId TEXT PRIMARY KEY,
+          studentId TEXT,
+          sessionStartTime TEXT,
+          sessionEndTime TEXT,
+          examinerId TEXT,
+          siteId TEXT,
+          device TEXT,
+          screenWidth REAL,
+          screenHeight REAL,
+          appVersion TEXT,
+          webVersion TEXT,
+          completed INTEGER
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE TrialLog (
+          sessionId TEXT,
+          trialId TEXT PRIMARY KEY,
+          trialType TEXT,
+          trialName TEXT,
+          trialStartTime INTEGER,
+          trialEndTime INTEGER,
+          conditionId TEXT,
+          conditionName TEXT,
+          comment TEXT,
+          validTrial INTEGER,
+          assistanceGiven INTEGER,
+          interrupted INTEGER,
+          technicalIssue INTEGER,
+          invalidReason TEXT
+        )
+      ''');
+
+        batch.execute('''
+        CREATE TABLE EventLog (
+          trialId TEXT,
+          eventId TEXT PRIMARY KEY,
+          eventType TEXT,
+          eventTimestamp INTEGER,
+          payloadJson TEXT
+        )
+      ''');
+
+        await batch.commit();
+      },
+    );
   }
 
 // 1. INSERT A CONVERTED FILE RECORD
