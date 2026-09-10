@@ -31,6 +31,10 @@ class Student {
     };
   }
 
+  String getFormattedSid() {
+    return "S${sid.toString().padLeft(4, '0')}";
+  }
+
   factory Student.fromMap(Map<String, Object?> map) {
     Map<String, dynamic> parsedSettings = {};
     if (map['settings'] is Map) {

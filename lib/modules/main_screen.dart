@@ -69,8 +69,8 @@ class _MainScreenState extends State<MainScreen> {
     final now = DateTime.now();
     final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
 
-    final String formattedSid = student.sid.toString().padLeft(4, '0');
-    final String sessionId = "S${formattedSid}_$dateStr";
+    final String formattedSid = student.getFormattedSid();
+    final String sessionId = "${formattedSid}_$dateStr";
 
     final formattedStartTime = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
@@ -39,7 +40,8 @@ class FileToTextScreen extends StatelessWidget {
                 file: result,
                 ttsService: context.read<TtsService>(),
                 localDatabase: context.read<LocalDatabase>(),
-                repoManager: context.read<RepoManager>()),
+                repoManager: context.read<RepoManager>(),
+                audioRecorder: context.read<AudioRecorder>()),
             child: EditableReadingScreen(),
           ),
         ),
@@ -190,7 +192,9 @@ class FileToTextScreen extends StatelessWidget {
                                                 file: file!,
                                                 ttsService: context.read<TtsService>(),
                                                 localDatabase: context.read<LocalDatabase>(),
-                                                repoManager: context.read<RepoManager>()),
+                                                repoManager: context.read<RepoManager>(),
+                                                audioRecorder: context.read<AudioRecorder>()
+                                            ),
                                         child: EditableReadingScreen(),
                                       ),
                                 ),

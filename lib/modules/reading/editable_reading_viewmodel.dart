@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/models/dictionary_entry.dart';
+import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/tts_service.dart'; // Import your TTS service
 
 import 'package:nodyslexia/data/repository_manager.dart';
@@ -13,11 +14,13 @@ enum TtsMode { none, paragraph, all, selection }
 
 class EditableReadingViewModel extends ChangeNotifier {
   ConvertedFile _file;
+
   String _extractedText = "";
   int _fileId = 0;
   final TtsService _ttsService;
   final LocalDatabase _localDatabase;
   final RepoManager? repoManager;
+  final AudioRecorder audioRecorder;
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
   int _currentOffset = 0;
@@ -61,6 +64,7 @@ class EditableReadingViewModel extends ChangeNotifier {
     required ConvertedFile file,
     required TtsService ttsService,
     required LocalDatabase localDatabase,
+    required this.audioRecorder,
     this.repoManager,
   })  : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
     _extractedText = _file.extractedText;
@@ -237,13 +241,11 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   void handleStopReading() {
-    if (ttsState == TtsState.playing) {
-      repoManager?.trialLogger.logEvent(
-        eventType: 'TTS_STOP',
-        eventCode: 'ttsstop',
-        payload: {},
-      );
-    }
+    repoManager?.trialLogger.logEvent(
+      eventType: 'TTS_STOP',
+      eventCode: 'ttsstop',
+      payload: {},
+    );
     _ttsService.stop();
     _currentTtsMode = TtsMode.none;
     _currentWordStart = -1;
@@ -277,6 +279,35 @@ class EditableReadingViewModel extends ChangeNotifier {
       );
     }
     return entry;
+  }
+
+  void toggleRecording() {
+    if (audioRecorder.isRecording) {
+      stopRecorder();
+    } else {
+      startRecorder();
+    }
+  }
+
+  Future<void> startRecorder() async {
+    await audioRecorder.record(
+        sid: repoManager?.currentStudent?.getFormattedSid() ?? "S0");
+    repoManager?.trialLogger.logEvent(
+        eventType: "RECORD_START",
+        eventCode: "record",
+        payload: {
+          "name": audioRecorder.recordingName
+        });
+    notifyListeners();
+  }
+
+  Future<void> stopRecorder() async {
+    await audioRecorder.stop();
+    repoManager?.trialLogger.logEvent(
+        eventType: "RECORD_END",
+        eventCode: "recordend",
+        payload: {});
+    notifyListeners();
   }
 
   @override

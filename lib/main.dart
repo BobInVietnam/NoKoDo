@@ -8,6 +8,7 @@ import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
+import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
@@ -43,6 +44,8 @@ Future<void> main() async {
       ChangeNotifierProvider<TtsService>(
         create: (context) => TtsService(settings: context.read<NokodoSettings>()),
       ),
+      ChangeNotifierProvider<AudioRecorder>(
+          create: (context) => AudioRecorder() )
       ],
     child: const NokodoApp())
   );
@@ -182,7 +185,7 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: NetworkTestScreen()
+      home: AScreen()
       // home: ChangeNotifierProvider(
       //   create: (context) => FileToTextViewModel(
       //       ocrService: MockOCRService(),

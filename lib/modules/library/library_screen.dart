@@ -22,6 +22,7 @@ import 'package:nodyslexia/modules/editing/editing_viewmodel.dart';
 import '../../customwigdets/dictionary_entry_display.dart';
 import '../../data/repository_manager.dart';
 import '../../models/dictionary_entry.dart';
+import '../../utils/audio_recorder.dart';
 import '../../utils/tts_service.dart';
 import '../reading/editable_reading_viewmodel.dart';
 
@@ -171,6 +172,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                               ttsService: viewModel.ttsService,
                               localDatabase: viewModel.localDatabase,
                               repoManager: providerContext.read<RepoManager>(),
+                              audioRecorder: providerContext.read<AudioRecorder>()
                             ),
                             child: EditableReadingScreen(),
                           ),
@@ -540,6 +542,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                             ttsService: viewModel.ttsService,
                             file: newFile!,
                             repoManager: providerContext.read<RepoManager>(),
+                            audioRecorder: providerContext.read<AudioRecorder>()
                         ),
                         child: EditableReadingScreen(),
                       ),

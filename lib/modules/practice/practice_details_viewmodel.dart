@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nodyslexia/models/lesson.dart';
 import 'package:nodyslexia/modules/reading/reading_screen.dart';
 import 'package:nodyslexia/modules/reading/reading_viewmodel.dart';
+import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/modules/letter_search/letter_search_screen.dart';
@@ -31,6 +32,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
               lessonId: lesson.id,
               lessonName: lesson.name,
               repoManager: providerContext.read<RepoManager>(),
+              audioRecorder: providerContext.read<AudioRecorder>()
             ),
             child: ReadingScreen(),
           ),

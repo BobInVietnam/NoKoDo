@@ -261,6 +261,26 @@ class _ReadingScreenState extends State<ReadingScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                         ),
+                        ElevatedButton.icon(
+                          icon: Icon(viewModel.audioRecorder.isRecording
+                              ? Icons.stop_circle_outlined
+                              : Icons.mic_none_rounded),
+                          label: Text(
+                              isSmall
+                                  ? ""
+                                  : viewModel.audioRecorder.isRecording ? 'Dừng ghi âm' : 'Ghi âm',
+                              style: textTheme.bodySmall!.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white
+                              )),
+                          onPressed: viewModel.toggleRecording,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: viewModel.audioRecorder.isRecording ? Colors.redAccent : Colors.teal[800],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
                         const SettingButton()
                       ],
                     ),

@@ -42,8 +42,8 @@ class RepoManager extends ChangeNotifier {
     final now = DateTime.now();
     final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
 
-    final String formattedSid = currentStudent!.sid.toString().padLeft(4, '0');
-    final String sessionId = "S${formattedSid}_$dateStr";
+    final String formattedSid = currentStudent?.getFormattedSid() ?? "S0";
+    final String sessionId = "${formattedSid}_$dateStr";
 
     final String deviceOs = kIsWeb ? 'web' : Platform.operatingSystem;
 
