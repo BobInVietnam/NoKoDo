@@ -1,5 +1,6 @@
 // viewmodels/editable_reading_viewmodel.dart
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
@@ -21,6 +22,7 @@ class EditableReadingViewModel extends ChangeNotifier {
   final LocalDatabase _localDatabase;
   final RepoManager? repoManager;
   final AudioRecorder audioRecorder;
+
   int _currentWordStart = -1;
   int _currentWordEnd = -1;
   int _currentOffset = 0;
@@ -29,6 +31,9 @@ class EditableReadingViewModel extends ChangeNotifier {
   double _currentReadingSpeed = 0.5;
   int _selectedParagraphIndex = 0;
   TtsMode _currentTtsMode = TtsMode.none;
+  bool _isUploadingAudio = false;
+  bool _isMessageUpdated = false;
+  String _audioMessage = "Đã lưu audio trên CSDL";
 
   // Getters
   ConvertedFile get file => _file;
@@ -44,6 +49,9 @@ class EditableReadingViewModel extends ChangeNotifier {
   int get selectedParagraphIndex => _selectedParagraphIndex;
   List<String> get paragraphs => _file.paragraphs;
   TtsMode get currentTtsMode => _currentTtsMode;
+  bool get isUploadingAudio => _isUploadingAudio;
+  bool get isMessageUpdated => _isMessageUpdated;
+  String get audioMessage => _audioMessage;
 
   void selectParagraph(int index) {
     if (index >= 0 && index < paragraphs.length) {
@@ -281,11 +289,11 @@ class EditableReadingViewModel extends ChangeNotifier {
     return entry;
   }
 
-  void toggleRecording() {
+  Future<void> toggleRecording() async {
     if (audioRecorder.isRecording) {
-      stopRecorder();
+      await stopRecorder();
     } else {
-      startRecorder();
+      await startRecorder();
     }
   }
 
@@ -302,14 +310,34 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   Future<void> stopRecorder() async {
-    await audioRecorder.stop();
+    final path = await audioRecorder.stop();
     repoManager?.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
+    File audioFile = File(path);
+    _isUploadingAudio = true;
     notifyListeners();
+    try {
+      await repoManager?.onlineDatabase.sendAudioFile(
+          audioFile, repoManager!.currentStudent!.uid);
+      _isUploadingAudio = false;
+      _audioMessage = "Đã lưu audio trên CSDL";
+      _isMessageUpdated = true;
+      notifyListeners();
+    } catch (e) {
+      _isUploadingAudio = false;
+      _isMessageUpdated = true;
+      _audioMessage = "Lỗi: $e";
+      notifyListeners();
+    }
   }
 
+  String toggleSnackbarMessage() {
+    _isMessageUpdated = false;
+    notifyListeners();
+    return audioMessage;
+  }
   @override
   void dispose() {
     repoManager?.trialLogger.endTrial();

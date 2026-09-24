@@ -31,6 +31,14 @@ class EditableReadingScreen extends StatelessWidget {
     final viewModel = context.watch<EditableReadingViewModel>();
     final textTheme = Theme.of(context).textTheme;
 
+    if (viewModel.isMessageUpdated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(viewModel.toggleSnackbarMessage())),
+        );
+      });
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -237,7 +245,9 @@ class EditableReadingScreen extends StatelessWidget {
                             )),
                         onPressed: viewModel.toggleRecording,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.audioRecorder.isRecording ? Colors.redAccent : Colors.teal[800],
+                          backgroundColor: viewModel.isUploadingAudio ?
+                              Colors.grey[500]
+                            : viewModel.audioRecorder.isRecording ? Colors.redAccent : Colors.teal[800],
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

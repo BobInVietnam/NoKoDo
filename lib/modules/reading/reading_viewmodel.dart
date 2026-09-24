@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
@@ -30,6 +31,9 @@ class ReadingViewModel extends ChangeNotifier {
   bool _hasReadParagraph = false;
   bool _hasReadAll = false;
   bool _scrolledToBottom = false;
+  bool _isUploadingAudio = false;
+  bool _isMessageUpdated = false;
+  String _audioMessage = "Đã lưu audio trên CSDL";
 
   // Getters
   String? get currentSelection => _currentSelection;
@@ -46,6 +50,9 @@ class ReadingViewModel extends ChangeNotifier {
   bool get scrolledToBottom => _scrolledToBottom;
   bool get hasReadParagraph => _hasReadParagraph;
   bool get hasReadAll => _hasReadAll;
+  bool get isUploadingAudio => _isUploadingAudio;
+  bool get isMessageUpdated => _isMessageUpdated;
+  String get audioMessage => _audioMessage;
 
   void selectParagraph(int index) {
     if (index >= 0 && index < _paragraphs.length) {
@@ -333,12 +340,34 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   Future<void> stopRecorder() async {
-    await audioRecorder.stop();
+    final path = await audioRecorder.stop();
     repoManager?.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
     notifyListeners();
+    File audioFile = File(path);
+    _isUploadingAudio = true;
+    notifyListeners();
+    try {
+      await repoManager?.onlineDatabase.sendAudioFile(
+          audioFile, repoManager!.currentStudent!.uid);
+      _isUploadingAudio = false;
+      _audioMessage = "Đã lưu audio trên CSDL";
+      _isMessageUpdated = true;
+      notifyListeners();
+    } catch (e) {
+      _isUploadingAudio = false;
+      _isMessageUpdated = true;
+      _audioMessage = "Lỗi: $e";
+      notifyListeners();
+    }
+  }
+
+  String toggleSnackbarMessage() {
+    _isMessageUpdated = false;
+    notifyListeners();
+    return audioMessage;
   }
 
   @override

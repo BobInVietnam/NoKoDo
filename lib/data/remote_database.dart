@@ -25,6 +25,7 @@ abstract class RemoteDatabase {
   Future<void> sendTrialLog(TrialLog trial);
   Future<void> sendEventLog(EventLog event);
   Future<void> sendEventLogsBatch(List<EventLog> events);
+  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId});
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
@@ -342,6 +343,12 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<Map<String, Object?>?> verifySession(String token) async {
     return null;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId}) {
+    // TODO: implement sendAudioFile
+    throw UnimplementedError();
   }
 }
 
@@ -877,6 +884,47 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       }
     } catch (error) {
       debugPrint('HTTP CRITICAL EXCEPTION: Session verification call failed. Details: $error');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId}) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/audio');
+
+    try {
+      debugPrint('HTTP REQUEST: Uploading audio file (${audioFile.path}) to $targetUrl...');
+
+      final request = http.MultipartRequest('POST', targetUrl);
+      if (_token != null) {
+        request.headers['Authorization'] = 'Bearer $_token';
+      }
+
+      request.fields['studentId'] = studentId;
+      if (trialId != null) {
+        request.fields['trialId'] = trialId;
+      }
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          audioFile.path,
+        ),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body);
+        debugPrint('HTTP SUCCESS: Audio file uploaded successfully: $jsonContents');
+        return jsonContents;
+      } else {
+        debugPrint('HTTP ERROR: Server rejected audio upload: ${response.statusCode}, ${response.body}');
+        throw Exception('Server rejected audio upload with status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to upload audio file. Details: $error');
       rethrow;
     }
   }

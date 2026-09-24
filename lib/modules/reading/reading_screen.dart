@@ -63,6 +63,14 @@ class _ReadingScreenState extends State<ReadingScreen> {
       }
     });
 
+    if (viewModel.isMessageUpdated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(viewModel.toggleSnackbarMessage())),
+        );
+      });
+    }
+
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
