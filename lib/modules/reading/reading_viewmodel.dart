@@ -106,6 +106,7 @@ class ReadingViewModel extends ChangeNotifier {
       _ttsService.onWordProgress = (text, start, end, word) {
         _currentWordStart = start + _currentOffset;
         _currentWordEnd = end + _currentOffset;
+        debugPrint(text.substring(start, end));
         notifyListeners();
       };
     } catch (e) {
@@ -340,16 +341,15 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   Future<void> stopRecorder() async {
-    final path = await audioRecorder.stop();
+    final audioFile = await audioRecorder.stop(); // XFile?
     repoManager?.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
-    notifyListeners();
-    File audioFile = File(path);
     _isUploadingAudio = true;
     notifyListeners();
     try {
+      if (audioFile == null) throw Exception('Recording failed');
       await repoManager?.onlineDatabase.sendAudioFile(
           audioFile, repoManager!.currentStudent!.uid);
       _isUploadingAudio = false;

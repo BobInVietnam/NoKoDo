@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 
-enum TtsState { playing, stopped, paused }
+enum TtsState { playing, stopped, paused, error }
 
 class TtsService extends ChangeNotifier {
 
@@ -23,9 +24,19 @@ class TtsService extends ChangeNotifier {
   }
 
   Future<void> _initializeDefaultSettings() async {
-    await _flutterTts.setLanguage("vi-VN");
-    await _flutterTts.setSpeechRate(settings.ttsSpeechRate);
-    await _flutterTts.setVolume(settings.ttsVolume);
+    try {
+      if (kIsWeb) {
+
+      } else {
+        await _flutterTts.setLanguage("vi-VN");
+      }
+      await _flutterTts.setSpeechRate(settings.ttsSpeechRate);
+      await _flutterTts.setVolume(settings.ttsVolume);
+      debugPrint("TTS init successfully");
+    } catch (e) {
+      _ttsState = TtsState.error;
+      debugPrint("TTS ERROR WHEN INITIALIZING");
+    }
   }
 
   void _setTtsEventHandlers() {

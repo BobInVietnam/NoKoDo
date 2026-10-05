@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:cross_file/cross_file.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -25,7 +26,7 @@ abstract class RemoteDatabase {
   Future<void> sendTrialLog(TrialLog trial);
   Future<void> sendEventLog(EventLog event);
   Future<void> sendEventLogsBatch(List<EventLog> events);
-  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId});
+  Future<Map<String, dynamic>?> sendAudioFile(XFile audioFile, String studentId, {String? trialId});
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
@@ -346,7 +347,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId}) {
+  Future<Map<String, dynamic>?> sendAudioFile(XFile audioFile, String studentId, {String? trialId}) {
     // TODO: implement sendAudioFile
     throw UnimplementedError();
   }
@@ -889,11 +890,12 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, dynamic>?> sendAudioFile(File audioFile, String studentId, {String? trialId}) async {
+  Future<Map<String, dynamic>?> sendAudioFile(
+      XFile audioFile, String studentId, {String? trialId}) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/audio');
 
     try {
-      debugPrint('HTTP REQUEST: Uploading audio file (${audioFile.path}) to $targetUrl...');
+      debugPrint('HTTP REQUEST: Uploading audio file (${audioFile.name}) to $targetUrl...');
 
       final request = http.MultipartRequest('POST', targetUrl);
       if (_token != null) {
@@ -905,10 +907,13 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         request.fields['trialId'] = trialId;
       }
 
+      final isWebm = audioFile.name.endsWith('.webm');
       request.files.add(
-        await http.MultipartFile.fromPath(
+        http.MultipartFile.fromBytes(
           'file',
-          audioFile.path,
+          await audioFile.readAsBytes(),
+          filename: audioFile.name,
+          contentType: http.MediaType('audio', isWebm ? 'webm' : 'mp4'),
         ),
       );
 

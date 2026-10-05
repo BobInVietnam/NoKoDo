@@ -9,7 +9,7 @@ import 'package:nodyslexia/utils/url_provider.dart';
 
 abstract class OCRService {
   /// Takes a file and returns the full extracted text as a single string.
-  Future<String?> extractText(File imageFile);
+  Future<String?> extractText(Uint8List imageData, String fileName);
 }
 
 class LocalOCRService implements OCRService {
@@ -20,7 +20,7 @@ class LocalOCRService implements OCRService {
       : client = client ?? http.Client(), _token = token;
 
   @override
-  Future<String?> extractText(File imageFile) async {
+  Future<String?> extractText(Uint8List imageData, String fileName) async {
     // Handling localhost: Android Emulator uses 10.0.2.2, iOS/Others use 127.0.0.1
     // The Next.js API server runs on port 3000
     final String baseUrl = UrlProvider().url;
@@ -33,8 +33,8 @@ class LocalOCRService implements OCRService {
     }
 
     // 2. Manually resolve the MIME type
-    final String? mimeType = lookupMimeType(imageFile.path); // Returns e.g., 'image/jpeg'
-    debugPrint("FILE_TO_TEXT: mime type = ${mimeType}");
+    final String? mimeType = lookupMimeType(fileName); // Returns e.g., 'image/jpeg'
+    debugPrint("FILE_TO_TEXT: mime type = $mimeType");
 
     // 3. Parse into type and subtype
     final contentType = mimeType != null
@@ -43,9 +43,10 @@ class LocalOCRService implements OCRService {
 
     // 4. Attach the file with key 'image' to match Next.js backend requirement
     request.files.add(
-      await http.MultipartFile.fromPath(
+      http.MultipartFile.fromBytes(
         'image',
-        imageFile.path,
+        imageData,
+        filename: fileName,
         contentType: contentType,
       ),
     );
@@ -84,8 +85,8 @@ class MockOCRService implements OCRService {
   });
 
   @override
-  Future<String?> extractText(File imageFile) async {
-    debugPrint("⚡ [MockOCRService]: Processing file: ${imageFile.path}");
+  Future<String?> extractText(Uint8List imageData, String fileName) async {
+    debugPrint("⚡ [MockOCRService]: Processing file: $fileName");
 
     // 1. Simulate the time it takes to upload and run PaddleX/VietOCR pipeline
     await Future.delayed(simulationDelay);

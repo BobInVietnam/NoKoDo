@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:drift/drift.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 
+import 'database.dart' as d; // adjust path; prefix avoids name clashes with models
 import '../models/converted_file.dart';
 import '../models/dictionary_entry.dart';
 import '../models/lesson.dart';
@@ -10,55 +10,33 @@ import '../models/session.dart';
 import '../models/trial_log.dart';
 import '../models/event_log.dart';
 
-abstract class LocalDatabase extends ChangeNotifier{
+abstract class LocalDatabase extends ChangeNotifier {
   Future<void> test();
   Future<int> insertConvertedFile(ConvertedFile file);
   Future<List<ConvertedFile>> getAllConvertedFiles();
   Future<ConvertedFile?> getConvertedFileById(int id);
   Future<int> deleteConvertedFile(int id);
-  /// Inserts a new dictionary entry and returns its auto-generated ID.
   Future<int> insertDictionaryEntry(DictionaryEntry entry);
-  /// Fetches a paginated slice of all entries in the dictionary.
   Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(int limit, int offset);
-  /// Searches for words matching the query with pagination.
   Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset);
-  /// Looks up a precise singular word entry (Returns null if not found).
   Future<DictionaryEntry?> getDictionaryEntryByWord(String word);
-  /// Clears all entries from the dictionary table.
   Future<void> clearDictionary();
-  /// Saves a key-value configuration pair.
   Future<void> setConfig(String key, String value);
-  /// Retrieves a value by key (Returns null if not found).
   Future<String?> getConfig(String key);
-  /// Inserts a new highlighted word/phrase and returns its ID.
   Future<int> insertHighlight(String text);
-  /// Retrieves all highlighted phrases saved on the local device.
   Future<List<String>> getAllHighlights();
-  /// Removes a highlighted phrase from the local database.
   Future<void> deleteHighlight(String text);
-  /// Saves the full set of lessons in the local database.
   Future<void> saveLessons(List<Lesson> lessons);
-  /// Retrieves all lessons from the local database.
   Future<List<Lesson>> getAllLessons();
-  /// Saves or updates a Session locally with ConflictAlgorithm.replace.
   Future<void> saveSession(Session session);
-  /// Retrieves a Session by sessionId.
   Future<Session?> getSessionById(String sessionId);
-  /// Retrieves all Sessions stored locally.
   Future<List<Session>> getAllSessions();
-  /// Saves or updates a TrialLog locally.
   Future<void> saveTrialLog(TrialLog trial);
-  /// Retrieves a TrialLog by trialId.
   Future<TrialLog?> getTrialLogById(String trialId);
-  /// Retrieves all TrialLogs for a specific session.
   Future<List<TrialLog>> getTrialLogsBySession(String sessionId);
-  /// Retrieves all TrialLogs stored locally.
   Future<List<TrialLog>> getAllTrialLogs();
-  /// Saves or updates an EventLog locally.
   Future<void> saveEventLog(EventLog event);
-  /// Retrieves all EventLogs for a specific trial.
   Future<List<EventLog>> getEventLogsByTrial(String trialId);
-  /// Retrieves all EventLogs stored locally.
   Future<List<EventLog>> getAllEventLogs();
 }
 
@@ -67,417 +45,233 @@ class TestLocalDatabase extends LocalDatabase {
   factory TestLocalDatabase() => _instance;
   TestLocalDatabase._internal();
 
-  Database? _database;
-  static const String _dbFileName = 'userdata.db';
+  final d.AppDatabase _db = d.AppDatabase();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDb(false);
-    return _database!;
-  }
-
-  Future<Database> _initDb(bool overwrite) async {
-    final String dbPath = await getDatabasesPath();
-    final String path = join(dbPath, _dbFileName);
-
-    if (overwrite && await databaseExists(path)) {
-      await deleteDatabase(path);
-    }
-
-    return openDatabase(
-      path,
-      version: 1,
-      onConfigure: (db) async {
-        await db.execute('PRAGMA foreign_keys = ON');
-      },
-      onCreate: (db, version) async {
-        debugPrint("DATABASE: Creating initial schema...");
-        final batch = db.batch();
-
-        batch.execute('''
-        CREATE TABLE Lesson (
-          id TEXT PRIMARY KEY,
-          name TEXT,
-          type INTEGER,
-          description TEXT,
-          content TEXT,
-          difficulty INTEGER,
-          dateCreated INTEGER,
-          isDone INTEGER
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE DictionaryEntry (
-          id TEXT PRIMARY KEY,
-          word TEXT,
-          description TEXT,
-          imageName TEXT
-        )
-      ''');
-        batch.execute('CREATE INDEX idx_dictionary_word ON DictionaryEntry (word)');
-
-        batch.execute('''
-        CREATE TABLE ConvertedFile (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
-          extractedText TEXT,
-          createdDate INTEGER
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE SystemConfig (
-          key TEXT PRIMARY KEY,
-          value TEXT
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE Highlight (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT UNIQUE
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE Session (
-          sessionId TEXT PRIMARY KEY,
-          studentId TEXT,
-          sessionStartTime TEXT,
-          sessionEndTime TEXT,
-          examinerId TEXT,
-          siteId TEXT,
-          device TEXT,
-          screenWidth REAL,
-          screenHeight REAL,
-          appVersion TEXT,
-          webVersion TEXT,
-          completed INTEGER
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE TrialLog (
-          sessionId TEXT,
-          trialId TEXT PRIMARY KEY,
-          trialType TEXT,
-          trialName TEXT,
-          trialStartTime INTEGER,
-          trialEndTime INTEGER,
-          conditionId TEXT,
-          conditionName TEXT,
-          comment TEXT,
-          validTrial INTEGER,
-          assistanceGiven INTEGER,
-          interrupted INTEGER,
-          technicalIssue INTEGER,
-          invalidReason TEXT
-        )
-      ''');
-
-        batch.execute('''
-        CREATE TABLE EventLog (
-          trialId TEXT,
-          eventId TEXT PRIMARY KEY,
-          eventType TEXT,
-          eventTimestamp INTEGER,
-          payloadJson TEXT
-        )
-      ''');
-
-        await batch.commit();
-      },
-    );
-  }
-
-// 1. INSERT A CONVERTED FILE RECORD
-  @override
-  Future<int> insertConvertedFile(ConvertedFile file) async {
-    final db = await database;
-    // Inserts record and returns the auto-incremented primary key ID
-    return await db.insert(
-      'ConvertedFile',
-      file.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  // Drift rows -> model maps (column names match the model map keys)
+  Map<String, Object?> _map(Insertable<dynamic> row) =>
+      (row as dynamic).toJson() as Map<String, Object?>;
 
   @override
   Future<void> test() async {
-    final db = await database;
+    await _db.customSelect('SELECT 1').get();
     debugPrint("DATABASE: Online!");
   }
 
-  // 2. QUERY ALL CONVERTED FILES
+  // ---------- ConvertedFile ----------
+  d.ConvertedFilesCompanion _fileCompanion(ConvertedFile f) {
+    final m = f.toMap();
+    return d.ConvertedFilesCompanion(
+      id: m['id'] == null ? const Value.absent() : Value(m['id'] as int),
+      name: Value(m['name'] as String?),
+      extractedText: Value(m['extractedText'] as String?),
+      createdDate: Value(m['createdDate'] as int?),
+    );
+  }
+
+  @override
+  Future<int> insertConvertedFile(ConvertedFile file) =>
+      _db.into(_db.convertedFiles).insert(
+        _fileCompanion(file),
+        mode: InsertMode.insertOrReplace,
+      );
+
   @override
   Future<List<ConvertedFile>> getAllConvertedFiles() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('ConvertedFile');
-
-    return List.generate(maps.length, (i) {
-      return ConvertedFile.fromMap(maps[i]);
-    });
+    final rows = await _db.select(_db.convertedFiles).get();
+    return rows.map((r) => ConvertedFile.fromMap(_map(r))).toList();
   }
 
   @override
   Future<ConvertedFile?> getConvertedFileById(int id) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'ConvertedFile',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1, // Optimizes execution since IDs are unique
-    );
-
-    if (maps.isEmpty) return null;
-    return ConvertedFile.fromMap(maps.first);
+    final row = await (_db.select(_db.convertedFiles)
+      ..where((t) => t.id.equals(id))
+      ..limit(1))
+        .getSingleOrNull();
+    return row == null ? null : ConvertedFile.fromMap(_map(row));
   }
 
-  // 3. DELETE A CONVERTED FILE RECORD BY INT ID
   @override
-  Future<int> deleteConvertedFile(int id) async {
-    final db = await database;
-    return await db.delete(
-      'ConvertedFile',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  Future<int> deleteConvertedFile(int id) =>
+      (_db.delete(_db.convertedFiles)..where((t) => t.id.equals(id))).go();
 
+  // ---------- Dictionary ----------
   @override
   Future<int> insertDictionaryEntry(DictionaryEntry entry) async {
-    final db = await database;
-    return await db.insert(
-      'DictionaryEntry',
-      entry.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final c = d.DictionaryEntry.fromJson(entry.toMap()).toCompanion(true);
+    return _db.into(_db.dictionaryEntries).insert(
+      c,
+      mode: InsertMode.insertOrReplace,
     );
   }
 
   @override
-  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(int limit, int offset) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'DictionaryEntry',
-      limit: limit,
-      offset: offset,
-      orderBy: 'word ASC', // Keeps listings strictly alphabetical
-    );
-    return List.generate(maps.length, (i) => DictionaryEntry.fromMap(maps[i]));
+  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(
+      int limit, int offset) async {
+    final rows = await (_db.select(_db.dictionaryEntries)
+      ..orderBy([(t) => OrderingTerm.asc(t.word)])
+      ..limit(limit, offset: offset))
+        .get();
+    return rows.map((r) => DictionaryEntry.fromMap(_map(r))).toList();
   }
 
   @override
   Future<DictionaryEntry?> getDictionaryEntryByWord(String word) async {
-    final db = await database;
-
-    final List<Map<String, Object?>> maps = await db.query(
-      'DictionaryEntry',
-      where: 'word = ?',
-      whereArgs: [word.trim()],
-      limit: 1, // Ends index query parsing immediately once matching node is located
-    );
-
-    if (maps.isEmpty) return null;
-    return DictionaryEntry.fromMap(maps.first);
+    final row = await (_db.select(_db.dictionaryEntries)
+      ..where((t) => t.word.equals(word.trim()))
+      ..limit(1))
+        .getSingleOrNull();
+    return row == null ? null : DictionaryEntry.fromMap(_map(row));
   }
 
   @override
-  Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset) async {
-    final db = await database;
-    if (query.trim().isEmpty) return [];
-
-    final List<Map<String, Object?>> maps = await db.query(
-      'DictionaryEntry',
-      where: 'word LIKE ?',
-      // Using '%' wildcards allows matching prefixes, suffixes, or sub-substring fragments
-      whereArgs: ['%${query.trim()}%'],
-      limit: limit,
-      offset: offset,
-      orderBy: 'word ASC',
-    );
-
-    return List.generate(maps.length, (i) => DictionaryEntry.fromMap(maps[i]));
+  Future<List<DictionaryEntry>> searchDictionaryWords(
+      String query, int limit, int offset) async {
+    final q = query.trim();
+    if (q.isEmpty) return [];
+    final rows = await (_db.select(_db.dictionaryEntries)
+      ..where((t) => t.word.like('%$q%'))
+      ..orderBy([(t) => OrderingTerm.asc(t.word)])
+      ..limit(limit, offset: offset))
+        .get();
+    return rows.map((r) => DictionaryEntry.fromMap(_map(r))).toList();
   }
 
   @override
-  Future<void> clearDictionary() async {
-    final db = await database;
-    await db.delete('DictionaryEntry');
-  }
+  Future<void> clearDictionary() => _db.delete(_db.dictionaryEntries).go();
 
+  // ---------- SystemConfig ----------
   @override
-  Future<void> setConfig(String key, String value) async {
-    final db = await database;
-    await db.insert(
-      'SystemConfig',
-      {'key': key, 'value': value},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> setConfig(String key, String value) =>
+      _db.into(_db.systemConfigs).insert(
+        d.SystemConfigsCompanion.insert(key: key, value: Value(value)),
+        mode: InsertMode.insertOrReplace,
+      );
 
   @override
   Future<String?> getConfig(String key) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'SystemConfig',
-      where: 'key = ?',
-      whereArgs: [key],
-      limit: 1,
-    );
-    if (maps.isEmpty) return null;
-    return maps.first['value'] as String?;
+    final row = await (_db.select(_db.systemConfigs)
+      ..where((t) => t.key.equals(key))
+      ..limit(1))
+        .getSingleOrNull();
+    return row?.value;
   }
 
+  // ---------- Highlights ----------
   @override
-  Future<int> insertHighlight(String text) async {
-    final db = await database;
-    return await db.insert(
-      'Highlight',
-      {'text': text},
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
-  }
+  Future<int> insertHighlight(String text) =>
+      _db.into(_db.highlights).insert(
+        d.HighlightsCompanion.insert(content: text),
+        mode: InsertMode.insertOrIgnore,
+      );
 
   @override
   Future<List<String>> getAllHighlights() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('Highlight');
-    return List.generate(maps.length, (i) => maps[i]['text'] as String);
+    final rows = await _db.select(_db.highlights).get();
+    return rows.map((r) => r.content).toList();
   }
 
   @override
-  Future<void> deleteHighlight(String text) async {
-    final db = await database;
-    await db.delete(
-      'Highlight',
-      where: 'text = ?',
-      whereArgs: [text],
+  Future<void> deleteHighlight(String text) =>
+      (_db.delete(_db.highlights)..where((t) => t.content.equals(text))).go();
+
+  // ---------- Lessons ----------
+  @override
+  Future<void> saveLessons(List<Lesson> lessons) => _db.batch((b) {
+    b.insertAll(
+      _db.lessons,
+      lessons.map((l) => d.Lesson.fromJson(l.toMap()).toCompanion(true)),
+      mode: InsertMode.insertOrReplace,
     );
-  }
-
-  @override
-  Future<void> saveLessons(List<Lesson> lessons) async {
-    final db = await database;
-    final batch = db.batch();
-    for (var lesson in lessons) {
-      batch.insert(
-        'Lesson',
-        lesson.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
-  }
+  });
 
   @override
   Future<List<Lesson>> getAllLessons() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('Lesson');
-    return List.generate(maps.length, (i) => Lesson.fromMap(maps[i]));
+    final rows = await _db.select(_db.lessons).get();
+    return rows.map((r) => Lesson.fromMap(_map(r))).toList();
   }
 
+  // ---------- Sessions ----------
   @override
   Future<void> saveSession(Session session) async {
-    final db = await database;
-    await db.insert(
-      'Session',
-      session.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await _db.into(_db.sessions).insert(
+      d.Session.fromJson(session.toMap()).toCompanion(true),
+      mode: InsertMode.insertOrReplace,
     );
-    debugPrint("DATABASE: Saved/replaced session ${session.sessionId} (completed: ${session.completed})");
+    debugPrint(
+        "DATABASE: Saved/replaced session ${session.sessionId} (completed: ${session.completed})");
   }
 
   @override
   Future<Session?> getSessionById(String sessionId) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'Session',
-      where: 'sessionId = ?',
-      whereArgs: [sessionId],
-      limit: 1,
-    );
-    if (maps.isEmpty) return null;
-    return Session.fromMap(maps.first);
+    final row = await (_db.select(_db.sessions)
+      ..where((t) => t.sessionId.equals(sessionId))
+      ..limit(1))
+        .getSingleOrNull();
+    return row == null ? null : Session.fromMap(_map(row));
   }
 
   @override
   Future<List<Session>> getAllSessions() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('Session');
-    return List.generate(maps.length, (i) => Session.fromMap(maps[i]));
+    final rows = await _db.select(_db.sessions).get();
+    return rows.map((r) => Session.fromMap(_map(r))).toList();
   }
 
+  // ---------- TrialLogs ----------
   @override
   Future<void> saveTrialLog(TrialLog trial) async {
-    final db = await database;
-    await db.insert(
-      'TrialLog',
-      trial.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await _db.into(_db.trialLogs).insert(
+      d.TrialLog.fromJson(trial.toMap()).toCompanion(true),
+      mode: InsertMode.insertOrReplace,
     );
     debugPrint("DATABASE: Saved/replaced TrialLog ${trial.trialId}");
   }
 
   @override
   Future<TrialLog?> getTrialLogById(String trialId) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'TrialLog',
-      where: 'trialId = ?',
-      whereArgs: [trialId],
-      limit: 1,
-    );
-    if (maps.isEmpty) return null;
-    return TrialLog.fromMap(maps.first);
+    final row = await (_db.select(_db.trialLogs)
+      ..where((t) => t.trialId.equals(trialId))
+      ..limit(1))
+        .getSingleOrNull();
+    return row == null ? null : TrialLog.fromMap(_map(row));
   }
 
   @override
   Future<List<TrialLog>> getTrialLogsBySession(String sessionId) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'TrialLog',
-      where: 'sessionId = ?',
-      whereArgs: [sessionId],
-      orderBy: 'trialStartTime ASC',
-    );
-    return List.generate(maps.length, (i) => TrialLog.fromMap(maps[i]));
+    final rows = await (_db.select(_db.trialLogs)
+      ..where((t) => t.sessionId.equals(sessionId))
+      ..orderBy([(t) => OrderingTerm.asc(t.trialStartTime)]))
+        .get();
+    return rows.map((r) => TrialLog.fromMap(_map(r))).toList();
   }
 
   @override
   Future<List<TrialLog>> getAllTrialLogs() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('TrialLog');
-    return List.generate(maps.length, (i) => TrialLog.fromMap(maps[i]));
+    final rows = await _db.select(_db.trialLogs).get();
+    return rows.map((r) => TrialLog.fromMap(_map(r))).toList();
   }
 
+  // ---------- EventLogs ----------
   @override
   Future<void> saveEventLog(EventLog event) async {
-    final db = await database;
-    await db.insert(
-      'EventLog',
-      event.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await _db.into(_db.eventLogs).insert(
+      d.EventLog.fromJson(event.toMap()).toCompanion(true),
+      mode: InsertMode.insertOrReplace,
     );
     debugPrint("DATABASE: Saved EventLog ${event.eventId}");
   }
 
   @override
   Future<List<EventLog>> getEventLogsByTrial(String trialId) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query(
-      'EventLog',
-      where: 'trialId = ?',
-      whereArgs: [trialId],
-      orderBy: 'eventTimestamp ASC',
-    );
-    return List.generate(maps.length, (i) => EventLog.fromMap(maps[i]));
+    final rows = await (_db.select(_db.eventLogs)
+      ..where((t) => t.trialId.equals(trialId))
+      ..orderBy([(t) => OrderingTerm.asc(t.eventTimestamp)]))
+        .get();
+    return rows.map((r) => EventLog.fromMap(_map(r))).toList();
   }
 
   @override
   Future<List<EventLog>> getAllEventLogs() async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('EventLog');
-    return List.generate(maps.length, (i) => EventLog.fromMap(maps[i]));
+    final rows = await _db.select(_db.eventLogs).get();
+    return rows.map((r) => EventLog.fromMap(_map(r))).toList();
   }
 }

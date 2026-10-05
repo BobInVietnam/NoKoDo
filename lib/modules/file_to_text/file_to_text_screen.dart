@@ -24,7 +24,6 @@ class FileToTextScreen extends StatelessWidget {
   Future<void> _handleImageAction(BuildContext context, int sourceIndex) async {
     final viewModel = context.read<FileToTextViewModel>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
     // Call the ViewModel logic
     final ConvertedFile? result = await viewModel.processImageFromSource(sourceIndex);

@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -46,8 +48,12 @@ class AudioRecorder extends ChangeNotifier {
       androidWillPauseWhenDucked: true,
     ));
 
-    final tmpDir = await getTemporaryDirectory();
-    _mPath = path.join(tmpDir.path, 'tau_file.mp4');
+    if (kIsWeb) {
+      debugPrint("kIsWeb");
+    } else {
+      final tmpDir = await getTemporaryDirectory();
+      _mPath = path.join(tmpDir.path, 'tau_file.mp4');
+    }
     // _player!.openPlayer().then((value) {
     //   setState(() {
     //     _mPlayerIsInited = true;
@@ -69,13 +75,9 @@ class AudioRecorder extends ChangeNotifier {
       }
     }
     await _recorder!.openRecorder();
-    if (!await _recorder!.isEncoderSupported(_codec) && kIsWeb) {
+    if (kIsWeb) {
       _codec = Codec.opusWebM;
       _mPath = 'tau_file.webm';
-      if (!await _recorder!.isEncoderSupported(_codec) && kIsWeb) {
-        _recorderIsInited = true;
-        return;
-      }
     }
     _recorderIsInited = true;
   }
@@ -88,32 +90,39 @@ class AudioRecorder extends ChangeNotifier {
       audioSource: theSource,
     );
     final now = DateTime.now();
-    recordingName = "${sid}_nokodoaudio_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.mp4";
+    recordingName = "${sid}_nokodoaudio_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
     debugPrint("RECORDER: Recording started.");
     _isRecording = true;
     notifyListeners();
   }
 
-  Future<String> stop() async {
-    await _recorder!.stopRecorder();
-    debugPrint("RECORDER: Saving...");
+  Future<XFile?> stop() async {
+    final url = await _recorder!.stopRecorder();
     _isRecording = false;
     try {
-      final recordingFile = File(_mPath);
-      final bytes = await recordingFile.readAsBytes();
-      final recordingPath = await FileSaver.instance.saveFile(
-        name: recordingName,
-        bytes: bytes,
-        mimeType: MimeType.mp4Audio,
-      );
-
-      debugPrint("RECORDER: Saved successfully at $recordingPath");
+      final XFile result;
+      if (kIsWeb) {
+        final bytes = (await http.get(Uri.parse(url!))).bodyBytes;
+        result = XFile.fromData(
+          bytes,
+          name: "$recordingName.webm",
+          mimeType: 'audio/webm',
+        );
+      } else {
+        final bytes = await File(_mPath).readAsBytes();
+        await FileSaver.instance.saveFile(
+          name: "$recordingName.mp4",
+          bytes: bytes,
+          mimeType: MimeType.mp4Audio,
+        );
+        result = XFile(_mPath, name: "$recordingName.mp4");
+      }
       notifyListeners();
-      return recordingPath;
+      return result;
     } catch (e) {
       debugPrint("ERROR SAVING AUDIO RECORDING: $e");
       notifyListeners();
-      return "";
+      return null;
     }
   }
 

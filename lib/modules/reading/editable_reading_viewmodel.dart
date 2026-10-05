@@ -310,15 +310,15 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   Future<void> stopRecorder() async {
-    final path = await audioRecorder.stop();
+    final audioFile = await audioRecorder.stop(); // XFile?
     repoManager?.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
-    File audioFile = File(path);
     _isUploadingAudio = true;
     notifyListeners();
     try {
+      if (audioFile == null) throw Exception('Recording failed');
       await repoManager?.onlineDatabase.sendAudioFile(
           audioFile, repoManager!.currentStudent!.uid);
       _isUploadingAudio = false;

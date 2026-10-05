@@ -28,13 +28,14 @@ class FileToTextViewModel extends ChangeNotifier {
     setLoading(true);
 
     try {
-      // 1. Pick the image using image_picker (Mocked here)
+      // 1. Pick the image using image_picker
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: sourceIndex == 0 ? ImageSource.camera : ImageSource.gallery);
       if (image == null) return null; // User cancelled
 
-      // 2. Send to backend via ApiService (Mocked here)
-      final String? formattedResult = await ocrService.extractText(File(image.path));
+      // 2. Send to backend via ApiService
+      final String? formattedResult =
+        await ocrService.extractText(await image.readAsBytes(), image.name);
 
       final file = ConvertedFile(
           fileName: image.name,

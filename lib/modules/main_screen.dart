@@ -6,6 +6,7 @@ import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/test/test_selection_viewmodel.dart';
@@ -25,6 +26,8 @@ import '../device_size.dart';
 import '../utils/ocr_service.dart';
 import 'file_to_text/file_to_text_viewmodel.dart';
 import 'library/library_viewmodel.dart';
+import 'login/login_screen.dart';
+import 'login/login_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -531,8 +534,20 @@ class _MainScreenState extends State<MainScreen> {
               }
               finally {
                 if (mounted) {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
+                  // Dismiss loading dialog first using root navigator
+                  Navigator.of(context, rootNavigator: true).pop();
+
+                  // Navigate cleanly to LoginScreen while clearing entire history stack
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+                        create: (context) => LoginViewModel(
+                          repoManager: context.read<RepoManager>(),
+                          textSettings: context.read<NokodoSettings>(),
+                          usageTimeTracker: context.read<UsageTimeTracker>(),
+                        ),
+                        child: const LoginScreen())), // Replace with your LoginScreen widget or named route
+                        (route) => false,
+                  );
                 }
               }
             },
