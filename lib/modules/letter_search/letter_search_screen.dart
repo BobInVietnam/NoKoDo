@@ -110,7 +110,7 @@ class LetterSearchScreen extends StatelessWidget {
                         }
                       },
                     ),
-                    const SettingButton(),
+                    SettingButton(),
                   ],
                 ),
               ),

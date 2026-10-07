@@ -206,7 +206,7 @@ class TestNokodoApp extends StatelessWidget {
             settings: context.read<NokodoSettings>(),
             ttsService: context.read<TtsService>(),
           ),
-          child: const SettingsScreen(),
+          child: SettingsScreen(),
         )
     );
   }

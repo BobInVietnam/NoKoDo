@@ -219,8 +219,8 @@ class FileToTextScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const <Widget>[
-                  ReturnButton(),
+                children: <Widget>[
+                  const ReturnButton(),
                   SettingButton()
                 ],
               ),

@@ -55,7 +55,7 @@ class PracticeDetailsScreen extends StatelessWidget {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () => viewModel.startLesson(context),
+                    onPressed: () async => await viewModel.startLesson(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,

@@ -3,7 +3,6 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nodyslexia/models/student.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/models/lesson.dart';
@@ -11,6 +10,7 @@ import 'package:nodyslexia/models/session.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
 import 'package:nodyslexia/utils/trial_logger.dart';
+import 'package:nodyslexia/models/converted_file.dart';
 
 class RepoManager extends ChangeNotifier {
   final RemoteDatabase onlineDatabase;
@@ -328,5 +328,32 @@ class RepoManager extends ChangeNotifier {
 
     debugPrint("TESTING: RepoMan sending lesson result data...");
     await onlineDatabase.sendLessonResult(currentStudent!.uid, lessonId, results);
+  }
+
+  Future<void> sendPersonalLesson(ConvertedFile file) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    debugPrint("TESTING: RepoMan sending custom lesson data...");
+    await onlineDatabase.sendPersonalLesson(currentStudent!.uid, file);
+  }
+
+  Future<void> sendCustomSettings(String lessonId, Map<String, Object?> settings) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    debugPrint("TESTING: RepoMan sending custom lesson settings...");
+    await onlineDatabase.sendCustomSettings(currentStudent!.uid, lessonId, settings);
+  }
+
+  Future<Map<String, dynamic>> getCustomSettings(String lessonId) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    try {
+      debugPrint("TESTING: RepoMan sending custom lesson settings...");
+      Map<String, dynamic> customSettings = await onlineDatabase
+          .getCustomSettings(currentStudent!.uid, lessonId);
+      return customSettings;
+    } catch (error) {
+      return {};
+    }
   }
 }

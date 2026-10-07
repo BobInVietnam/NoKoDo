@@ -314,7 +314,7 @@ class _SimplifierScreenState extends State<SimplifierScreen> {
                       ),
                     ),
                   ),
-                  const SettingButton(),
+                  SettingButton(),
                 ],
               ),
             ],

@@ -191,7 +191,7 @@ class NokodoSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateFromMap(Map<String, dynamic> settingsMap) {
+  Future<void> updateFromMap(Map<String, dynamic> settingsMap) async {
     if (settingsMap.isEmpty) return;
 
     if (settingsMap['fontSize'] != null) {
@@ -229,7 +229,7 @@ class NokodoSettings extends ChangeNotifier {
       _ttsSpeechRate = (settingsMap['ttsSpeechRate'] as num).toDouble();
     }
 
-    _saveToPrefs();
+    await _saveToPrefs();
     notifyListeners();
   }
 

@@ -7,7 +7,12 @@ import "../modules/settings/settings_viewmodel.dart";
 import "../modules/settings/text_settings.dart";
 
 class SettingButton extends StatelessWidget {
-  const SettingButton({super.key});
+  final bool syncEnabled;
+
+  const SettingButton({
+    super.key,
+    this.syncEnabled = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +26,7 @@ class SettingButton extends StatelessWidget {
                 settings: context.read<NokodoSettings>(),
                 ttsService: context.read<TtsService>(),
               ),
-              child: const SettingsScreen(),
+              child: SettingsScreen(syncEnabled: syncEnabled),
             ),
           ),
         )

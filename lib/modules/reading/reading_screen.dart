@@ -164,14 +164,14 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                               final isHighlighted = settings.highlights.contains(text.trim());
                                               if (isHighlighted) {
                                                 settings.removeHighlight(db, text);
-                                                viewModel.repoManager?.trialLogger.logEvent(
+                                                viewModel.repoManager.trialLogger.logEvent(
                                                   eventType: 'UNHIGHLIGHT_TEXT',
                                                   eventCode: 'unhighlight',
                                                   payload: {'content': text},
                                                 );
                                               } else {
                                                 settings.addHighlight(db, text);
-                                                viewModel.repoManager?.trialLogger.logEvent(
+                                                viewModel.repoManager.trialLogger.logEvent(
                                                   eventType: 'HIGHLIGHT_TEXT',
                                                   eventCode: 'highlight',
                                                   payload: {'content': text},
@@ -226,6 +226,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       children: <Widget>[
                         ReturnButton(
                           onReturn: (context) {
+                            NokodoSettings settings = context.read<NokodoSettings>();
+                            Map<String, dynamic> customSettings = settings.toMap();
+                            viewModel.repoManager.sendCustomSettings(viewModel.lessonId, customSettings);
+                            settings.updateFromMap(viewModel.repoManager.currentStudent!.settings);
                             Navigator.pop(context);
                           },
                         ),
@@ -289,7 +293,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                         ),
-                        const SettingButton()
+                        SettingButton(syncEnabled: false)
                       ],
                     ),
                   ],

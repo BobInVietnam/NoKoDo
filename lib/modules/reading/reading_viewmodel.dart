@@ -10,9 +10,9 @@ import 'package:nodyslexia/utils/tts_service.dart';
 enum TtsMode { none, paragraph, all, selection }
 
 class ReadingViewModel extends ChangeNotifier {
-  final String? lessonId;
+  final String lessonId;
   final String lessonName;
-  final RepoManager? repoManager;
+  final RepoManager repoManager;
 
   String _extractedText = "";
   List<String> _paragraphs = List.empty();
@@ -24,7 +24,6 @@ class ReadingViewModel extends ChangeNotifier {
   int _currentOffset = 0;
   String? _currentSelection;
   OverlayEntry? _selectionMenuOverlay;
-  double _currentReadingSpeed = 0.5;
   int _selectedParagraphIndex = 0;
   TtsMode _currentTtsMode = TtsMode.none;
 
@@ -37,7 +36,6 @@ class ReadingViewModel extends ChangeNotifier {
 
   // Getters
   String? get currentSelection => _currentSelection;
-  double get currentReadingSpeed => _currentReadingSpeed;
   int get currentWordStart => _currentWordStart;
   int get currentWordEnd => _currentWordEnd;
   TtsService get ttsService => _ttsService;
@@ -58,8 +56,8 @@ class ReadingViewModel extends ChangeNotifier {
     if (index >= 0 && index < _paragraphs.length) {
       final oldIndex = _selectedParagraphIndex;
       _selectedParagraphIndex = index;
-      if (repoManager != null && oldIndex != index) {
-        repoManager!.trialLogger.logEvent(
+      if (oldIndex != index) {
+        repoManager.trialLogger.logEvent(
           eventType: 'PARAGRAPH_CHANGE',
           eventCode: 'pgchange',
           payload: {'from': oldIndex, 'to': index},
@@ -73,31 +71,29 @@ class ReadingViewModel extends ChangeNotifier {
     required String text,
     required TtsService ttsService,
     required LocalDatabase localDatabase,
-    this.lessonId,
+    required this.lessonId,
     required this.lessonName,
     required this.audioRecorder,
-    this.repoManager,
+    required this.repoManager,
   })  : _ttsService = ttsService,
         _extractedText = text,
         _localDatabase = localDatabase {
     _initializeTts();
     _extractParagraphs();
 
-    if (repoManager != null) {
-      repoManager!.trialLogger.startTrial(
-        trialType: 'READING',
-        trialCode: 'r',
-        trialName: lessonName
-      );
-      repoManager!.trialLogger.logEvent(
-        eventType: 'STIMULUS_SHOWN',
-        eventCode: 'shown',
-        payload: {
-          'content': _extractedText,
-          'initialSettings': repoManager!.currentStudent?.settings ?? {},
-        },
-      );
-    }
+    repoManager.trialLogger.startTrial(
+      trialType: 'READING',
+      trialCode: 'r',
+      trialName: lessonName
+    );
+    repoManager.trialLogger.logEvent(
+      eventType: 'STIMULUS_SHOWN',
+      eventCode: 'shown',
+      payload: {
+        'content': _extractedText,
+        'initialSettings': repoManager.currentStudent?.settings ?? {},
+      },
+    );
   }
 
   Future<void> _initializeTts() async {
@@ -132,7 +128,7 @@ class ReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -145,7 +141,7 @@ class ReadingViewModel extends ChangeNotifier {
       _currentWordEnd = -1;
       if (_paragraphs.isNotEmpty && _selectedParagraphIndex < _paragraphs.length) {
         final textToRead = _paragraphs[_selectedParagraphIndex];
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_START',
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
@@ -154,7 +150,7 @@ class ReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -172,7 +168,7 @@ class ReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -183,7 +179,7 @@ class ReadingViewModel extends ChangeNotifier {
         _currentWordStart = -1;
         _currentWordEnd = -1;
         final textToRead = currentSelection!;
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_START',
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
@@ -192,7 +188,7 @@ class ReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -210,7 +206,7 @@ class ReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -219,7 +215,7 @@ class ReadingViewModel extends ChangeNotifier {
       selectParagraph(0);
       _currentTtsMode = TtsMode.all;
       _hasReadAll = true;
-      repoManager?.trialLogger.logEvent(
+      repoManager.trialLogger.logEvent(
         eventType: 'TTS_START',
         eventCode: 'ttsstart',
         payload: {'content': _extractedText},
@@ -238,9 +234,9 @@ class ReadingViewModel extends ChangeNotifier {
 
   void syncLessonResultIfCriteriaMet() {
     final hasRead = _hasReadParagraph || _hasReadAll;
-    if (hasRead && _scrolledToBottom && lessonId != null && repoManager != null) {
+    if (hasRead && _scrolledToBottom) {
       debugPrint("READING: Criteria met. Sending lesson result.");
-      repoManager!.sendLessonResult(lessonId!, {
+      repoManager.sendLessonResult(lessonId, {
         'completed': true,
         'hasReadParagraph': _hasReadParagraph,
         'hasReadAll': _hasReadAll,
@@ -266,7 +262,7 @@ class ReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -280,7 +276,7 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   void handleStopReading() {
-    repoManager?.trialLogger.logEvent(
+    repoManager.trialLogger.logEvent(
       eventType: 'TTS_STOP',
       eventCode: 'ttsstop',
       payload: {},
@@ -307,8 +303,8 @@ class ReadingViewModel extends ChangeNotifier {
 
   Future<DictionaryEntry?>  getWordDefinition() async {
     final entry = await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
-    if (repoManager != null && currentSelection != null) {
-      repoManager!.trialLogger.logEvent(
+    if (currentSelection != null) {
+      repoManager.trialLogger.logEvent(
         eventType: 'DICTIONARY_LOOKUP',
         eventCode: 'dictlookup',
         payload: {
@@ -330,8 +326,8 @@ class ReadingViewModel extends ChangeNotifier {
 
   Future<void> startRecorder() async {
     await audioRecorder.record(
-        sid: repoManager?.currentStudent?.getFormattedSid() ?? "S0");
-    repoManager?.trialLogger.logEvent(
+        sid: repoManager.currentStudent?.getFormattedSid() ?? "S0");
+    repoManager.trialLogger.logEvent(
         eventType: "RECORD_START",
         eventCode: "record",
         payload: {
@@ -342,7 +338,7 @@ class ReadingViewModel extends ChangeNotifier {
 
   Future<void> stopRecorder() async {
     final audioFile = await audioRecorder.stop(); // XFile?
-    repoManager?.trialLogger.logEvent(
+    repoManager.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
@@ -350,8 +346,8 @@ class ReadingViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       if (audioFile == null) throw Exception('Recording failed');
-      await repoManager?.onlineDatabase.sendAudioFile(
-          audioFile, repoManager!.currentStudent!.uid);
+      await repoManager.onlineDatabase.sendAudioFile(
+          audioFile, repoManager.currentStudent!.uid);
       _isUploadingAudio = false;
       _audioMessage = "Đã lưu audio trên CSDL";
       _isMessageUpdated = true;
@@ -372,7 +368,7 @@ class ReadingViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    repoManager?.trialLogger.endTrial();
+    repoManager.trialLogger.endTrial();
     _ttsService.removeListener(_onTtsChanged);
     _ttsService.stop();
     // Ensure overlay entries are safely detached out of global stack references

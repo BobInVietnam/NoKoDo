@@ -327,7 +327,7 @@ class EditingScreen extends StatelessWidget {
                               isSmall ? "" : 'Lưu thành bản sao'),
                           onPressed: () => _showSaveAsCopyDialog(context, viewModel),
                         ),
-                        const SettingButton()
+                        SettingButton()
                       ],
                     ),
                   ],

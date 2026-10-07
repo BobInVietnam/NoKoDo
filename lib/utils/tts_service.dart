@@ -26,9 +26,9 @@ class TtsService extends ChangeNotifier {
   Future<void> _initializeDefaultSettings() async {
     try {
       if (kIsWeb) {
-
+        debugPrint("TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}");
       } else {
-        await _flutterTts.setLanguage("vi-VN");
+        debugPrint("TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}");
       }
       await _flutterTts.setSpeechRate(settings.ttsSpeechRate);
       await _flutterTts.setVolume(settings.ttsVolume);
@@ -81,6 +81,7 @@ class TtsService extends ChangeNotifier {
     _onComplete = onComplete;
     if (text.isNotEmpty) {
       _ttsState = TtsState.playing;
+      debugPrint("TTS: Speaking $text");
       notifyListeners();
       await _flutterTts.setSpeechRate(settings.ttsSpeechRate);
       await _flutterTts.setVolume(settings.ttsVolume);
@@ -91,6 +92,7 @@ class TtsService extends ChangeNotifier {
   Future<void> stop() async {
     var result = await _flutterTts.stop();
     if (result == 1) {
+      debugPrint("TTS: Stopped");
       _ttsState = TtsState.stopped;
       notifyListeners();
     }

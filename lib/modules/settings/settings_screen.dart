@@ -26,16 +26,21 @@ bool isOpenedFromReadingScreen(BuildContext context) {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final bool syncEnabled;
 
-  void _syncSettingsOnline(BuildContext context, Map<String, dynamic> initialSettings) {
+  const SettingsScreen(
+      {super.key,
+      this.syncEnabled = true
+      }
+  );
+
+  void _syncSettings(BuildContext context, Map<String, dynamic> initialSettings) {
     try {
       final textSettings = context.read<NokodoSettings>();
       final repoManager = context.read<RepoManager>();
       final newSettings = textSettings.toMap();
-      repoManager.saveStudentSettings(newSettings);
+      if (syncEnabled) repoManager.saveStudentSettings(newSettings);
 
-      if (repoManager.trialLogger.currentTrial != null) {
         repoManager.trialLogger.logEvent(
           eventType: 'SETTINGS_CHANGED',
           eventCode: 'settings',
@@ -44,7 +49,6 @@ class SettingsScreen extends StatelessWidget {
             'to': newSettings,
           },
         );
-      }
     } catch (e) {
       debugPrint("SETTINGS: Exit sync error: $e");
     }
@@ -60,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          _syncSettingsOnline(context, initialSettings);
+          _syncSettings(context, initialSettings);
         }
       },
       child: Scaffold(

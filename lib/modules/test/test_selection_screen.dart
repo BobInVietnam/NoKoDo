@@ -126,7 +126,7 @@ class TestSelectionScreen extends StatelessWidget {
                   // Return Button
                   ReturnButton(),
                   // Settings Button
-                  const SettingButton()
+                  SettingButton()
                 ],
               ),
             ),

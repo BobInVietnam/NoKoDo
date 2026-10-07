@@ -291,7 +291,7 @@ class EditableReadingScreen extends StatelessWidget {
                           viewModel.refreshContent(newFile!);
                         },
                       ),
-                      const SettingButton()
+                      SettingButton(syncEnabled: false)
                     ],
                   ),
                 ],

@@ -8,6 +8,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../models/converted_file.dart';
 import '../models/test.dart';
 import '../models/session.dart';
 import '../models/trial_log.dart';
@@ -18,11 +19,14 @@ abstract class RemoteDatabase {
   Future<Map<String, Object?>?> getUser(String uid);
   Future<List<Map<String, Object?>>> getTestList(String uid);
   Future<Map<String, Object?>> getTestDetails(String testId, String studentId);
+  Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId);
+  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings);
   Future<void> sendTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
   Future<void> sendUsageTime(int totalUsageTime, String uid);
   Future<void> sendSession(Session session);
   Future<void> sendUserSettings(String uid, Map<String, dynamic> settings);
+  Future<void> sendPersonalLesson(String uid, ConvertedFile file);
   Future<void> sendTrialLog(TrialLog trial);
   Future<void> sendEventLog(EventLog event);
   Future<void> sendEventLogsBatch(List<EventLog> events);
@@ -349,6 +353,24 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<Map<String, dynamic>?> sendAudioFile(XFile audioFile, String studentId, {String? trialId}) {
     // TODO: implement sendAudioFile
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendPersonalLesson(String uid, ConvertedFile file) {
+    // TODO: implement sendPersonalLesson
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId) {
+    // TODO: implement getCustomSettings
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings) {
+    // TODO: implement sendCustomSettings
     throw UnimplementedError();
   }
 }
@@ -933,4 +955,69 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       rethrow;
     }
   }
+
+  @override
+  Future<void> sendPersonalLesson(String uid, ConvertedFile file) {
+    // TODO: implement sendPersonalLesson
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/customsettings').replace(
+      queryParameters: {
+        'studentid': uid,
+        'lessonid': lessonId,
+      },
+    );
+
+    try {
+      final http.Response response = await _get(
+        targetUrl
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> jsonContents = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 4. Log the target JSON value cleanly to your debug terminal console window
+        debugPrint('JSON Content: $jsonContents');
+        debugPrint('HTTP SUCCESS: Student lesson settings fetched successfully.');
+        return jsonContents;
+      } else {
+        debugPrint('HTTP ERROR: Server rejected lesson settings fetch with status code: ${response.statusCode}, ${response.body}');
+        throw Exception('Server rejected lesson settings fetch with status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to get lesson settings. Details: $error. Returning to default settings.');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/customsettings');
+
+    try {
+      debugPrint('HTTP REQUEST: Syncing lesson ($lessonId) custom settings to $targetUrl...');
+
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode({
+          'studentid': uid,
+          'lessonid': lessonId,
+          'settings': settings
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Student lesson settings synced successfully.');
+      } else {
+        debugPrint('HTTP ERROR: Server rejected lesson settings sync with status code: ${response.statusCode}, ${response.body}');
+        throw Exception('Server rejected lesson settings sync with status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
+      rethrow;
+    }
+  }
+  
 }

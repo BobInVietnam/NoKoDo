@@ -481,7 +481,7 @@ class TestDetailScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   ReturnButton(),
-                  const SettingButton(),
+                  SettingButton(),
                 ],
               ),
             ),
