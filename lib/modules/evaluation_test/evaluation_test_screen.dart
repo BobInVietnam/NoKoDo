@@ -109,9 +109,12 @@ class EvaluationTestScreen extends StatelessWidget {
   Widget _buildInProgressScreen(BuildContext context, EvaluationTestViewModel viewModel) {
     final textTheme = Theme.of(context).textTheme;
 
-    String headerText = viewModel.currentType == 0
-        ? "Hãy chọn chữ ${viewModel.currentTarget} mà em thấy dễ đọc nhất"
-        : "Hãy chọn câu/từ mà em thấy dễ nhìn nhất";
+    List<TextSpan> headerText = viewModel.currentType == 0
+        ? [TextSpan(text: "Hãy chọn chữ "),
+          TextSpan(text: viewModel.currentTarget,
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+          TextSpan(text:" mà em thấy dễ đọc nhất")]
+        : [TextSpan(text: "Hãy chọn câu/từ mà em thấy dễ nhìn nhất")];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -132,13 +135,15 @@ class EvaluationTestScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text(
-              headerText,
-              style: textTheme.bodyLarge?.copyWith(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ) ?? const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            child: Text.rich(
+              TextSpan(
+                style: textTheme.bodyLarge?.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ) ?? const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                children: headerText
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -175,45 +180,38 @@ class EvaluationTestScreen extends StatelessWidget {
 
           // Question presentation fitting screen height exactly
           Expanded(
-            child: viewModel.currentType == 2
-                ? _buildType2List(context, viewModel)
-                : _buildGrid(context, viewModel),
+            child: _buildGrid(context, viewModel),
           ),
         ],
       ),
     );
   }
 
-  // 2x5 Grid for Type 0 and Type 1 (dynamically sized via LayoutBuilder to fit screen without scrolling)
+// Two-row grid for Type 0 and Type 1: columns grow with the item count, cells are evenly spaced
   Widget _buildGrid(BuildContext context, EvaluationTestViewModel viewModel) {
-    const double crossAxisSpacing = 10.0;
-    const double mainAxisSpacing = 8.0;
+    final items = viewModel.displayAnswerList;
+    final int columns = (items.length / 2).ceil();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double maxWidth = constraints.maxWidth;
-        final double maxHeight = constraints.maxHeight;
+    Widget buildRow(int row) {
+      return Expanded(
+        child: Row(
+          children: List.generate(columns, (col) {
+            final int index = row * columns + col;
+            return Expanded(
+              child: index < items.length
+                  ? _buildGridCard(context, viewModel, items[index])
+                  : const SizedBox.shrink(), // keeps columns aligned when the count is odd
+            );
+          }),
+        ),
+      );
+    }
 
-        // 2 columns, 5 rows -> compute exact childAspectRatio
-        final double itemWidth = (maxWidth - crossAxisSpacing) / 2;
-        final double itemHeight = (maxHeight - (4 * mainAxisSpacing)) / 5;
-        final double childAspectRatio = itemWidth / itemHeight;
-
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(), // No scrolling allowed
-          itemCount: viewModel.displayAnswerList.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: crossAxisSpacing,
-            mainAxisSpacing: mainAxisSpacing,
-            childAspectRatio: childAspectRatio,
-          ),
-          itemBuilder: (BuildContext context, int index) {
-            final option = viewModel.displayAnswerList[index];
-            return _buildGridCard(context, viewModel, option);
-          },
-        );
-      },
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: [buildRow(0), buildRow(1)]),
     );
   }
 
@@ -226,24 +224,15 @@ class EvaluationTestScreen extends StatelessWidget {
     double fontSize = (option["size"] as num?)?.toDouble() ?? 20.0;
     double wordSpacing = (option["word_spacing"] as num?)?.toDouble() ?? 0.0;
     double letterSpacing = (option["letter_spacing"] as num?)?.toDouble() ?? 0.0;
+    double opacity = (option["opacity"] as num?)?.toDouble() ?? 1.0;
+    Color textColor = option["text_color"] ?? Colors.black;
+    Color bgColor = option["bg_color"] ?? Colors.white;
 
     return Material(
-      color: Colors.transparent,
+      color: bgColor,
       child: InkWell(
         onTap: () => viewModel.selectAnswer(option),
-        borderRadius: BorderRadius.circular(8),
         child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // Clean white card without outlines/borders
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           child: Text(
@@ -253,7 +242,7 @@ class EvaluationTestScreen extends StatelessWidget {
               fontSize: fontSize,
               wordSpacing: wordSpacing,
               letterSpacing: letterSpacing,
-              color: Colors.black87,
+              color: textColor.withAlpha((255 * opacity).toInt()),
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -261,58 +250,6 @@ class EvaluationTestScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  // Vertical list of background color cards for Type 2 (fits screen without scrolling)
-  Widget _buildType2List(BuildContext context, EvaluationTestViewModel viewModel) {
-    const double spacing = 12.0;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double totalHeight = constraints.maxHeight;
-        final int itemCount = viewModel.displayAnswerList.length;
-        final double itemHeight = (totalHeight - (spacing * (itemCount - 1))) / itemCount;
-
-        return ListView.separated(
-          physics: const NeverScrollableScrollPhysics(), // No scrolling allowed
-          itemCount: itemCount,
-          separatorBuilder: (context, index) => const SizedBox(height: spacing),
-          itemBuilder: (context, index) {
-            final option = viewModel.displayAnswerList[index];
-            Color bgColor = option["bg_color"] ?? Colors.white;
-            String displayText = option["word"] ?? "abc xyz";
-
-            return InkWell(
-              onTap: () => viewModel.selectAnswer(option),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                height: itemHeight,
-                decoration: BoxDecoration(
-                  color: bgColor, // Clean background without outline/border
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  displayText,
-                  style: const TextStyle(
-                    fontFamily: "VniAvo",
-                    fontSize: 22,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 
@@ -399,9 +336,11 @@ class EvaluationTestScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildResultRow("Kích thước chữ:", "${viewModel.preferredFontSize.toStringAsFixed(0)} pt"),
                   const SizedBox(height: 8),
-                  _buildResultRow("Khoảng cách từ:", "${viewModel.preferredWordSpacing.toStringAsFixed(1)}"),
+                  _buildResultRow("Độ rõ chữ:", viewModel.preferredFontOpacity.toStringAsFixed(2)),
                   const SizedBox(height: 8),
-                  _buildResultRow("Khoảng cách chữ:", "${viewModel.preferredLetterSpacing.toStringAsFixed(1)}"),
+                  _buildResultRow("Khoảng cách từ:", viewModel.preferredWordSpacing.toStringAsFixed(1)),
+                  const SizedBox(height: 8),
+                  _buildResultRow("Khoảng cách chữ:", viewModel.preferredLetterSpacing.toStringAsFixed(1)),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -421,6 +360,24 @@ class EvaluationTestScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Màu chữ ưu tiên:",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      ),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: viewModel.preferredTextColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey[400]!),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),

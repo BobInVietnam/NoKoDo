@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/models/converted_file.dart';
+import 'package:nodyslexia/modules/evaluation_test/evaluation_test_screen.dart';
+import 'package:nodyslexia/modules/evaluation_test/evaluation_test_viewmodel.dart';
 import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/library/library_viewmodel.dart';
@@ -17,6 +19,8 @@ import 'data/repository_manager.dart';
 import 'modules/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
 import 'modules/login/login_viewmodel.dart';
+import 'modules/settings/settings_screen.dart';
+import 'modules/settings/settings_viewmodel.dart';
 import 'modules/testing_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -185,7 +189,7 @@ class TestNokodoApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
-      home: AScreen()
+      // home: AScreen()
       // home: ChangeNotifierProvider(
       //   create: (context) => FileToTextViewModel(
       //       ocrService: MockOCRService(),
@@ -197,6 +201,13 @@ class TestNokodoApp extends StatelessWidget {
       //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
       //     child: LibraryScreen()
       // )
+      home: ChangeNotifierProvider(
+          create: (context) => SettingsViewModel(
+            settings: context.read<NokodoSettings>(),
+            ttsService: context.read<TtsService>(),
+          ),
+          child: const SettingsScreen(),
+        )
     );
   }
 }

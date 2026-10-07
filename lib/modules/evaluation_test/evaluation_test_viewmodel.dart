@@ -104,31 +104,29 @@ class EvaluationTestViewModel extends ChangeNotifier {
         List<String> fontList = List<String>.from(_currentQuestion!["font"] ?? ["VniAvo"]);
         List<dynamic> rawSizeList = _currentQuestion!["size"] ?? [18];
         List<double> sizeList = rawSizeList.map((e) => (e as num).toDouble()).toList();
-        List<String> noiseList = List<String>.from(_currentQuestion!["noise"] ?? ["a"]);
-        String target = currentTarget;
+        List<String> letterList = List<String>.from(_currentQuestion!["noise"] ?? ["a"]);
+        letterList.add(currentTarget);
 
         for (String f in fontList) {
           for (double s in sizeList) {
-            displayAnswerList.add({
-              "letter": target,
-              "font": f,
-              "size": s
-            });
+            for (String c in letterList) {
+              displayAnswerList.add({
+                "letter": c,
+                "font": f,
+                "size": s
+              });
+            }
           }
         }
-        noiseList.add(target);
-        while (displayAnswerList.length < 10) {
-          final letter = noiseList[random.nextInt(noiseList.length)];
-          displayAnswerList.add({
-            "letter": letter,
-            "font": fontList[random.nextInt(fontList.length)],
-            "size": sizeList[random.nextInt(sizeList.length)]
-          });
-        }
+
         displayAnswerList.shuffle();
         break;
 
       case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
         List<String> fontList = List<String>.from(_currentQuestion!["font"] ?? ["VniAvo"]);
         List<dynamic> rawSizeList = _currentQuestion!["size"] ?? [18];
         List<double> sizeList = rawSizeList.map((e) => (e as num).toDouble()).toList();
@@ -136,54 +134,57 @@ class EvaluationTestViewModel extends ChangeNotifier {
         List<double> wordSList = rawWordSList.map((e) => (e as num).toDouble()).toList();
         List<dynamic> rawLetterSList = _currentQuestion!["letter_spacing"] ?? [0];
         List<double> letterSList = rawLetterSList.map((e) => (e as num).toDouble()).toList();
+        List<dynamic> rawOpacityList = _currentQuestion!["opacity"] ?? [1];
+        List<double> opacityList = rawOpacityList.map((e) => (e as num).toDouble()).toList();
 
         List<Map<String, dynamic>> combinations = [];
         for (String f in fontList) {
           for (double s in sizeList) {
             for (double ws in wordSList) {
               for (double ls in letterSList) {
-                combinations.add({
-                  "word": currentTarget,
-                  "font": f,
-                  "size": s,
-                  "word_spacing": ws,
-                  "letter_spacing": ls,
-                });
+                for (double o in opacityList) {
+                  combinations.add({
+                    "word": currentTarget,
+                    "font": f,
+                    "size": s,
+                    "word_spacing": ws,
+                    "letter_spacing": ls,
+                    "opacity": o
+                  });
+              }
               }
             }
           }
-        }
-
-        while (combinations.length < 10) {
-          combinations.add({
-            "word": currentTarget,
-            "font": fontList[random.nextInt(fontList.length)],
-            "size": sizeList[random.nextInt(sizeList.length)],
-            "word_spacing": wordSList[random.nextInt(wordSList.length)],
-            "letter_spacing": letterSList[random.nextInt(letterSList.length)],
-          });
-        }
-        if (combinations.length > 10) {
-          combinations = combinations.sublist(0, 10);
         }
 
         combinations.shuffle();
         displayAnswerList = combinations;
         break;
 
-      case 2:
-        List<Color> bgColors = [
-          Colors.white,
-          const Color(0xFFE5E5E5), // Light Grey
-          const Color(0xFFFFFCE4), // Cream/Light Yellow
-        ];
-
-        for (Color color in bgColors) {
-          displayAnswerList.add({
-            "word": currentTarget,
-            "bg_color": color,
-          });
-        }
+      case 6:
+        // off-black / off-white
+        displayAnswerList.add({
+          "word": currentTarget,
+          "bg_color": Color.fromARGB(255, 255, 255, 229),
+          "text_color": Color.fromARGB(255, 10, 10, 10),
+        });
+        // pure white-black
+        displayAnswerList.add({
+          "word": currentTarget,
+          "bg_color": Color.fromARGB(255, 255, 255, 255),
+          "text_color": Color.fromARGB(255, 0, 0, 0),
+        });
+        displayAnswerList.add({
+          "word": currentTarget,
+          "bg_color": Color.fromARGB(255, 250, 250, 200),
+          "text_color": Color.fromARGB(255, 0, 0, 0),
+        });
+        displayAnswerList.add({
+          "word": currentTarget,
+          "bg_color": Color.fromARGB(255, 255, 255, 0),
+          "text_color": Color.fromARGB(255, 0, 0, 125),
+        });
+        displayAnswerList.shuffle();
         break;
 
       default:
@@ -196,6 +197,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
       eventType: 'STIMULUS_SHOWN',
       eventCode: 'shown',
       payload: {
+        'type': currentType,
         'optionList': displayAnswerList,
         'isDyslexiaTest': currentType == 0,
         'target': currentType == 0 ? currentTarget : null
@@ -220,6 +222,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
           eventType: 'INCORRECT',
           eventCode: 'incorrect',
           payload: {
+            'type': 0,
             'content': optionContent,
             'position': position,
           },
@@ -236,6 +239,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
         eventType: 'CORRECT',
         eventCode: 'correct',
         payload: {
+          'type': 0,
           'content': optionContent,
           'position': position,
         },
@@ -251,36 +255,114 @@ class EvaluationTestViewModel extends ChangeNotifier {
       });
 
       _wrongAttemptsCount = 0;
-    } else if (currentType == 1) {
+    }
+    // Type 1: Letter (format: font family, font size)
+    else if (currentType == 1) {
       repoManager?.trialLogger.logEvent(
         eventType: 'OPTION_SELECT',
         eventCode: 'select',
         payload: {
+          'type': currentType,
           'content': optionContent,
           'position': position,
         },
       );
 
       results.add({
-        "type": 1,
+        'type': currentType,
+        "font": selectedOption["font"],
+        "size": (selectedOption["size"] as num).toDouble(),
+      });
+    }
+    // Type 2: Single word (format: font family, size, letter spacing)
+    else if (currentType == 2) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'type': currentType,
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
+      results.add({
+        'type': currentType,
+        "font": selectedOption["font"],
+        "size": (selectedOption["size"] as num).toDouble(),
+        "letter_spacing": (selectedOption["letter_spacing"] as num).toDouble(),
+      });
+    }
+    // Type 3: Multi word (format: font family, size, word spacing)
+    else if (currentType == 3) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'type': currentType,
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
+      results.add({
+        'type': currentType,
         "font": selectedOption["font"],
         "size": (selectedOption["size"] as num).toDouble(),
         "word_spacing": (selectedOption["word_spacing"] as num).toDouble(),
-        "letter_spacing": (selectedOption["letter_spacing"] as num).toDouble(),
       });
-    } else if (currentType == 2) {
+    }
+    // Type 4: Sentence (format: font family, size, word spacing)
+    else if (currentType == 4) {
       repoManager?.trialLogger.logEvent(
         eventType: 'OPTION_SELECT',
         eventCode: 'select',
         payload: {
+          'type': currentType,
           'content': optionContent,
           'position': position,
         },
       );
 
       results.add({
-        "type": 2,
+        'type': currentType,
+        "font": selectedOption["font"],
+        "word_spacing": (selectedOption["word_spacing"] as num).toDouble(),
+      });
+    }
+    // Type 5: Opacity check
+    else if (currentType == 5) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'type': currentType,
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
+      results.add({
+        'type': currentType,
+        "opacity": (selectedOption["opacity"] as num).toDouble(),
+      });
+    }
+    // Type 6: Text & background color
+    else if (currentType == 6) {
+      repoManager?.trialLogger.logEvent(
+        eventType: 'OPTION_SELECT',
+        eventCode: 'select',
+        payload: {
+          'type': currentType,
+          'content': optionContent,
+          'position': position,
+        },
+      );
+
+      results.add({
+        'type': currentType,
         "bg_color": selectedOption["bg_color"],
+        "text_color": selectedOption["text_color"]
       });
     }
 
@@ -325,34 +407,50 @@ class EvaluationTestViewModel extends ChangeNotifier {
   }
 
   String get preferredFontFamily {
-    final type1Results = results.where((r) => r["type"] == 1).toList();
+    final type1Results = results.where(
+            (r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3).toList();
     if (type1Results.isEmpty) return "VniAvo";
     return _getMode<String>(type1Results.map((r) => r["font"] as String).toList(), "VniAvo");
   }
 
   double get preferredFontSize {
-    final type1Results = results.where((r) => r["type"] == 1).toList();
+    final type1Results = results.where(
+            (r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3).toList();
     if (type1Results.isEmpty) return 20.0;
     return _getMode<double>(type1Results.map((r) => r["size"] as double).toList(), 20.0);
   }
 
+  double get preferredFontOpacity {
+    final type1Results = results.where((r) => r["type"] == 5).toList();
+    if (type1Results.isEmpty) return 1.0;
+    return _getMode<double>(type1Results.map((r) => r["opacity"] as double).toList(), 1.0);
+  }
+
   double get preferredWordSpacing {
-    final type1Results = results.where((r) => r["type"] == 1).toList();
+    final type1Results = results.where(
+            (r) => r["type"] == 3 || r["type"] == 4).toList();
     if (type1Results.isEmpty) return 1.0;
     return _getMode<double>(type1Results.map((r) => r["word_spacing"] as double).toList(), 1.0);
   }
 
   double get preferredLetterSpacing {
-    final type1Results = results.where((r) => r["type"] == 1).toList();
+    final type1Results = results.where((r) => r["type"] == 2).toList();
     if (type1Results.isEmpty) return 1.5;
     return _getMode<double>(type1Results.map((r) => r["letter_spacing"] as double).toList(), 1.5);
   }
 
   Color get preferredBackgroundColor {
-    final type2Results = results.where((r) => r["type"] == 2).toList();
+    final type2Results = results.where((r) => r["type"] == 6).toList();
     if (type2Results.isEmpty) return Colors.white;
     return _getMode<Color>(type2Results.map((r) => r["bg_color"] as Color).toList(), Colors.white);
   }
+
+  Color get preferredTextColor {
+    final type2Results = results.where((r) => r["type"] == 6).toList();
+    if (type2Results.isEmpty) return Colors.white;
+    return _getMode<Color>(type2Results.map((r) => r["text_color"] as Color).toList(), Colors.black);
+  }
+
 
   T _getMode<T>(List<T> list, T fallback) {
     if (list.isEmpty) return fallback;
@@ -374,9 +472,11 @@ class EvaluationTestViewModel extends ChangeNotifier {
   void applyPreferredSettings(NokodoSettings textSettings) {
     textSettings.setFontFamily(preferredFontFamily);
     textSettings.setFontSize(preferredFontSize);
+    textSettings.setFontOpacity(preferredFontOpacity);
     textSettings.setWordSpacing(preferredWordSpacing);
     textSettings.setLetterSpacing(preferredLetterSpacing);
     textSettings.setBackgroundColor(preferredBackgroundColor);
+    textSettings.setColor(preferredTextColor);
   }
 
   @override

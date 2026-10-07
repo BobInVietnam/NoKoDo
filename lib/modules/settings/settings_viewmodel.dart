@@ -17,6 +17,7 @@ class SettingsViewModel extends ChangeNotifier {
 
   // Expose values safely to the View
   double get fontSize => _settings.fontSize;
+  double get fontOpacity => _settings.fontOpacity;
   double get letterSpacing => _settings.letterSpacing;
   double get wordSpacing => _settings.wordSpacing;
   Color get color => _settings.color;
@@ -29,6 +30,10 @@ class SettingsViewModel extends ChangeNotifier {
   // Wrapped modification methods
   void updateFontSize(double value) {
     _settings.setFontSize(value);
+  }
+
+  void updateFontOpacity(double value) {
+    _settings.setFontOpacity(value);
   }
 
   void updateLetterSpacing(double value) {

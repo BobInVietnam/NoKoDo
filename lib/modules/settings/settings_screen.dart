@@ -126,6 +126,18 @@ class SettingsScreen extends StatelessWidget {
                     style: textTheme.bodyMedium),
 
                     const SizedBox(height: 15),
+                    Text("Độ rõ chữ", style: textTheme.displayMedium),
+                    Slider(
+                      min: 0.25,
+                      max: 1.0,
+                      divisions: 15,
+                      value: viewModel.fontOpacity.toDouble(),
+                      onChanged: (val) => viewModel.updateFontOpacity(val),
+                      activeColor: Colors.teal,
+                    ),
+                    Text("Hiện tại: ${viewModel.fontOpacity.toStringAsFixed(2)}", style: textTheme.bodyMedium),
+
+                    const SizedBox(height: 15),
                     Text("Độ dày chữ", style: textTheme.displayMedium),
                     Slider(
                       min: 100,
@@ -167,8 +179,8 @@ class SettingsScreen extends StatelessWidget {
                       spacing: 10,
                       children: [
                         _ColorButton(color: Colors.black, label: "Đen"),
-                        _ColorButton(color: Colors.black87, label: "Xám"),
-                        _ColorButton(color: Colors.indigo.shade800, label: "Xanh"),
+                        _ColorButton(color: Color.fromARGB(255, 10, 10, 10), label: "Xám"),
+                        _ColorButton(color: Color.fromARGB(255, 0, 0, 125), label: "Xanh"),
                         _ColorButton(color: Colors.red.shade900, label: "Đỏ"),
                         _ColorButton(color: Colors.teal.shade900, label: "Tía"),
                       ],
@@ -182,8 +194,9 @@ class SettingsScreen extends StatelessWidget {
                       spacing: 10,
                       children: const [
                         _BgColorButton(color: Colors.white, label: "Trắng"),
-                        _BgColorButton(color: Color(0xFFF2F2F2), label: "Xám nhạt"),
-                        _BgColorButton(color: Color(0xFFFFFCE4), label: "Vàng nhạt"),
+                        _BgColorButton(color: Color.fromARGB(255, 255, 255, 229), label: "Xám nhạt"),
+                        _BgColorButton(color: Color.fromARGB(255, 250, 250, 200), label: "Vàng nhạt"),
+                        _BgColorButton(color: Color.fromARGB(255, 255, 255, 0), label: "Vàng")
                       ],
                     ),
 

@@ -32,7 +32,7 @@ class AdjustableText extends StatelessWidget {
       maxLines: maxLines,
       style: TextStyle(
         fontSize: settings.fontSize,
-        color: settings.color,
+        color: settings.color.withAlpha((255 * settings.fontOpacity).toInt()),
         fontFamily: settings.fontFamily,
         letterSpacing: settings.letterSpacing,
         wordSpacing: settings.wordSpacing,
@@ -174,7 +174,7 @@ class SelectableAdjustableText extends StatelessWidget {
           end,   // tracked by progress indices
           TextStyle(
             fontSize: settings.fontSize,
-            color: settings.color,
+            color: settings.color.withAlpha((255 * settings.fontOpacity).toInt()),
             fontFamily: settings.fontFamily,
             letterSpacing: settings.letterSpacing,
             wordSpacing: settings.wordSpacing,

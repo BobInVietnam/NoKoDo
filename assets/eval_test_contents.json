@@ -1,262 +1,197 @@
 [
+  {
+    "type": 1,
+    "target": "ă",
+    "font": ["VniAvo", "Serif"],
+    "size": [18, 26],
+    "word_spacing": [0],
+    "letter_spacing": [0],
+    "repeat": 1
+  },
+  {
+    "type": 1,
+    "target": "m",
+    "font": ["VniAvo", "Serif"],
+    "size": [18, 26],
+    "word_spacing": [0],
+    "letter_spacing": [0],
+    "repeat": 1
+  },
+  {
+    "type": 1,
+    "target": "p",
+    "font": ["VniAvo", "Serif"],
+    "size": [18, 26],
+    "word_spacing": [0],
+    "letter_spacing": [0],
+    "repeat": 1
+  },
+
+
     {
-      "type": 0,
-      "target": "d",
-      "noise": ["p", "q", "b"],
+      "type": 2,
+      "target": "cũ",
       "font": ["VniAvo", "Serif"],
       "size": [18, 26],
-      "repeat": 3
+      "word_spacing": [0],
+      "letter_spacing": [0, 4],
+      "repeat": 1
+    },
+    {
+      "type": 2,
+      "target": "tỏ",
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "word_spacing": [0],
+      "letter_spacing": [0, 4],
+      "repeat": 1
+    },
+    {
+      "type": 2,
+      "target": "làm",
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "word_spacing": [0],
+      "letter_spacing": [0, 4],
+      "repeat": 1
+    },
+
+
+    {
+      "type": 3,
+      "target": "cái kéo",
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "word_spacing": [0, 16],
+      "letter_spacing": [0],
+      "repeat": 1
+    },
+    {
+      "type": 3,
+      "target": "bút chì",
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "word_spacing": [0, 16],
+      "letter_spacing": [0],
+      "repeat": 1
+    },
+    {
+      "type": 3,
+      "target": "xe đạp",
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "word_spacing": [0, 16],
+      "letter_spacing": [0],
+      "repeat": 1
+    },
+
+
+    {
+      "type": 4,
+      "target": "Câu này không có nghĩa",
+      "font": ["VniAvo"],
+      "size": [18],
+      "word_spacing": [0, 16],
+      "letter_spacing": [0],
+      "repeat": 1
+    },
+    {
+      "type": 4,
+      "target": "Câu này không có nghĩa",
+      "font": ["VniAvo"],
+      "size": [26],
+      "word_spacing": [0, 16],
+      "letter_spacing": [0],
+      "repeat": 1
+    },
+
+
+  {
+      "type": 0,
+      "target": "d",
+      "noise": ["p", "b"],
+      "font": ["VniAvo", "Serif"],
+      "size": [18, 26],
+      "repeat": 1
     },
     {
       "type": 0,
       "target": "q",
-      "noise": ["p", "d", "b"],
+      "noise": ["p", "b"],
       "font": ["VniAvo", "Serif"],
       "size": [18, 26],
-      "repeat": 3
+      "repeat": 1
     },
     {
       "type": 0,
       "target": "n",
-      "noise": ["m", "u", "v"],
+      "noise": ["m", "u"],
       "font": ["VniAvo", "Serif"],
       "size": [18, 26],
-      "repeat": 3
+      "repeat": 1
     },
+
     {
-      "type": 0,
-      "target": "u",
-      "noise": ["m", "n", "v"],
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "repeat": 3
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
+      "type": 5,
+      "target": "m",
       "font": ["VniAvo"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
+      "size": [30],
+      "opacity": [0.25, 0.5, 0.75, 1.0],
       "repeat": 1
     },
     {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [18],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "đẹp",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
+      "type": 5,
+      "target": "n",
       "font": ["VniAvo"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
+      "size": [30],
+      "opacity": [0.25, 0.5, 0.75, 1.0],
       "repeat": 1
     },
     {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [18],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "da báo",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [4],
-      "repeat": 1
-    },
-    {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
+      "type": 5,
+      "target": "t",
       "font": ["VniAvo"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
+      "size": [30],
+      "opacity": [0.25, 0.5, 0.75, 1.0],
       "repeat": 1
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
+      "type": 5,
+      "target": "cũ",
+      "font": ["VniAvo"],
+      "size": [30],
+      "opacity": [0.25, 0.5, 0.75, 1.0],
       "repeat": 1
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [18],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
+      "type": 5,
+      "target": "xe đạp",
+      "font": ["VniAvo"],
+      "size": [30],
+      "opacity": [0.25, 0.5, 0.75, 1.0],
       "repeat": 1
     },
+
+
+
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
+      "type": 6,
+      "target": "ă"
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0],
-      "letter_spacing": [0, 4],
-      "repeat": 1
+      "type": 6,
+      "target": "tỏ"
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [16],
-      "letter_spacing": [0, 4],
-      "repeat": 1
+      "type": 6,
+      "target": "bông hồng"
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [0],
-      "repeat": 1
+      "type": 6,
+      "target": "bông hồng"
     },
     {
-      "type": 1,
-      "target": "Lúa nếp là lúa nếp làng",
-      "font": ["VniAvo", "Serif"],
-      "size": [18, 26],
-      "word_spacing": [0, 16],
-      "letter_spacing": [4],
-      "repeat": 1
-    },
-    {
-      "type": 2,
-      "target": "Xin chào"
-    },
-    {
-      "type": 2,
-      "target": "Con chim non trên cành cao"
-    },
-    {
-      "type": 2,
-      "target": "Hót líu lo, hót líu lo"
+      "type": 6,
+      "target": "bông hồng"
     }
 ]

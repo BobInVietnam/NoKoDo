@@ -5,6 +5,7 @@ import '../../data/persistence.dart';
 class NokodoSettings extends ChangeNotifier {
   // Default values
   double _fontSize = 20.0;
+  double _fontOpacity = 1.0;
   Color _color = Colors.black;
   String _fontFamily = 'Roboto';
   double _letterSpacing = 1.5;
@@ -16,6 +17,7 @@ class NokodoSettings extends ChangeNotifier {
   double _ttsSpeechRate = 0.5;
 
   double get fontSize => _fontSize;
+  double get fontOpacity => _fontOpacity;
   Color get color => _color;
   String get fontFamily => _fontFamily;
   double get letterSpacing => _letterSpacing;
@@ -91,6 +93,7 @@ class NokodoSettings extends ChangeNotifier {
 
     // Load values, or use defaults if they don't exist
     _fontSize = prefs.getDouble('fontSize') ?? 20.0;
+    _fontOpacity = prefs.getDouble('fontOpacity') ?? 1.0;
     _letterSpacing = prefs.getDouble('letterSpacing') ?? 0;
     _wordSpacing = prefs.getDouble('wordSpacing') ?? 0;
     _fontFamily = prefs.getString('fontFamily') ?? 'VniAvo';
@@ -115,6 +118,7 @@ class NokodoSettings extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     prefs.setDouble('fontSize', _fontSize);
+    prefs.setDouble('fontOpacity', _fontOpacity);
     prefs.setDouble('letterSpacing', _letterSpacing);
     prefs.setDouble('wordSpacing', _wordSpacing);
     prefs.setString('fontFamily', _fontFamily);
@@ -129,6 +133,12 @@ class NokodoSettings extends ChangeNotifier {
 
   void setFontSize(double newSize) {
     _fontSize = newSize;
+    _saveToPrefs(); // Auto-save
+    notifyListeners();
+  }
+
+  void setFontOpacity(double opacity) {
+    _fontOpacity = opacity;
     _saveToPrefs(); // Auto-save
     notifyListeners();
   }
@@ -187,6 +197,9 @@ class NokodoSettings extends ChangeNotifier {
     if (settingsMap['fontSize'] != null) {
       _fontSize = (settingsMap['fontSize'] as num).toDouble();
     }
+    if (settingsMap['fontOpacity'] != null) {
+      _fontOpacity = (settingsMap['fontOpacity'] as num).toDouble();
+    }
     if (settingsMap['letterSpacing'] != null) {
       _letterSpacing = (settingsMap['letterSpacing'] as num).toDouble();
     }
@@ -223,6 +236,7 @@ class NokodoSettings extends ChangeNotifier {
   Map<String, dynamic> toMap() {
     return {
       'fontSize': _fontSize,
+      'fontOpacity': _fontOpacity,
       'colorValue': _color.toARGB32(),
       'fontFamily': _fontFamily,
       'letterSpacing': _letterSpacing,
