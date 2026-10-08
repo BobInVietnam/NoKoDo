@@ -19,10 +19,15 @@ class EvaluationTestScreen extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 70), // Leave space for ReturnButton
+                padding: const EdgeInsets.only(
+                  bottom: 70,
+                ), // Leave space for ReturnButton
                 child: switch (viewModel.currentState) {
                   EvalTestState.START => _buildStartScreen(context, viewModel),
-                  EvalTestState.IN_PROGRESS => _buildInProgressScreen(context, viewModel),
+                  EvalTestState.IN_PROGRESS => _buildInProgressScreen(
+                    context,
+                    viewModel,
+                  ),
                   EvalTestState.END => _buildEndScreen(context, viewModel),
                 },
               ),
@@ -49,7 +54,10 @@ class EvaluationTestScreen extends StatelessWidget {
   }
 
   // --- 1. START SCREEN ---
-  Widget _buildStartScreen(BuildContext context, EvaluationTestViewModel viewModel) {
+  Widget _buildStartScreen(
+    BuildContext context,
+    EvaluationTestViewModel viewModel,
+  ) {
     final textTheme = Theme.of(context).textTheme;
 
     return Center(
@@ -61,10 +69,16 @@ class EvaluationTestScreen extends StatelessWidget {
           children: [
             Text(
               "Bài kiểm tra đầu vào",
-              style: textTheme.displayLarge?.copyWith(
-                color: Colors.teal[800],
-                fontWeight: FontWeight.bold,
-              ) ?? TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+              style:
+                  textTheme.displayLarge?.copyWith(
+                    color: Colors.teal[800],
+                    fontWeight: FontWeight.bold,
+                  ) ??
+                  TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[800],
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -83,11 +97,13 @@ class EvaluationTestScreen extends StatelessWidget {
               ),
               child: Text(
                 "Bài kiểm tra này giúp đánh giá khả năng nhận diện chữ cái và tìm ra định dạng hiển thị văn bản phù hợp nhất với em (phông chữ, kích thước, khoảng cách và màu nền).\n\nHãy bấm bắt đầu để tiến hành bài kiểm tra!",
-                style: textTheme.bodyMedium?.copyWith(
-                  fontSize: 20,
-                  height: 1.5,
-                  color: Colors.grey[800],
-                ) ?? const TextStyle(fontSize: 18, height: 1.5),
+                style:
+                    textTheme.bodyMedium?.copyWith(
+                      fontSize: 20,
+                      height: 1.5,
+                      color: Colors.grey[800],
+                    ) ??
+                    const TextStyle(fontSize: 18, height: 1.5),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -106,15 +122,23 @@ class EvaluationTestScreen extends StatelessWidget {
   }
 
   // --- 2. IN_PROGRESS SCREEN ---
-  Widget _buildInProgressScreen(BuildContext context, EvaluationTestViewModel viewModel) {
+  Widget _buildInProgressScreen(
+    BuildContext context,
+    EvaluationTestViewModel viewModel,
+  ) {
     final textTheme = Theme.of(context).textTheme;
 
-    List<TextSpan> headerText = viewModel.currentType == 0
-        ? [TextSpan(text: "Hãy chọn chữ "),
-          TextSpan(text: viewModel.currentTarget,
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
-          TextSpan(text:" mà em thấy dễ đọc nhất")]
-        : [TextSpan(text: "Hãy chọn câu/từ mà em thấy dễ nhìn nhất")];
+    List<TextSpan> headerText =
+        viewModel.currentType == 0
+            ? [
+              TextSpan(text: "Hãy chọn chữ "),
+              TextSpan(
+                text: viewModel.currentTarget,
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+              ),
+              TextSpan(text: " mà em thấy dễ đọc nhất"),
+            ]
+            : [TextSpan(text: "Hãy chọn câu/từ mà em thấy dễ nhìn nhất")];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -129,7 +153,7 @@ class EvaluationTestScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -137,12 +161,14 @@ class EvaluationTestScreen extends StatelessWidget {
             ),
             child: Text.rich(
               TextSpan(
-                style: textTheme.bodyLarge?.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ) ?? const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                children: headerText
+                style:
+                    textTheme.bodyLarge?.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ) ??
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                children: headerText,
               ),
               textAlign: TextAlign.center,
             ),
@@ -179,15 +205,13 @@ class EvaluationTestScreen extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Question presentation fitting screen height exactly
-          Expanded(
-            child: _buildGrid(context, viewModel),
-          ),
+          Expanded(child: _buildGrid(context, viewModel)),
         ],
       ),
     );
   }
 
-// Two-row grid for Type 0 and Type 1: columns grow with the item count, cells are evenly spaced
+  // Two-row grid for Type 0 and Type 1: columns grow with the item count, cells are evenly spaced
   Widget _buildGrid(BuildContext context, EvaluationTestViewModel viewModel) {
     final items = viewModel.displayAnswerList;
     final int columns = (items.length / 2).ceil();
@@ -198,9 +222,10 @@ class EvaluationTestScreen extends StatelessWidget {
           children: List.generate(columns, (col) {
             final int index = row * columns + col;
             return Expanded(
-              child: index < items.length
-                  ? _buildGridCard(context, viewModel, items[index])
-                  : const SizedBox.shrink(), // keeps columns aligned when the count is odd
+              child:
+                  index < items.length
+                      ? _buildGridCard(context, viewModel, items[index])
+                      : const SizedBox.shrink(), // keeps columns aligned when the count is odd
             );
           }),
         ),
@@ -215,15 +240,21 @@ class EvaluationTestScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGridCard(BuildContext context, EvaluationTestViewModel viewModel, Map<String, dynamic> option) {
-    String displayText = viewModel.currentType == 0
-        ? option["letter"] ?? ""
-        : option["word"] ?? "";
+  Widget _buildGridCard(
+    BuildContext context,
+    EvaluationTestViewModel viewModel,
+    Map<String, dynamic> option,
+  ) {
+    String displayText =
+        viewModel.currentType == 0
+            ? option["letter"] ?? ""
+            : option["word"] ?? "";
 
     String fontFamily = option["font"] ?? "VniAvo";
     double fontSize = (option["size"] as num?)?.toDouble() ?? 20.0;
     double wordSpacing = (option["word_spacing"] as num?)?.toDouble() ?? 0.0;
-    double letterSpacing = (option["letter_spacing"] as num?)?.toDouble() ?? 0.0;
+    double letterSpacing =
+        (option["letter_spacing"] as num?)?.toDouble() ?? 0.0;
     double opacity = (option["opacity"] as num?)?.toDouble() ?? 1.0;
     Color textColor = option["text_color"] ?? Colors.black;
     Color bgColor = option["bg_color"] ?? Colors.white;
@@ -254,7 +285,10 @@ class EvaluationTestScreen extends StatelessWidget {
   }
 
   // --- 3. END SCREEN ---
-  Widget _buildEndScreen(BuildContext context, EvaluationTestViewModel viewModel) {
+  Widget _buildEndScreen(
+    BuildContext context,
+    EvaluationTestViewModel viewModel,
+  ) {
     final textTheme = Theme.of(context).textTheme;
 
     return Center(
@@ -266,10 +300,16 @@ class EvaluationTestScreen extends StatelessWidget {
           children: [
             Text(
               "Kết quả kiểm tra",
-              style: textTheme.displayLarge?.copyWith(
-                color: Colors.teal[800],
-                fontWeight: FontWeight.bold,
-              ) ?? TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+              style:
+                  textTheme.displayLarge?.copyWith(
+                    color: Colors.teal[800],
+                    fontWeight: FontWeight.bold,
+                  ) ??
+                  TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[800],
+                  ),
             ),
             const SizedBox(height: 20),
 
@@ -281,7 +321,11 @@ class EvaluationTestScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
                 ],
               ),
               child: Column(
@@ -293,14 +337,24 @@ class EvaluationTestScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Text(
                         "Khả năng nhận diện chữ",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[800],
+                        ),
                       ),
                     ],
                   ),
                   const Divider(height: 24),
-                  _buildResultRow("Độ chính xác:", "${viewModel.type0Accuracy.toStringAsFixed(1)}%"),
+                  _buildResultRow(
+                    "Độ chính xác:",
+                    "${viewModel.type0Accuracy.toStringAsFixed(1)}%",
+                  ),
                   const SizedBox(height: 8),
-                  _buildResultRow("Thời gian trung bình:", "${viewModel.type0AverageTimeSeconds.toStringAsFixed(1)} giây / lượt"),
+                  _buildResultRow(
+                    "Thời gian trung bình:",
+                    "${viewModel.type0AverageTimeSeconds.toStringAsFixed(1)} giây / lượt",
+                  ),
                 ],
               ),
             ),
@@ -315,7 +369,11 @@ class EvaluationTestScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
                 ],
               ),
               child: Column(
@@ -327,27 +385,49 @@ class EvaluationTestScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Text(
                         "Định dạng văn bản tối ưu",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[800],
+                        ),
                       ),
                     ],
                   ),
                   const Divider(height: 24),
-                  _buildResultRow("Phông chữ ưu tiên:", viewModel.preferredFontFamily),
+                  _buildResultRow(
+                    "Phông chữ ưu tiên:",
+                    viewModel.preferredFontFamily,
+                  ),
                   const SizedBox(height: 8),
-                  _buildResultRow("Kích thước chữ:", "${viewModel.preferredFontSize.toStringAsFixed(0)} pt"),
+                  _buildResultRow(
+                    "Kích thước chữ:",
+                    "${viewModel.preferredFontSize.toStringAsFixed(0)} pt",
+                  ),
                   const SizedBox(height: 8),
-                  _buildResultRow("Độ rõ chữ:", viewModel.preferredFontOpacity.toStringAsFixed(2)),
+                  _buildResultRow(
+                    "Độ rõ chữ:",
+                    viewModel.preferredFontOpacity.toStringAsFixed(2),
+                  ),
                   const SizedBox(height: 8),
-                  _buildResultRow("Khoảng cách từ:", viewModel.preferredWordSpacing.toStringAsFixed(1)),
+                  _buildResultRow(
+                    "Khoảng cách từ:",
+                    viewModel.preferredWordSpacing.toStringAsFixed(1),
+                  ),
                   const SizedBox(height: 8),
-                  _buildResultRow("Khoảng cách chữ:", viewModel.preferredLetterSpacing.toStringAsFixed(1)),
+                  _buildResultRow(
+                    "Khoảng cách chữ:",
+                    viewModel.preferredLetterSpacing.toStringAsFixed(1),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
                         "Màu nền ưu tiên:",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       Container(
                         width: 32,
@@ -365,7 +445,10 @@ class EvaluationTestScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Màu chữ ưu tiên:",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       Container(
                         width: 32,
@@ -377,7 +460,7 @@ class EvaluationTestScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -419,7 +502,11 @@ class EvaluationTestScreen extends StatelessWidget {
         ),
         Text(
           value,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal[900]),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal[900],
+          ),
         ),
       ],
     );

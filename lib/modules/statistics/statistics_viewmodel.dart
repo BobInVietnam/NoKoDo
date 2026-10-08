@@ -30,8 +30,8 @@ class StatisticsViewmodel extends ChangeNotifier {
   StatisticsViewmodel({
     required RepoManager repoManager,
     required UsageTimeTracker usageTimeTracker,
-  })  : _repoManager = repoManager,
-        _usageTimeTracker = usageTimeTracker {
+  }) : _repoManager = repoManager,
+       _usageTimeTracker = usageTimeTracker {
     _loadStatistics();
     _usageTimeTracker.addListener(_onTrackerTick);
   }
@@ -92,35 +92,47 @@ class StatisticsViewmodel extends ChangeNotifier {
 
     // 1. Sessions CSV
     final sessionCsvContent = StringBuffer();
-    sessionCsvContent.writeln('sessionId,studentId,sessionStartTime,sessionEndTime,examinerId,siteId,device,screenWidth,screenHeight,completed');
+    sessionCsvContent.writeln(
+      'sessionId,studentId,sessionStartTime,sessionEndTime,examinerId,siteId,device,screenWidth,screenHeight,completed',
+    );
     for (final s in sessions) {
       sessionCsvContent.writeln(
-        '${_escapeCsv(s.sessionId)},${_escapeCsv(s.studentId)},${s.sessionStartTime},${s.sessionEndTime ?? ''},${_escapeCsv(s.examinerId)},${_escapeCsv(s.siteId)},${_escapeCsv(s.device)},${s.screenWidth},${s.screenHeight},${s.completed}'
+        '${_escapeCsv(s.sessionId)},${_escapeCsv(s.studentId)},${s.sessionStartTime},${s.sessionEndTime ?? ''},${_escapeCsv(s.examinerId)},${_escapeCsv(s.siteId)},${_escapeCsv(s.device)},${s.screenWidth},${s.screenHeight},${s.completed}',
       );
     }
 
     // 2. Trials CSV
     final trialCsvContent = StringBuffer();
-    trialCsvContent.writeln('sessionId,trialId,trialType,trialStartTime,trialEndTime,conditionId,conditionName,comment,validTrial,assistanceGiven,interrupted,technicalIssue,invalidReason');
+    trialCsvContent.writeln(
+      'sessionId,trialId,trialType,trialStartTime,trialEndTime,conditionId,conditionName,comment,validTrial,assistanceGiven,interrupted,technicalIssue,invalidReason',
+    );
     for (final t in trials) {
       trialCsvContent.writeln(
-        '${_escapeCsv(t.sessionId)},${_escapeCsv(t.trialId)},${_escapeCsv(t.trialType)},${t.trialStartTime},${t.trialEndTime ?? ''},${_escapeCsv(t.conditionId)},${_escapeCsv(t.conditionName)},${_escapeCsv(t.comment)},${t.validTrial},${t.assistanceGiven},${t.interrupted},${t.technicalIssue},${_escapeCsv(t.invalidReason)}'
+        '${_escapeCsv(t.sessionId)},${_escapeCsv(t.trialId)},${_escapeCsv(t.trialType)},${t.trialStartTime},${t.trialEndTime ?? ''},${_escapeCsv(t.conditionId)},${_escapeCsv(t.conditionName)},${_escapeCsv(t.comment)},${t.validTrial},${t.assistanceGiven},${t.interrupted},${t.technicalIssue},${_escapeCsv(t.invalidReason)}',
       );
     }
 
     // 3. Events CSV
     final eventCsvContent = StringBuffer();
-    eventCsvContent.writeln('trialId,eventId,eventType,eventTimestamp,payloadJson');
+    eventCsvContent.writeln(
+      'trialId,eventId,eventType,eventTimestamp,payloadJson',
+    );
     for (final e in events) {
       final payloadJsonStr = jsonEncode(e.payloadJson);
       eventCsvContent.writeln(
-        '${_escapeCsv(e.trialId)},${_escapeCsv(e.eventId)},${_escapeCsv(e.eventType)},${e.eventTimestamp},${_escapeCsv(payloadJsonStr)}'
+        '${_escapeCsv(e.trialId)},${_escapeCsv(e.eventId)},${_escapeCsv(e.eventType)},${e.eventTimestamp},${_escapeCsv(payloadJsonStr)}',
       );
     }
 
-    final sessionBytes = Uint8List.fromList(utf8.encode(sessionCsvContent.toString()));
-    final trialBytes = Uint8List.fromList(utf8.encode(trialCsvContent.toString()));
-    final eventBytes = Uint8List.fromList(utf8.encode(eventCsvContent.toString()));
+    final sessionBytes = Uint8List.fromList(
+      utf8.encode(sessionCsvContent.toString()),
+    );
+    final trialBytes = Uint8List.fromList(
+      utf8.encode(trialCsvContent.toString()),
+    );
+    final eventBytes = Uint8List.fromList(
+      utf8.encode(eventCsvContent.toString()),
+    );
 
     final sessionPath = await FileSaver.instance.saveFile(
       name: 'sessions_export.csv',

@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'database.dart' as d; // adjust path; prefix avoids name clashes with models
+import 'database.dart'
+    as d; // adjust path; prefix avoids name clashes with models
 import '../models/converted_file.dart';
 import '../models/dictionary_entry.dart';
 import '../models/lesson.dart';
@@ -17,8 +18,15 @@ abstract class LocalDatabase extends ChangeNotifier {
   Future<ConvertedFile?> getConvertedFileById(int id);
   Future<int> deleteConvertedFile(int id);
   Future<int> insertDictionaryEntry(DictionaryEntry entry);
-  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(int limit, int offset);
-  Future<List<DictionaryEntry>> searchDictionaryWords(String query, int limit, int offset);
+  Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(
+    int limit,
+    int offset,
+  );
+  Future<List<DictionaryEntry>> searchDictionaryWords(
+    String query,
+    int limit,
+    int offset,
+  );
   Future<DictionaryEntry?> getDictionaryEntryByWord(String word);
   Future<void> clearDictionary();
   Future<void> setConfig(String key, String value);
@@ -69,11 +77,9 @@ class TestLocalDatabase extends LocalDatabase {
   }
 
   @override
-  Future<int> insertConvertedFile(ConvertedFile file) =>
-      _db.into(_db.convertedFiles).insert(
-        _fileCompanion(file),
-        mode: InsertMode.insertOrReplace,
-      );
+  Future<int> insertConvertedFile(ConvertedFile file) => _db
+      .into(_db.convertedFiles)
+      .insert(_fileCompanion(file), mode: InsertMode.insertOrReplace);
 
   @override
   Future<List<ConvertedFile>> getAllConvertedFiles() async {
@@ -83,10 +89,11 @@ class TestLocalDatabase extends LocalDatabase {
 
   @override
   Future<ConvertedFile?> getConvertedFileById(int id) async {
-    final row = await (_db.select(_db.convertedFiles)
-      ..where((t) => t.id.equals(id))
-      ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.convertedFiles)
+              ..where((t) => t.id.equals(id))
+              ..limit(1))
+            .getSingleOrNull();
     return row == null ? null : ConvertedFile.fromMap(_map(row));
   }
 
@@ -98,41 +105,48 @@ class TestLocalDatabase extends LocalDatabase {
   @override
   Future<int> insertDictionaryEntry(DictionaryEntry entry) async {
     final c = d.DictionaryEntry.fromJson(entry.toMap()).toCompanion(true);
-    return _db.into(_db.dictionaryEntries).insert(
-      c,
-      mode: InsertMode.insertOrReplace,
-    );
+    return _db
+        .into(_db.dictionaryEntries)
+        .insert(c, mode: InsertMode.insertOrReplace);
   }
 
   @override
   Future<List<DictionaryEntry>> getDictionaryEntriesPaginated(
-      int limit, int offset) async {
-    final rows = await (_db.select(_db.dictionaryEntries)
-      ..orderBy([(t) => OrderingTerm.asc(t.word)])
-      ..limit(limit, offset: offset))
-        .get();
+    int limit,
+    int offset,
+  ) async {
+    final rows =
+        await (_db.select(_db.dictionaryEntries)
+              ..orderBy([(t) => OrderingTerm.asc(t.word)])
+              ..limit(limit, offset: offset))
+            .get();
     return rows.map((r) => DictionaryEntry.fromMap(_map(r))).toList();
   }
 
   @override
   Future<DictionaryEntry?> getDictionaryEntryByWord(String word) async {
-    final row = await (_db.select(_db.dictionaryEntries)
-      ..where((t) => t.word.equals(word.trim()))
-      ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.dictionaryEntries)
+              ..where((t) => t.word.equals(word.trim()))
+              ..limit(1))
+            .getSingleOrNull();
     return row == null ? null : DictionaryEntry.fromMap(_map(row));
   }
 
   @override
   Future<List<DictionaryEntry>> searchDictionaryWords(
-      String query, int limit, int offset) async {
+    String query,
+    int limit,
+    int offset,
+  ) async {
     final q = query.trim();
     if (q.isEmpty) return [];
-    final rows = await (_db.select(_db.dictionaryEntries)
-      ..where((t) => t.word.like('%$q%'))
-      ..orderBy([(t) => OrderingTerm.asc(t.word)])
-      ..limit(limit, offset: offset))
-        .get();
+    final rows =
+        await (_db.select(_db.dictionaryEntries)
+              ..where((t) => t.word.like('%$q%'))
+              ..orderBy([(t) => OrderingTerm.asc(t.word)])
+              ..limit(limit, offset: offset))
+            .get();
     return rows.map((r) => DictionaryEntry.fromMap(_map(r))).toList();
   }
 
@@ -141,25 +155,28 @@ class TestLocalDatabase extends LocalDatabase {
 
   // ---------- SystemConfig ----------
   @override
-  Future<void> setConfig(String key, String value) =>
-      _db.into(_db.systemConfigs).insert(
+  Future<void> setConfig(String key, String value) => _db
+      .into(_db.systemConfigs)
+      .insert(
         d.SystemConfigsCompanion.insert(key: key, value: Value(value)),
         mode: InsertMode.insertOrReplace,
       );
 
   @override
   Future<String?> getConfig(String key) async {
-    final row = await (_db.select(_db.systemConfigs)
-      ..where((t) => t.key.equals(key))
-      ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.systemConfigs)
+              ..where((t) => t.key.equals(key))
+              ..limit(1))
+            .getSingleOrNull();
     return row?.value;
   }
 
   // ---------- Highlights ----------
   @override
-  Future<int> insertHighlight(String text) =>
-      _db.into(_db.highlights).insert(
+  Future<int> insertHighlight(String text) => _db
+      .into(_db.highlights)
+      .insert(
         d.HighlightsCompanion.insert(content: text),
         mode: InsertMode.insertOrIgnore,
       );
@@ -193,20 +210,24 @@ class TestLocalDatabase extends LocalDatabase {
   // ---------- Sessions ----------
   @override
   Future<void> saveSession(Session session) async {
-    await _db.into(_db.sessions).insert(
-      d.Session.fromJson(session.toMap()).toCompanion(true),
-      mode: InsertMode.insertOrReplace,
-    );
+    await _db
+        .into(_db.sessions)
+        .insert(
+          d.Session.fromJson(session.toMap()).toCompanion(true),
+          mode: InsertMode.insertOrReplace,
+        );
     debugPrint(
-        "DATABASE: Saved/replaced session ${session.sessionId} (completed: ${session.completed})");
+      "DATABASE: Saved/replaced session ${session.sessionId} (completed: ${session.completed})",
+    );
   }
 
   @override
   Future<Session?> getSessionById(String sessionId) async {
-    final row = await (_db.select(_db.sessions)
-      ..where((t) => t.sessionId.equals(sessionId))
-      ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.sessions)
+              ..where((t) => t.sessionId.equals(sessionId))
+              ..limit(1))
+            .getSingleOrNull();
     return row == null ? null : Session.fromMap(_map(row));
   }
 
@@ -219,28 +240,32 @@ class TestLocalDatabase extends LocalDatabase {
   // ---------- TrialLogs ----------
   @override
   Future<void> saveTrialLog(TrialLog trial) async {
-    await _db.into(_db.trialLogs).insert(
-      d.TrialLog.fromJson(trial.toMap()).toCompanion(true),
-      mode: InsertMode.insertOrReplace,
-    );
+    await _db
+        .into(_db.trialLogs)
+        .insert(
+          d.TrialLog.fromJson(trial.toMap()).toCompanion(true),
+          mode: InsertMode.insertOrReplace,
+        );
     debugPrint("DATABASE: Saved/replaced TrialLog ${trial.trialId}");
   }
 
   @override
   Future<TrialLog?> getTrialLogById(String trialId) async {
-    final row = await (_db.select(_db.trialLogs)
-      ..where((t) => t.trialId.equals(trialId))
-      ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.trialLogs)
+              ..where((t) => t.trialId.equals(trialId))
+              ..limit(1))
+            .getSingleOrNull();
     return row == null ? null : TrialLog.fromMap(_map(row));
   }
 
   @override
   Future<List<TrialLog>> getTrialLogsBySession(String sessionId) async {
-    final rows = await (_db.select(_db.trialLogs)
-      ..where((t) => t.sessionId.equals(sessionId))
-      ..orderBy([(t) => OrderingTerm.asc(t.trialStartTime)]))
-        .get();
+    final rows =
+        await (_db.select(_db.trialLogs)
+              ..where((t) => t.sessionId.equals(sessionId))
+              ..orderBy([(t) => OrderingTerm.asc(t.trialStartTime)]))
+            .get();
     return rows.map((r) => TrialLog.fromMap(_map(r))).toList();
   }
 
@@ -253,19 +278,22 @@ class TestLocalDatabase extends LocalDatabase {
   // ---------- EventLogs ----------
   @override
   Future<void> saveEventLog(EventLog event) async {
-    await _db.into(_db.eventLogs).insert(
-      d.EventLog.fromJson(event.toMap()).toCompanion(true),
-      mode: InsertMode.insertOrReplace,
-    );
+    await _db
+        .into(_db.eventLogs)
+        .insert(
+          d.EventLog.fromJson(event.toMap()).toCompanion(true),
+          mode: InsertMode.insertOrReplace,
+        );
     debugPrint("DATABASE: Saved EventLog ${event.eventId}");
   }
 
   @override
   Future<List<EventLog>> getEventLogsByTrial(String trialId) async {
-    final rows = await (_db.select(_db.eventLogs)
-      ..where((t) => t.trialId.equals(trialId))
-      ..orderBy([(t) => OrderingTerm.asc(t.eventTimestamp)]))
-        .get();
+    final rows =
+        await (_db.select(_db.eventLogs)
+              ..where((t) => t.trialId.equals(trialId))
+              ..orderBy([(t) => OrderingTerm.asc(t.eventTimestamp)]))
+            .get();
     return rows.map((r) => EventLog.fromMap(_map(r))).toList();
   }
 

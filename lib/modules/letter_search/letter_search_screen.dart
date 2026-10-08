@@ -5,34 +5,77 @@ import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/modules/letter_search/letter_search_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-class LetterSearchScreen extends StatelessWidget {
+class LetterSearchScreen extends StatefulWidget {
   const LetterSearchScreen({super.key});
+
+  @override
+  State<LetterSearchScreen> createState() => _LetterSearchScreenState();
+}
+
+class _LetterSearchScreenState extends State<LetterSearchScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _hintController;
+  late final Animation<Color?> _hintColor;
+  late final LetterSearchViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _hintController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+    // Starts from the same color at alpha 0 so the fade doesn't pass through dark tints
+    _hintColor = ColorTween(
+      begin: const Color.fromARGB(0, 250, 250, 200),
+      end: const Color.fromARGB(255, 250, 250, 200),
+    ).animate(_hintController);
+
+    _viewModel = context.read<LetterSearchViewModel>();
+    _viewModel.addListener(_resetHintOnNewRound);
+  }
+
+  void _resetHintOnNewRound() {
+    if (!_viewModel.hintRequested && _hintController.value != 0) {
+      _hintController.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _viewModel.removeListener(_resetHintOnNewRound);
+    _hintController.dispose();
+    super.dispose();
+  }
 
   Future<bool> _showExitConfirmation(BuildContext context) async {
     return await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Thoát luyện tập?'),
-          content: const Text('Bài luyện tập đang diễn ra. Tiến trình hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Ở lại'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Thoát'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              title: const Text('Thoát luyện tập?'),
+              content: const Text(
+                'Bài luyện tập đang diễn ra. Tiến trình hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Ở lại'),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(false);
+                  },
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('Thoát'),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
   @override
@@ -60,7 +103,10 @@ class LetterSearchScreen extends StatelessWidget {
             children: [
               // Top Status Header / Timer Bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -71,7 +117,11 @@ class LetterSearchScreen extends StatelessWidget {
                     if (viewModel.currentState == GameState.IN_PROGRESS)
                       Row(
                         children: [
-                          const Icon(Icons.timer_outlined, color: Colors.teal, size: 20),
+                          const Icon(
+                            Icons.timer_outlined,
+                            color: Colors.teal,
+                            size: 20,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${viewModel.elapsedSeconds.toStringAsFixed(1)} giây',
@@ -85,31 +135,48 @@ class LetterSearchScreen extends StatelessWidget {
               const Divider(height: 1),
 
               // Main body area depending on GameState
-              Expanded(
-                child: _buildBody(context, viewModel),
-              ),
+              Expanded(child: _buildBody(context, viewModel)),
 
               // Bottom Navigation Actions
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 24.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ReturnButton(
                       onReturn: (context) async {
                         // Triggers the pop check manually since ReturnButton pops explicitly
-                        final canDirectPop = viewModel.currentState != GameState.IN_PROGRESS
-                            && viewModel.currentState != GameState.COUNTDOWN;
+                        final canDirectPop =
+                            viewModel.currentState != GameState.IN_PROGRESS &&
+                            viewModel.currentState != GameState.COUNTDOWN;
                         if (canDirectPop) {
                           Navigator.pop(context);
                         } else {
-                          final shouldPop = await _showExitConfirmation(context);
+                          final shouldPop = await _showExitConfirmation(
+                            context,
+                          );
                           if (shouldPop && context.mounted) {
                             Navigator.pop(context);
                           }
                         }
                       },
                     ),
+                    viewModel.currentState == GameState.IN_PROGRESS
+                        ? ElevatedButton.icon(
+                          onPressed:
+                              viewModel.hintRequested
+                                  ? null
+                                  : () {
+                                    viewModel.requestHint();
+                                    _hintController.forward(from: 0);
+                                  },
+                          icon: const Icon(Icons.lightbulb_outline),
+                          label: const Text("Gợi ý"),
+                        )
+                        : Container(),
                     SettingButton(),
                   ],
                 ),
@@ -135,7 +202,11 @@ class LetterSearchScreen extends StatelessWidget {
             ),
             child: Text(
               'Bắt đầu trò chơi',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         );
@@ -156,7 +227,9 @@ class LetterSearchScreen extends StatelessWidget {
               const SizedBox(height: 20),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                transitionBuilder:
+                    (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
                 child: Text(
                   '${viewModel.countdownSeconds}',
                   key: ValueKey<int>(viewModel.countdownSeconds),
@@ -188,7 +261,7 @@ class LetterSearchScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.teal.withOpacity(0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       spreadRadius: 2,
                       blurRadius: 8,
                     ),
@@ -196,47 +269,74 @@ class LetterSearchScreen extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(12.0),
                 alignment: Alignment.center,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(viewModel.currentGridHeight, (rowIndex) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(viewModel.currentGridWidth, (colIndex) {
-                        final char = viewModel.displayGrid[rowIndex][colIndex];
-                        final double cellSize = viewModel.currentSize * 1.0;
+                child: AnimatedBuilder(
+                  animation: _hintController,
+                  builder:
+                      (context, _) => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(viewModel.currentGridHeight, (
+                          rowIndex,
+                        ) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(
+                              viewModel.currentGridWidth,
+                              (colIndex) {
+                                final char =
+                                    viewModel.displayGrid[rowIndex][colIndex];
+                                final double cellSize =
+                                    viewModel.currentSize * 1.0;
 
-                        return Padding(
-                          padding: EdgeInsets.all(viewModel.currentSpacing),
-                          child: SizedBox(
-                            width: cellSize,
-                            height: cellSize,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(4.0),
-                                onTapDown: (details) => viewModel.handleCellTap(
-                                  rowIndex,
-                                  colIndex,
-                                  details.globalPosition.dx,
-                                  details.globalPosition.dy,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    char,
-                                    style: textTheme.bodyLarge?.copyWith(
-                                      fontSize: viewModel.currentSize,
-                                      height: 1.0,
+                                return Padding(
+                                  padding: EdgeInsets.all(
+                                    viewModel.currentSpacing,
+                                  ),
+                                  child: SizedBox(
+                                    width: cellSize,
+                                    height: cellSize,
+                                    child: Material(
+                                      color:
+                                          viewModel.isInHintArea(
+                                                rowIndex,
+                                                colIndex,
+                                              )
+                                              ? (_hintColor.value ??
+                                                  Colors.transparent)
+                                              : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(4.0),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(
+                                          4.0,
+                                        ),
+                                        onTapDown:
+                                            (details) =>
+                                                viewModel.handleCellTap(
+                                                  rowIndex,
+                                                  colIndex,
+                                                  details.globalPosition.dx,
+                                                  details.globalPosition.dy,
+                                                ),
+                                        child: Center(
+                                          child: Text(
+                                            char,
+                                            style: textTheme.bodyLarge
+                                                ?.copyWith(
+                                                  fontSize:
+                                                      viewModel.currentSize,
+                                                  height: 1.0,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              },
                             ),
-                          ),
-                        );
-                      }),
-                    );
-                  }),
+                          );
+                        }),
+                      ),
                 ),
               ),
             ),
@@ -250,25 +350,35 @@ class LetterSearchScreen extends StatelessWidget {
             Container(
               height: 48,
               alignment: Alignment.center,
-              child: feedback == null
-                  ? const SizedBox.shrink()
-                  : AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: feedback == "Chính xác!" ? Colors.green.shade100 : Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        feedback,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: feedback == "Chính xác!" ? Colors.green.shade800 : Colors.red.shade800,
+              child:
+                  feedback == null
+                      ? const SizedBox.shrink()
+                      : AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              feedback == "Chính xác!"
+                                  ? Colors.green.shade100
+                                  : Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          feedback,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                feedback == "Chính xác!"
+                                    ? Colors.green.shade800
+                                    : Colors.red.shade800,
+                          ),
                         ),
                       ),
-                    ),
-            )
+            ),
           ],
         );
 
@@ -309,12 +419,17 @@ class LetterSearchScreen extends StatelessWidget {
                           backgroundColor: Colors.teal,
                           child: Text(
                             '${res["round"]}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         title: Text(
                           'Tìm chữ "${res["target"]}"',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         subtitle: Text(
                           'Thời gian: ${(res["time"] as double).toStringAsFixed(1)} giây | Số lần bấm: ${res["attempts"]}',

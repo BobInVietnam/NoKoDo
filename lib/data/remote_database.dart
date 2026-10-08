@@ -20,7 +20,11 @@ abstract class RemoteDatabase {
   Future<List<Map<String, Object?>>> getTestList(String uid);
   Future<Map<String, Object?>> getTestDetails(String testId, String studentId);
   Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId);
-  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings);
+  Future<void> sendCustomSettings(
+    String uid,
+    String lessonId,
+    Map<String, Object?> settings,
+  );
   Future<void> sendTestSessionStatus(TestSession testSession);
   Future<void> sendTestAnswers(Map<String, Object?> answersList);
   Future<void> sendUsageTime(int totalUsageTime, String uid);
@@ -30,11 +34,19 @@ abstract class RemoteDatabase {
   Future<void> sendTrialLog(TrialLog trial);
   Future<void> sendEventLog(EventLog event);
   Future<void> sendEventLogsBatch(List<EventLog> events);
-  Future<Map<String, dynamic>?> sendAudioFile(XFile audioFile, String studentId, {String? trialId});
+  Future<Map<String, dynamic>?> sendAudioFile(
+    XFile audioFile,
+    String studentId, {
+    String? trialId,
+  });
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
-  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results);
+  Future<void> sendLessonResult(
+    String studentId,
+    String lessonId,
+    Map<String, dynamic> results,
+  );
   Future<Map<String, String>> getSystemConfig();
   Future<Map<String, dynamic>> getDictionaryData();
   Future<Map<String, Object?>?> studentLogin(String email, String password);
@@ -78,8 +90,10 @@ class TestRemoteDatabase extends RemoteDatabase {
       await Directory(dirname(path)).create(recursive: true);
 
       ByteData data = await rootBundle.load(join("assets", _dbFileName));
-      List<int> bytes =
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      List<int> bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
 
       await File(path).writeAsBytes(bytes, flush: true);
       debugPrint("TESTING: Fresh database copied successfully.");
@@ -113,14 +127,21 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId) async {
+  Future<List<Map<String, Object?>>> getLessonList(
+    String uid,
+    String classId,
+  ) async {
     final db = await database;
     final List<Map<String, Object?>> maps = await db.query('Lesson');
-    return maps.map((map) => {
-      ...map,
-      'dateCreated': map['created_date'],
-      'isDone': false,
-    }).toList();
+    return maps
+        .map(
+          (map) => {
+            ...map,
+            'dateCreated': map['created_date'],
+            'isDone': false,
+          },
+        )
+        .toList();
   }
 
   @override
@@ -128,7 +149,8 @@ class TestRemoteDatabase extends RemoteDatabase {
     final db = await database;
 
     debugPrint("TESTING: Querying database for TestInfo...");
-    final List<Map<String, Object?>> maps = await db.rawQuery('''
+    final List<Map<String, Object?>> maps = await db.rawQuery(
+      '''
   SELECT 
       T.id, 
       T.name, 
@@ -154,7 +176,7 @@ class TestRemoteDatabase extends RemoteDatabase {
   WHERE S.uid = ?
   GROUP BY T.id;
   ''',
-      [uid]
+      [uid],
     );
     debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
@@ -166,18 +188,24 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>> getTestDetails(String testId, String studentId) async {
+  Future<Map<String, Object?>> getTestDetails(
+    String testId,
+    String studentId,
+  ) async {
     final db = await database;
 
     debugPrint("TESTING: Querying database for Test...");
-    final List<Map<String, Object?>> maps = await db.rawQuery('''
+    final List<Map<String, Object?>> maps = await db.rawQuery(
+      '''
    SELECT * FROM test WHERE test.id = ?;
       ''',
-        [testId]
+      [testId],
     );
     debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
-      final Map<String, Object?> mutableMap = Map<String, Object?>.from(maps.first);
+      final Map<String, Object?> mutableMap = Map<String, Object?>.from(
+        maps.first,
+      );
       final List<Map<String, Object?>> attemptsList = await db.query(
         'student_test_status',
         where: 'testid = ? AND studentid = ?',
@@ -198,7 +226,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     final List<Map<String, Object?>> maps = await db.query(
       'student_test_status',
       where: 'studentid = ? AND date_created = ?',
-      whereArgs: [testSession.studentId, testSession.startTime]
+      whereArgs: [testSession.studentId, testSession.startTime],
     );
     debugPrint("TESTING: Map pulled : $maps");
     if (maps.isNotEmpty) {
@@ -214,16 +242,14 @@ class TestRemoteDatabase extends RemoteDatabase {
     final db = await database;
 
     debugPrint("TESTING: Posting test session data...");
-    final int sessionId = await db.insert('student_test_status',
-        {
-          'studentid': testSession.studentId,
-          'testid': testSession.testId,
-          'date_created': testSession.startTime,
-          'date_finished': testSession.endTime,
-          'duration': testSession.endTime - testSession.startTime,
-          'result': testSession.score
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    final int sessionId = await db.insert('student_test_status', {
+      'studentid': testSession.studentId,
+      'testid': testSession.testId,
+      'date_created': testSession.startTime,
+      'date_finished': testSession.endTime,
+      'duration': testSession.endTime - testSession.startTime,
+      'result': testSession.score,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
     debugPrint("TESTING: Test session posted.");
     return sessionId;
   }
@@ -235,8 +261,11 @@ class TestRemoteDatabase extends RemoteDatabase {
     debugPrint("TESTING: Posting test answers data...");
     for (var answer in (answersList["answers"] as List<Map<String, Object?>>)) {
       answer["date_created"] = answersList["startTime"];
-      await db.insert('Student_Answer', answer,
-          conflictAlgorithm: ConflictAlgorithm.replace);
+      await db.insert(
+        'Student_Answer',
+        answer,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
     debugPrint("TESTING: Test answers posted.");
   }
@@ -252,7 +281,7 @@ class TestRemoteDatabase extends RemoteDatabase {
       'lessonNumber': 2,
       'lessonFinishedNumber': 1,
       'activityCounts': [0, 1, 0, 2, 0, 1, 3],
-      'totalUsageTime': 45320
+      'totalUsageTime': 45320,
     };
   }
 
@@ -269,7 +298,9 @@ class TestRemoteDatabase extends RemoteDatabase {
 
   @override
   Future<void> sendUsageTime(int totalUsageTime, String uid) async {
-    debugPrint("TESTING: Mock sendUsageTime updating: $totalUsageTime seconds for $uid");
+    debugPrint(
+      "TESTING: Mock sendUsageTime updating: $totalUsageTime seconds for $uid",
+    );
   }
 
   @override
@@ -278,7 +309,10 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendUserSettings(String uid, Map<String, dynamic> settings) async {
+  Future<void> sendUserSettings(
+    String uid,
+    Map<String, dynamic> settings,
+  ) async {
     debugPrint("TESTING: Mock sendUserSettings saved for $uid: $settings");
   }
 
@@ -294,12 +328,20 @@ class TestRemoteDatabase extends RemoteDatabase {
 
   @override
   Future<void> sendEventLogsBatch(List<EventLog> events) async {
-    debugPrint("TESTING: Mock sendEventLogsBatch saved (${events.length} events)");
+    debugPrint(
+      "TESTING: Mock sendEventLogsBatch saved (${events.length} events)",
+    );
   }
 
   @override
-  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results) async {
-    debugPrint("TESTING: Mock sendLessonResult saved: $results for student $studentId and lesson $lessonId");
+  Future<void> sendLessonResult(
+    String studentId,
+    String lessonId,
+    Map<String, dynamic> results,
+  ) async {
+    debugPrint(
+      "TESTING: Mock sendLessonResult saved: $results for student $studentId and lesson $lessonId",
+    );
   }
 
   @override
@@ -308,8 +350,7 @@ class TestRemoteDatabase extends RemoteDatabase {
     try {
       final List<Map<String, Object?>> maps = await db.query('system_config');
       return {
-        for (final row in maps)
-          row['key'] as String: row['value'] as String
+        for (final row in maps) row['key'] as String: row['value'] as String,
       };
     } catch (e) {
       debugPrint("TESTING: Error querying local mock config: $e");
@@ -324,7 +365,10 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>?> studentLogin(String email, String password) async {
+  Future<Map<String, Object?>?> studentLogin(
+    String email,
+    String password,
+  ) async {
     final db = await database;
     try {
       final List<Map<String, Object?>> maps = await db.query(
@@ -351,7 +395,11 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, dynamic>?> sendAudioFile(XFile audioFile, String studentId, {String? trialId}) {
+  Future<Map<String, dynamic>?> sendAudioFile(
+    XFile audioFile,
+    String studentId, {
+    String? trialId,
+  }) {
     // TODO: implement sendAudioFile
     throw UnimplementedError();
   }
@@ -369,7 +417,11 @@ class TestRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings) {
+  Future<void> sendCustomSettings(
+    String uid,
+    String lessonId,
+    Map<String, Object?> settings,
+  ) {
     // TODO: implement sendCustomSettings
     throw UnimplementedError();
   }
@@ -377,7 +429,6 @@ class TestRemoteDatabase extends RemoteDatabase {
 
 class LocalhostRemoteDatabase extends RemoteDatabase {
   String? _token;
-
 
   @override
   void setToken(String? token) {
@@ -391,9 +442,7 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   Future<http.Response> _get(Uri url) async {
     return http.get(
       url,
-      headers: {
-        if (_token != null) 'Authorization': 'Bearer $_token',
-      },
+      headers: {if (_token != null) 'Authorization': 'Bearer $_token'},
     );
   }
 
@@ -430,23 +479,30 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('Extracted Key Value (hello): ${jsonContents['hello']}');
         return jsonContents;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
 
   @override
-  Future<Map<String, Object?>> getTestDetails(String testId, String studentId) async {
+  Future<Map<String, Object?>> getTestDetails(
+    String testId,
+    String studentId,
+  ) async {
     // 1. Construct the target URL with path parameters and query arguments matching the API contract
-    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam/$testId').replace(
-      queryParameters: {
-        'studentid': studentId,
-      },
-    );
+    final Uri targetUrl = Uri.parse(
+      '$_baseUrl/api/exam/$testId',
+    ).replace(queryParameters: {'studentid': studentId});
 
     try {
       debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
@@ -458,28 +514,34 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200) {
         // 4. Parse the raw text body payload into a structured Dart Map object safely
         final Map<String, Object?> jsonContents =
-        jsonDecode(response.body) as Map<String, Object?>;
+            jsonDecode(response.body) as Map<String, Object?>;
 
         debugPrint('HTTP SUCCESS: Connection established payload received!');
         debugPrint('JSON Content: $jsonContents');
         return jsonContents;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
 
   @override
-  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId) async {
+  Future<List<Map<String, Object?>>> getLessonList(
+    String uid,
+    String classId,
+  ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson').replace(
-      queryParameters: {
-        'classid': classId.toString(),
-        'studentid': uid,
-      },
+      queryParameters: {'classid': classId.toString(), 'studentid': uid},
     );
 
     try {
@@ -488,31 +550,36 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
 
       if (response.statusCode == 200) {
         final Map<String, Object?> jsonContents =
-          jsonDecode(response.body) as Map<String, Object?>;
+            jsonDecode(response.body) as Map<String, Object?>;
 
-        final List<Map<String, Object?>> lessonList = List<Map<String, Object?>>.from(
-          jsonContents["lessons"] as List,
+        final List<Map<String, Object?>> lessonList =
+            List<Map<String, Object?>>.from(jsonContents["lessons"] as List);
+        debugPrint(
+          'HTTP SUCCESS: Connection established lessons payload received!',
         );
-        debugPrint('HTTP SUCCESS: Connection established lessons payload received!');
         debugPrint('JSON Content: $jsonContents');
         return lessonList;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
 
   @override
   Future<List<Map<String, Object?>>> getTestList(String uid) async {
-    final Uri targetUrl = Uri.parse('$_baseUrl/api/exam').replace(
-      queryParameters: {
-        'studentid': uid,
-      },
-    );
+    final Uri targetUrl = Uri.parse(
+      '$_baseUrl/api/exam',
+    ).replace(queryParameters: {'studentid': uid});
 
     try {
       debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
@@ -524,20 +591,27 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200) {
         // 4. Parse the raw text body payload into a structured Dart Map object safely
         final Map<String, Object?> jsonContents =
-          jsonDecode(response.body) as Map<String, Object?>;
+            jsonDecode(response.body) as Map<String, Object?>;
 
-        final List<Map<String, Object?>> testList = List<Map<String, Object?>>.from(
-          jsonContents["testInfoList"] as List,
-        );
+        final List<Map<String, Object?>> testList =
+            List<Map<String, Object?>>.from(
+              jsonContents["testInfoList"] as List,
+            );
         debugPrint('HTTP SUCCESS: Connection established payload received!');
         debugPrint('JSON Content: $jsonContents');
         return testList;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
@@ -552,17 +626,23 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       final http.Response response = await _get(targetUrl);
 
       if (response.statusCode == 200) {
-        final Map<String, Object?> jsonContents = jsonDecode(response.body)
-            as Map<String, Object?>;
+        final Map<String, Object?> jsonContents =
+            jsonDecode(response.body) as Map<String, Object?>;
         debugPrint('HTTP SUCCESS: Connection established payload received!');
         debugPrint('JSON Content: $jsonContents');
         return jsonContents;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
@@ -580,11 +660,17 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('HTTP SUCCESS: Test answers data synced successfully.');
       } else {
-        debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
-        throw Exception('Server rejected session payload with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}',
+        );
+        throw Exception(
+          'Server rejected session payload with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error',
+      );
       rethrow;
     }
   }
@@ -609,11 +695,17 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('HTTP SUCCESS: Test session data synced successfully.');
       } else {
-        debugPrint('HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}');
-        throw Exception('Server rejected session payload with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected session payload with status code: ${response.statusCode},  ${response.body}',
+        );
+        throw Exception(
+          'Server rejected session payload with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit session status. Details: $error',
+      );
       rethrow;
     }
   }
@@ -631,7 +723,8 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       // 2. Evaluate the HTTP Status Code response boundary
       if (response.statusCode == 200) {
         // 3. Parse the raw text body payload into a structured Dart Map object
-        final Map<String, dynamic> jsonContents = jsonDecode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> jsonContents =
+            jsonDecode(response.body) as Map<String, dynamic>;
 
         // 4. Log the target JSON value cleanly to your debug terminal console window
         debugPrint('HTTP SUCCESS: Connection established payload received!');
@@ -639,11 +732,17 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         debugPrint('Extracted Key Value (hello): ${jsonContents['hello']}');
         return true;
       } else {
-        debugPrint('HTTP ERROR: Server responded with status code: ${response.statusCode}, ${response.body}');
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server responded with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to reach network endpoint. Details: $error',
+      );
       rethrow;
     }
   }
@@ -653,24 +752,37 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
 
     try {
-      debugPrint('HTTP REQUEST: Syncing usage time ($totalUsageTime seconds) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing usage time ($totalUsageTime seconds) to $targetUrl...',
+      );
 
       // Dispatch a POST network request to perform a partial update on the student record
       final http.Response response = await _post(
         targetUrl,
         body: jsonEncode({
-          'totalTime': totalUsageTime, // Matches the 'totalTime' schema keyword on your Prisma backend
+          'totalTime':
+              totalUsageTime, // Matches the 'totalTime' schema keyword on your Prisma backend
         }),
       );
       // Evaluate the HTTP status codes
-      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
-        debugPrint('HTTP SUCCESS: Active application usage time synced successfully.');
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204) {
+        debugPrint(
+          'HTTP SUCCESS: Active application usage time synced successfully.',
+        );
       } else {
-        debugPrint('HTTP ERROR: Server rejected time sync payload with status code: ${response.statusCode}, ${response.body}');
-        throw Exception('Server rejected time sync payload with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected time sync payload with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected time sync payload with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit usage time payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit usage time payload. Details: $error',
+      );
       rethrow;
     }
   }
@@ -680,7 +792,9 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/session');
 
     try {
-      debugPrint('HTTP REQUEST: Syncing session (${session.sessionId}) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing session (${session.sessionId}) to $targetUrl...',
+      );
 
       final http.Response response = await _post(
         targetUrl,
@@ -688,17 +802,26 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('HTTP SUCCESS: Intervention session data synced successfully.');
+        debugPrint(
+          'HTTP SUCCESS: Intervention session data synced successfully.',
+        );
       } else {
-        debugPrint('HTTP ERROR: Server rejected session sync payload with status code: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Server rejected session sync payload with status code: ${response.statusCode}, ${response.body}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit session payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit session payload. Details: $error',
+      );
     }
   }
 
   @override
-  Future<void> sendUserSettings(String uid, Map<String, dynamic> settings) async {
+  Future<void> sendUserSettings(
+    String uid,
+    Map<String, dynamic> settings,
+  ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
 
     try {
@@ -706,18 +829,24 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
 
       final http.Response response = await _post(
         targetUrl,
-        body: jsonEncode({
-          'settings': settings,
-        }),
+        body: jsonEncode({'settings': settings}),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
-        debugPrint('HTTP SUCCESS: Student personal settings synced online successfully.');
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204) {
+        debugPrint(
+          'HTTP SUCCESS: Student personal settings synced online successfully.',
+        );
       } else {
-        debugPrint('HTTP ERROR: Server rejected settings payload with status code: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Server rejected settings payload with status code: ${response.statusCode}, ${response.body}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit settings payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit settings payload. Details: $error',
+      );
     }
   }
 
@@ -725,7 +854,9 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   Future<void> sendTrialLog(TrialLog trial) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/trial');
     try {
-      debugPrint('HTTP REQUEST: Syncing TrialLog (${trial.trialId}) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing TrialLog (${trial.trialId}) to $targetUrl...',
+      );
       final http.Response response = await _post(
         targetUrl,
         body: jsonEncode(trial.toMap()),
@@ -733,10 +864,14 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('HTTP SUCCESS: TrialLog synced online successfully.');
       } else {
-        debugPrint('HTTP ERROR: Server rejected TrialLog: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Server rejected TrialLog: ${response.statusCode}, ${response.body}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit TrialLog payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit TrialLog payload. Details: $error',
+      );
     }
   }
 
@@ -744,7 +879,9 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   Future<void> sendEventLog(EventLog event) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/event');
     try {
-      debugPrint('HTTP REQUEST: Syncing EventLog (${event.eventId}) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing EventLog (${event.eventId}) to $targetUrl...',
+      );
       final http.Response response = await _post(
         targetUrl,
         body: jsonEncode(event.toMap()),
@@ -752,10 +889,14 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('HTTP SUCCESS: EventLog synced online successfully.');
       } else {
-        debugPrint('HTTP ERROR: Server rejected EventLog: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Server rejected EventLog: ${response.statusCode}, ${response.body}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit EventLog payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit EventLog payload. Details: $error',
+      );
     }
   }
 
@@ -764,27 +905,41 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     if (events.isEmpty) return;
     final Uri targetUrl = Uri.parse('$_baseUrl/api/event');
     try {
-      debugPrint('HTTP REQUEST: Syncing ${events.length} EventLogs batch to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing ${events.length} EventLogs batch to $targetUrl...',
+      );
       final http.Response response = await _post(
         targetUrl,
         body: jsonEncode(events.map((e) => e.toMap()).toList()),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('HTTP SUCCESS: Batch of ${events.length} EventLogs synced online successfully.');
+        debugPrint(
+          'HTTP SUCCESS: Batch of ${events.length} EventLogs synced online successfully.',
+        );
       } else {
-        debugPrint('HTTP ERROR: Server rejected EventLog batch: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Server rejected EventLog batch: ${response.statusCode}, ${response.body}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to transmit EventLog batch payload. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to transmit EventLog batch payload. Details: $error',
+      );
     }
   }
 
   @override
-  Future<void> sendLessonResult(String studentId, String lessonId, Map<String, dynamic> results) async {
+  Future<void> sendLessonResult(
+    String studentId,
+    String lessonId,
+    Map<String, dynamic> results,
+  ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson');
 
     try {
-      debugPrint('HTTP REQUEST: Syncing lesson result ($lessonId) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing lesson result ($lessonId) to $targetUrl...',
+      );
 
       final http.Response response = await _post(
         targetUrl,
@@ -798,11 +953,17 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('HTTP SUCCESS: Student lesson result synced successfully.');
       } else {
-        debugPrint('HTTP ERROR: Server rejected lesson result sync with status code: ${response.statusCode}, ${response.body}');
-        throw Exception('Server rejected lesson result sync with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected lesson result sync with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected lesson result sync with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error',
+      );
       rethrow;
     }
   }
@@ -814,9 +975,13 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       final response = await _get(targetUrl);
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
-        return jsonContents.map((key, value) => MapEntry(key, value.toString()));
+        return jsonContents.map(
+          (key, value) => MapEntry(key, value.toString()),
+        );
       } else {
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       debugPrint("HTTP ERROR: Failed to get system config: $e");
@@ -832,7 +997,9 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        throw Exception(
+          'Server responded with status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       debugPrint("HTTP ERROR: Failed to get dictionary data: $e");
@@ -841,15 +1008,18 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>?> studentLogin(String email, String password) async {
+  Future<Map<String, Object?>?> studentLogin(
+    String email,
+    String password,
+  ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/auth/student/login');
     try {
-      debugPrint('HTTP REQUEST: Initiating student login POST request to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Initiating student login POST request to $targetUrl...',
+      );
       final http.Response response = await http.post(
         targetUrl,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'email': email.trim().toLowerCase(),
           'password': password,
@@ -858,7 +1028,8 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
-        final Map<String, Object?>? student = jsonContents['student'] as Map<String, Object?>?;
+        final Map<String, Object?>? student =
+            jsonContents['student'] as Map<String, Object?>?;
         final String? token = jsonContents['token'] as String?;
         if (token != null) {
           setToken(token);
@@ -871,7 +1042,9 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
         }
         return student;
       } else {
-        debugPrint('HTTP ERROR: Login failed with code: ${response.statusCode}, ${response.body}');
+        debugPrint(
+          'HTTP ERROR: Login failed with code: ${response.statusCode}, ${response.body}',
+        );
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
         throw Exception(jsonContents['error'] ?? 'Đăng nhập không thành công.');
       }
@@ -885,39 +1058,51 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   Future<Map<String, Object?>?> verifySession(String token) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/auth/student/session');
     try {
-      debugPrint('HTTP REQUEST: Verifying student session GET request to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Verifying student session GET request to $targetUrl...',
+      );
       final http.Response response = await http.get(
         targetUrl,
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
-        final Map<String, Object?>? student = jsonContents['student'] as Map<String, Object?>?;
+        final Map<String, Object?>? student =
+            jsonContents['student'] as Map<String, Object?>?;
         if (student != null) {
           setToken(token);
         }
         debugPrint('HTTP SUCCESS: Session token validated successfully!');
         return student;
       } else {
-        debugPrint('HTTP ERROR: Session validation failed with code: ${response.statusCode}, ${response.body}');
-        throw Exception('Session validation failed with code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Session validation failed with code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Session validation failed with code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Session verification call failed. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Session verification call failed. Details: $error',
+      );
       rethrow;
     }
   }
 
   @override
   Future<Map<String, dynamic>?> sendAudioFile(
-      XFile audioFile, String studentId, {String? trialId}) async {
+    XFile audioFile,
+    String studentId, {
+    String? trialId,
+  }) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/audio');
 
     try {
-      debugPrint('HTTP REQUEST: Uploading audio file (${audioFile.name}) to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Uploading audio file (${audioFile.name}) to $targetUrl...',
+      );
 
       final request = http.MultipartRequest('POST', targetUrl);
       if (_token != null) {
@@ -944,14 +1129,22 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonContents = jsonDecode(response.body);
-        debugPrint('HTTP SUCCESS: Audio file uploaded successfully: $jsonContents');
+        debugPrint(
+          'HTTP SUCCESS: Audio file uploaded successfully: $jsonContents',
+        );
         return jsonContents;
       } else {
-        debugPrint('HTTP ERROR: Server rejected audio upload: ${response.statusCode}, ${response.body}');
-        throw Exception('Server rejected audio upload with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected audio upload: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected audio upload with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to upload audio file. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to upload audio file. Details: $error',
+      );
       rethrow;
     }
   }
@@ -963,61 +1156,81 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId) async {
-    final Uri targetUrl = Uri.parse('$_baseUrl/api/customsettings').replace(
-      queryParameters: {
-        'studentid': uid,
-        'lessonid': lessonId,
-      },
-    );
+  Future<Map<String, Object?>> getCustomSettings(
+    String uid,
+    String lessonId,
+  ) async {
+    final Uri targetUrl = Uri.parse(
+      '$_baseUrl/api/customsettings',
+    ).replace(queryParameters: {'studentid': uid, 'lessonid': lessonId});
 
     try {
-      final http.Response response = await _get(
-        targetUrl
-      );
+      final http.Response response = await _get(targetUrl);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> jsonContents = jsonDecode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> jsonContents =
+            jsonDecode(response.body) as Map<String, dynamic>;
 
         // 4. Log the target JSON value cleanly to your debug terminal console window
         debugPrint('JSON Content: $jsonContents');
-        debugPrint('HTTP SUCCESS: Student lesson settings fetched successfully.');
+        debugPrint(
+          'HTTP SUCCESS: Student lesson settings fetched successfully.',
+        );
         return jsonContents;
       } else {
-        debugPrint('HTTP ERROR: Server rejected lesson settings fetch with status code: ${response.statusCode}, ${response.body}');
-        throw Exception('Server rejected lesson settings fetch with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected lesson settings fetch with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected lesson settings fetch with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to get lesson settings. Details: $error. Returning to default settings.');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to get lesson settings. Details: $error. Returning to default settings.',
+      );
       rethrow;
     }
   }
 
   @override
-  Future<void> sendCustomSettings(String uid, String lessonId, Map<String, Object?> settings) async {
+  Future<void> sendCustomSettings(
+    String uid,
+    String lessonId,
+    Map<String, Object?> settings,
+  ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/customsettings');
 
     try {
-      debugPrint('HTTP REQUEST: Syncing lesson ($lessonId) custom settings to $targetUrl...');
+      debugPrint(
+        'HTTP REQUEST: Syncing lesson ($lessonId) custom settings to $targetUrl...',
+      );
 
       final http.Response response = await _post(
         targetUrl,
         body: jsonEncode({
           'studentid': uid,
           'lessonid': lessonId,
-          'settings': settings
+          'settings': settings,
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('HTTP SUCCESS: Student lesson settings synced successfully.');
+        debugPrint(
+          'HTTP SUCCESS: Student lesson settings synced successfully.',
+        );
       } else {
-        debugPrint('HTTP ERROR: Server rejected lesson settings sync with status code: ${response.statusCode}, ${response.body}');
-        throw Exception('Server rejected lesson settings sync with status code: ${response.statusCode}');
+        debugPrint(
+          'HTTP ERROR: Server rejected lesson settings sync with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected lesson settings sync with status code: ${response.statusCode}',
+        );
       }
     } catch (error) {
-      debugPrint('HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error');
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error',
+      );
       rethrow;
     }
   }
-  
 }

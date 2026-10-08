@@ -15,8 +15,9 @@ class EditingScreen extends StatelessWidget {
 
   void _showRenameDialog(BuildContext context, EditingViewModel viewModel) {
     // Local controller initialized with current filename to track typing context
-    final TextEditingController renameController =
-    TextEditingController(text: viewModel.fileName);
+    final TextEditingController renameController = TextEditingController(
+      text: viewModel.fileName,
+    );
 
     showDialog(
       context: context,
@@ -40,7 +41,8 @@ class EditingScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext), // Close dialog safely
+              onPressed:
+                  () => Navigator.pop(dialogContext), // Close dialog safely
               child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
             ),
             ElevatedButton(
@@ -53,7 +55,10 @@ class EditingScreen extends StatelessWidget {
                 Navigator.pop(dialogContext); // Close dialog overlay
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-              child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Xác nhận',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -67,7 +72,9 @@ class EditingScreen extends StatelessWidget {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Rời khỏi màn hình?'),
-          content: const Text('Bạn có những thay đổi chưa được lưu. Rời đi sẽ mất các thay đổi này.'),
+          content: const Text(
+            'Bạn có những thay đổi chưa được lưu. Rời đi sẽ mất các thay đổi này.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -75,7 +82,10 @@ class EditingScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Rời đi', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Rời đi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -85,8 +95,9 @@ class EditingScreen extends StatelessWidget {
   }
 
   void _showSaveAsCopyDialog(BuildContext context, EditingViewModel viewModel) {
-    final TextEditingController renameController =
-        TextEditingController(text: '${viewModel.fileName} - Bản sao');
+    final TextEditingController renameController = TextEditingController(
+      text: '${viewModel.fileName} - Bản sao',
+    );
 
     showDialog(
       context: context,
@@ -124,7 +135,9 @@ class EditingScreen extends StatelessWidget {
                       builder: (BuildContext successContext) {
                         return AlertDialog(
                           title: const Text('Thành công'),
-                          content: const Text('Bản sao đã được lưu thành công vào thư viện!'),
+                          content: const Text(
+                            'Bản sao đã được lưu thành công vào thư viện!',
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(successContext),
@@ -137,7 +150,10 @@ class EditingScreen extends StatelessWidget {
                   }
                 }
               },
-              child: const Text('Lưu bản sao', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Lưu bản sao',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -148,7 +164,8 @@ class EditingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = getSize(context);
-    final isSmall = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
+    final isSmall =
+        screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
     debugPrint("SCREENSIZE: editing_screen screen size: $screenSize");
     final textTheme = Theme.of(context).textTheme;
     final viewModel = context.watch<EditingViewModel>();
@@ -168,7 +185,7 @@ class EditingScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-      // Matching the clean layout background of ReadingScreen
+        // Matching the clean layout background of ReadingScreen
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
@@ -177,32 +194,47 @@ class EditingScreen extends StatelessWidget {
               isKeyboardOpen
                   ? Container()
                   : Padding(
-                padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Đang chỉnh sửa: ${viewModel.fileName}",
-                        style: textTheme.displayMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      top: 16.0,
                     ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.edit_note_outlined),
-                      label: const Text('Đổi tên'),
-                      onPressed: () => _showRenameDialog(context, viewModel),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Đang chỉnh sửa: ${viewModel.fileName}",
+                            style: textTheme.displayMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.edit_note_outlined),
+                          label: const Text('Đổi tên'),
+                          onPressed:
+                              () => _showRenameDialog(context, viewModel),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.undo,
+                            color:
+                                viewModel.canUndo ? Colors.teal : Colors.grey,
+                          ),
+                          onPressed:
+                              viewModel.canUndo ? viewModel.undoAction : null,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.redo,
+                            color:
+                                viewModel.canRedo ? Colors.teal : Colors.grey,
+                          ),
+                          onPressed:
+                              viewModel.canRedo ? viewModel.redoAction : null,
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: Icon(Icons.undo, color: viewModel.canUndo ? Colors.teal : Colors.grey),
-                      onPressed: viewModel.canUndo ? viewModel.undoAction : null,
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.redo, color: viewModel.canRedo ? Colors.teal : Colors.grey),
-                      onPressed: viewModel.canRedo ? viewModel.redoAction : null,
-                    ),
-                  ],
-                ),
-              ),
+                  ),
 
               // --- Central Editing Area Box (Cloned perfectly from ReadingScreen structure) ---
               Expanded(
@@ -225,8 +257,10 @@ class EditingScreen extends StatelessWidget {
                     ),
                     child: TextField(
                       controller: viewModel.textController,
-                      maxLines: null, // Natural multiline vertical growth mapping
-                      expands: true,  // Force complete filling of Container limits
+                      maxLines:
+                          null, // Natural multiline vertical growth mapping
+                      expands:
+                          true, // Force complete filling of Container limits
                       textAlignVertical: TextAlignVertical.top,
                       style: textTheme.bodyMedium?.copyWith(height: 1.6),
                       decoration: const InputDecoration(
@@ -253,15 +287,19 @@ class EditingScreen extends StatelessWidget {
                         ReturnButton(
                           onReturn: (context) async {
                             if (viewModel.hasUnsavedChanges) {
-                              final shouldPop = await _showExitConfirmation(context);
+                              final shouldPop = await _showExitConfirmation(
+                                context,
+                              );
                               if (shouldPop && context.mounted) {
-                                final updatedFile = await viewModel.getUpdatedFile();
+                                final updatedFile =
+                                    await viewModel.getUpdatedFile();
                                 if (context.mounted) {
                                   Navigator.pop(context, updatedFile);
                                 }
                               }
                             } else {
-                              final updatedFile = await viewModel.getUpdatedFile();
+                              final updatedFile =
+                                  await viewModel.getUpdatedFile();
                               if (context.mounted) {
                                 Navigator.pop(context, updatedFile);
                               }
@@ -270,23 +308,40 @@ class EditingScreen extends StatelessWidget {
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.restore),
-                          label: Text(
-                              isSmall ? "" : 'Trở về ban đầu'),
+                          label: Text(isSmall ? "" : 'Trở về ban đầu'),
                           onPressed: () async {
                             final confirm = await showDialog<bool>(
                               context: context,
                               builder: (BuildContext dialogContext) {
                                 return AlertDialog(
                                   title: const Text('Trở về ban đầu?'),
-                                  content: const Text('Bạn có chắc chắn muốn hủy mọi thay đổi và quay về nội dung ban đầu?'),
+                                  content: const Text(
+                                    'Bạn có chắc chắn muốn hủy mọi thay đổi và quay về nội dung ban đầu?',
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.pop(dialogContext, false),
-                                      child: Text('Hủy', style: const TextStyle(color: Colors.black87)),
+                                      onPressed:
+                                          () => Navigator.pop(
+                                            dialogContext,
+                                            false,
+                                          ),
+                                      child: Text(
+                                        'Hủy',
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                        ),
+                                      ),
                                     ),
                                     ElevatedButton(
-                                      onPressed: () => Navigator.pop(dialogContext, true),
-                                      child: const Text('Đồng ý', style: TextStyle(color: Colors.white)),
+                                      onPressed:
+                                          () => Navigator.pop(
+                                            dialogContext,
+                                            true,
+                                          ),
+                                      child: const Text(
+                                        'Đồng ý',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
                                     ),
                                   ],
                                 );
@@ -295,13 +350,12 @@ class EditingScreen extends StatelessWidget {
                             if (confirm == true) {
                               viewModel.resetToDefault();
                             }
-                          }
+                          },
                         ),
                         // Central Action Pill (Mirrors the prominent placement of Read All / Stop)
                         ElevatedButton.icon(
                           icon: const Icon(Icons.save_as_outlined),
-                          label: Text(
-                              isSmall ? "" : 'Lưu lại'),
+                          label: Text(isSmall ? "" : 'Lưu lại'),
                           onPressed: () {
                             viewModel.saveDocument();
                             showDialog(
@@ -309,25 +363,28 @@ class EditingScreen extends StatelessWidget {
                               builder: (BuildContext dialogContext) {
                                 return AlertDialog(
                                   title: const Text('Lưu tài liệu'),
-                                  content: const Text('Tài liệu đã được lưu thành công!'),
+                                  content: const Text(
+                                    'Tài liệu đã được lưu thành công!',
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.pop(dialogContext),
+                                      onPressed:
+                                          () => Navigator.pop(dialogContext),
                                       child: const Text('Đồng ý'),
                                     ),
                                   ],
                                 );
                               },
                             );
-                          }
+                          },
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.copy_outlined),
-                          label: Text(
-                              isSmall ? "" : 'Lưu thành bản sao'),
-                          onPressed: () => _showSaveAsCopyDialog(context, viewModel),
+                          label: Text(isSmall ? "" : 'Lưu thành bản sao'),
+                          onPressed:
+                              () => _showSaveAsCopyDialog(context, viewModel),
                         ),
-                        SettingButton()
+                        SettingButton(),
                       ],
                     ),
                   ],
@@ -336,7 +393,7 @@ class EditingScreen extends StatelessWidget {
             ],
           ),
         ),
-      )
+      ),
     );
   }
 }

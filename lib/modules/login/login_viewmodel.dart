@@ -64,7 +64,10 @@ class LoginViewModel extends ChangeNotifier {
       _onLoginSuccess();
       return true;
     } catch (e) {
-      _displayMessage = e.toString().replaceFirst('Exception: ', '').replaceFirst('Exception', '');
+      _displayMessage = e
+          .toString()
+          .replaceFirst('Exception: ', '')
+          .replaceFirst('Exception', '');
       _state = LoginState.idle;
       notifyListeners();
       return false;
@@ -97,7 +100,9 @@ class LoginViewModel extends ChangeNotifier {
       }
     }
 
-    usageTimeTracker.resumeWithUserData(repoManager.currentStudent?.totalTime ?? 0);
+    usageTimeTracker.resumeWithUserData(
+      repoManager.currentStudent?.totalTime ?? 0,
+    );
     notifyListeners();
   }
 

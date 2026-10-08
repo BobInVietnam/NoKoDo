@@ -20,7 +20,8 @@ class TestSelectionViewModel extends ChangeNotifier {
   SortOption get currentSortOption => _currentSortOption;
   bool get sortAscending => _sortAscending;
 
-  TestSelectionViewModel({required RepoManager repoManager}) : _repoManager = repoManager {
+  TestSelectionViewModel({required RepoManager repoManager})
+    : _repoManager = repoManager {
     _loadData();
     searchController.addListener(_filterTests);
   }
@@ -46,9 +47,10 @@ class TestSelectionViewModel extends ChangeNotifier {
 
   void _filterTests() {
     final query = searchController.text.toLowerCase();
-    _filteredTests = _allTests.where((testInfo) {
-      return testInfo.name.toLowerCase().contains(query);
-    }).toList();
+    _filteredTests =
+        _allTests.where((testInfo) {
+          return testInfo.name.toLowerCase().contains(query);
+        }).toList();
     _sortTests();
     notifyListeners();
   }

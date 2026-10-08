@@ -7,7 +7,7 @@ class TestDetailViewModel extends ChangeNotifier {
   final RepoManager _repoManager;
 
   TestDetailViewModel({required this.test, required RepoManager repoManager})
-      : _repoManager = repoManager;
+    : _repoManager = repoManager;
 
   String formatTimestamp(int timestampMs) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
@@ -32,7 +32,9 @@ class TestDetailViewModel extends ChangeNotifier {
 
   double? get maxScore {
     if (test.studentStatuses.isEmpty) return null;
-    return test.studentStatuses.map((s) => s.score).reduce((a, b) => a > b ? a : b);
+    return test.studentStatuses
+        .map((s) => s.score)
+        .reduce((a, b) => a > b ? a : b);
   }
 
   Future<TestSession> startNewSession() async {
@@ -41,12 +43,8 @@ class TestDetailViewModel extends ChangeNotifier {
       final TestSession testSession = TestSession(
         testId: test.id,
         studentId: studentId,
-        startTime: DateTime
-            .now()
-            .millisecondsSinceEpoch,
-        endTime: DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        startTime: DateTime.now().millisecondsSinceEpoch,
+        endTime: DateTime.now().millisecondsSinceEpoch,
         score: 0,
       );
       await _repoManager.sendTestSessionStatus(testSession);
@@ -58,7 +56,9 @@ class TestDetailViewModel extends ChangeNotifier {
 
   Future<void> refreshDetails() async {
     try {
-      final updatedTest = await _repoManager.getTestDetailsAndQuestions(test.id);
+      final updatedTest = await _repoManager.getTestDetailsAndQuestions(
+        test.id,
+      );
       test = updatedTest;
       notifyListeners();
     } catch (e) {

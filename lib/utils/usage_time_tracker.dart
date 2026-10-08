@@ -10,14 +10,16 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
   // Track total accrued time across past states if you need to add to an existing database baseline
   int _previouslyAccruedSeconds = -1;
 
-  UsageTimeTracker({required RepoManager repoManager}) : _repoManager = repoManager {
+  UsageTimeTracker({required RepoManager repoManager})
+    : _repoManager = repoManager {
     // 1. Register this class into the global system lifecycle observer registry
     WidgetsBinding.instance.addObserver(this);
     _resumeTracking();
   }
 
   /// Total elapsed active usage time in seconds
-  int get totalSecondsElapsed => _previouslyAccruedSeconds + _stopwatch.elapsed.inSeconds;
+  int get totalSecondsElapsed =>
+      _previouslyAccruedSeconds + _stopwatch.elapsed.inSeconds;
 
   void resumeWithUserData(int accruedSeconds) {
     _stopwatch.reset();
@@ -42,10 +44,12 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
       // App minimized, closed, or detached -> Pause background timing leak and mark session complete
       _pauseTracking();
-    } else if (state == AppLifecycleState.resumed && _previouslyAccruedSeconds >= 0) {
+    } else if (state == AppLifecycleState.resumed &&
+        _previouslyAccruedSeconds >= 0) {
       // App brought back to foreground focus -> Restart tracking seamlessly
       _resumeTracking();
     }
@@ -73,7 +77,7 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
     _stopwatch.stop();
     _uiTimer?.cancel();
     notifyListeners(); // Final broadcast to ensure data synchronicity
-    
+
     // Trigger background synchronization with the web server
     await _repoManager.sendUsageTime(totalSecondsElapsed);
   }

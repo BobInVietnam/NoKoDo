@@ -15,7 +15,8 @@ class LocalSimplifierService implements SimplifierService {
   final String? _token;
 
   LocalSimplifierService({http.Client? client, String? token})
-      : client = client ?? http.Client(), _token = token;
+    : client = client ?? http.Client(),
+      _token = token;
 
   @override
   Future<String?> simplifyText(String text) async {
@@ -38,7 +39,9 @@ class LocalSimplifierService implements SimplifierService {
         final Map<String, dynamic> data = json.decode(response.body);
         return data['simplifiedText'] as String?;
       } else {
-        debugPrint('Simplifier Server Error: ${response.statusCode} - ${response.body}');
+        debugPrint(
+          'Simplifier Server Error: ${response.statusCode} - ${response.body}',
+        );
         return null;
       }
     } catch (e) {

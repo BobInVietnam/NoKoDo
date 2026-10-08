@@ -17,7 +17,8 @@ class LocalOCRService implements OCRService {
   final String? _token;
 
   LocalOCRService({http.Client? client, String? token})
-      : client = client ?? http.Client(), _token = token;
+    : client = client ?? http.Client(),
+      _token = token;
 
   @override
   Future<String?> extractText(Uint8List imageData, String fileName) async {
@@ -33,13 +34,16 @@ class LocalOCRService implements OCRService {
     }
 
     // 2. Manually resolve the MIME type
-    final String? mimeType = lookupMimeType(fileName); // Returns e.g., 'image/jpeg'
+    final String? mimeType = lookupMimeType(
+      fileName,
+    ); // Returns e.g., 'image/jpeg'
     debugPrint("FILE_TO_TEXT: mime type = $mimeType");
 
     // 3. Parse into type and subtype
-    final contentType = mimeType != null
-        ? MediaType.parse(mimeType)
-        : MediaType('image', 'jpeg'); // Fallback to jpeg if detection fails
+    final contentType =
+        mimeType != null
+            ? MediaType.parse(mimeType)
+            : MediaType('image', 'jpeg'); // Fallback to jpeg if detection fails
 
     // 4. Attach the file with key 'image' to match Next.js backend requirement
     request.files.add(
@@ -62,7 +66,9 @@ class LocalOCRService implements OCRService {
         debugPrint(data.toString());
         return data['text'] as String?;
       } else {
-        debugPrint('OCR Server Error: ${response.statusCode} - ${response.body}');
+        debugPrint(
+          'OCR Server Error: ${response.statusCode} - ${response.body}',
+        );
         return null;
       }
     } catch (e) {
@@ -93,7 +99,9 @@ class MockOCRService implements OCRService {
 
     // 2. Simulate server/network error if configured
     if (shouldFail) {
-      debugPrint("❌ [MockOCRService]: Simulated server failure (500 internal error)");
+      debugPrint(
+        "❌ [MockOCRService]: Simulated server failure (500 internal error)",
+      );
       return null;
     }
 
@@ -104,8 +112,9 @@ class MockOCRService implements OCRService {
         "Không ngờ về nhà bà thụ thai và mười hai tháng sau sinh một thằng bé mặt mũi rất khôi ngô. Hai vợ chồng mừng lắm. "
         "Nhưng lạ thay! Ðứa trẻ cho đến khi lên ba vẫn không biết nói, biết cười, cũng chẳng biết đi, cứ đặt đâu thì nằm đấy.";
 
-    debugPrint("✅ [MockOCRService]: Successfully returned mock text parsing matrix.");
+    debugPrint(
+      "✅ [MockOCRService]: Successfully returned mock text parsing matrix.",
+    );
     return mockExtractedText;
   }
 }
-

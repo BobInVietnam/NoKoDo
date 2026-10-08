@@ -28,27 +28,23 @@ bool isOpenedFromReadingScreen(BuildContext context) {
 class SettingsScreen extends StatelessWidget {
   final bool syncEnabled;
 
-  const SettingsScreen(
-      {super.key,
-      this.syncEnabled = true
-      }
-  );
+  const SettingsScreen({super.key, this.syncEnabled = true});
 
-  void _syncSettings(BuildContext context, Map<String, dynamic> initialSettings) {
+  void _syncSettings(
+    BuildContext context,
+    Map<String, dynamic> initialSettings,
+  ) {
     try {
       final textSettings = context.read<NokodoSettings>();
       final repoManager = context.read<RepoManager>();
       final newSettings = textSettings.toMap();
       if (syncEnabled) repoManager.saveStudentSettings(newSettings);
 
-        repoManager.trialLogger.logEvent(
-          eventType: 'SETTINGS_CHANGED',
-          eventCode: 'settings',
-          payload: {
-            'from': initialSettings,
-            'to': newSettings,
-          },
-        );
+      repoManager.trialLogger.logEvent(
+        eventType: 'SETTINGS_CHANGED',
+        eventCode: 'settings',
+        payload: {'from': initialSettings, 'to': newSettings},
+      );
     } catch (e) {
       debugPrint("SETTINGS: Exit sync error: $e");
     }
@@ -75,10 +71,13 @@ class SettingsScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
-                    Text("Hệ thống đọc văn bản", style: textTheme.displayMedium!.copyWith(
-                      fontSize: 36,
-                      color: Colors.teal[800]
-                    )),
+                    Text(
+                      "Hệ thống đọc văn bản",
+                      style: textTheme.displayMedium!.copyWith(
+                        fontSize: 36,
+                        color: Colors.teal[800],
+                      ),
+                    ),
                     const SizedBox(height: 15),
                     Text("Tốc độ đọc", style: textTheme.displayMedium),
                     Slider(
@@ -89,7 +88,10 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: viewModel.updateSpeechRate,
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${viewModel.speechRate.toStringAsFixed(2)}x", style: textTheme.bodyMedium),
+                    Text(
+                      "Hiện tại: ${viewModel.speechRate.toStringAsFixed(2)}x",
+                      style: textTheme.bodyMedium,
+                    ),
 
                     const SizedBox(height: 15),
                     Text("Âm lượng đọc", style: textTheme.displayMedium),
@@ -101,22 +103,32 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: viewModel.updateVolume,
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${(viewModel.volume * 100).toInt()}%", style: textTheme.bodyMedium),
+                    Text(
+                      "Hiện tại: ${(viewModel.volume * 100).toInt()}%",
+                      style: textTheme.bodyMedium,
+                    ),
 
                     const SizedBox(height: 15),
 
                     ElevatedButton.icon(
-                        onPressed: viewModel.playTestSound,
-                        icon: const Icon(Icons.volume_up, size: 24),
-                        label: const Text(
-                          "Nghe thử",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ) ),
+                      onPressed: viewModel.playTestSound,
+                      icon: const Icon(Icons.volume_up, size: 24),
+                      label: const Text(
+                        "Nghe thử",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     const Divider(height: 30),
-                    Text("Định dạng văn bản", style: textTheme.displayMedium!.copyWith(
+                    Text(
+                      "Định dạng văn bản",
+                      style: textTheme.displayMedium!.copyWith(
                         fontSize: 36,
-                        color: Colors.teal[800]
-                    )),
+                        color: Colors.teal[800],
+                      ),
+                    ),
                     const SizedBox(height: 15),
                     Text("Cỡ chữ", style: textTheme.displayMedium),
                     Slider(
@@ -126,8 +138,10 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: viewModel.updateFontSize,
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}",
-                    style: textTheme.bodyMedium),
+                    Text(
+                      "Hiện tại: ${viewModel.fontSize.toStringAsFixed(1)}",
+                      style: textTheme.bodyMedium,
+                    ),
 
                     const SizedBox(height: 15),
                     Text("Độ rõ chữ", style: textTheme.displayMedium),
@@ -139,7 +153,10 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: (val) => viewModel.updateFontOpacity(val),
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${viewModel.fontOpacity.toStringAsFixed(2)}", style: textTheme.bodyMedium),
+                    Text(
+                      "Hiện tại: ${viewModel.fontOpacity.toStringAsFixed(2)}",
+                      style: textTheme.bodyMedium,
+                    ),
 
                     const SizedBox(height: 15),
                     Text("Độ dày chữ", style: textTheme.displayMedium),
@@ -148,10 +165,14 @@ class SettingsScreen extends StatelessWidget {
                       max: 900,
                       divisions: 8,
                       value: viewModel.fontWeightValue.toDouble(),
-                      onChanged: (val) => viewModel.updateFontWeight(val.toInt()),
+                      onChanged:
+                          (val) => viewModel.updateFontWeight(val.toInt()),
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: w${viewModel.fontWeightValue}", style: textTheme.bodyMedium),
+                    Text(
+                      "Hiện tại: w${viewModel.fontWeightValue}",
+                      style: textTheme.bodyMedium,
+                    ),
 
                     const SizedBox(height: 15),
                     Text("Dãn cách chữ", style: textTheme.displayMedium),
@@ -162,7 +183,9 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: viewModel.updateLetterSpacing,
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${viewModel.letterSpacing.toStringAsFixed(1)}"),
+                    Text(
+                      "Hiện tại: ${viewModel.letterSpacing.toStringAsFixed(1)}",
+                    ),
 
                     const SizedBox(height: 15),
                     Text("Dãn cách từ", style: textTheme.displayMedium),
@@ -173,7 +196,9 @@ class SettingsScreen extends StatelessWidget {
                       onChanged: viewModel.updateWordSpacing,
                       activeColor: Colors.teal,
                     ),
-                    Text("Hiện tại: ${viewModel.wordSpacing.toStringAsFixed(1)}"),
+                    Text(
+                      "Hiện tại: ${viewModel.wordSpacing.toStringAsFixed(1)}",
+                    ),
 
                     const SizedBox(height: 15),
 
@@ -183,8 +208,14 @@ class SettingsScreen extends StatelessWidget {
                       spacing: 10,
                       children: [
                         _ColorButton(color: Colors.black, label: "Đen"),
-                        _ColorButton(color: Color.fromARGB(255, 10, 10, 10), label: "Xám"),
-                        _ColorButton(color: Color.fromARGB(255, 0, 0, 125), label: "Xanh"),
+                        _ColorButton(
+                          color: Color.fromARGB(255, 10, 10, 10),
+                          label: "Xám",
+                        ),
+                        _ColorButton(
+                          color: Color.fromARGB(255, 0, 0, 125),
+                          label: "Xanh",
+                        ),
                         _ColorButton(color: Colors.red.shade900, label: "Đỏ"),
                         _ColorButton(color: Colors.teal.shade900, label: "Tía"),
                       ],
@@ -198,9 +229,18 @@ class SettingsScreen extends StatelessWidget {
                       spacing: 10,
                       children: const [
                         _BgColorButton(color: Colors.white, label: "Trắng"),
-                        _BgColorButton(color: Color.fromARGB(255, 255, 255, 229), label: "Xám nhạt"),
-                        _BgColorButton(color: Color.fromARGB(255, 250, 250, 200), label: "Vàng nhạt"),
-                        _BgColorButton(color: Color.fromARGB(255, 255, 255, 0), label: "Vàng")
+                        _BgColorButton(
+                          color: Color.fromARGB(255, 255, 255, 229),
+                          label: "Xám nhạt",
+                        ),
+                        _BgColorButton(
+                          color: Color.fromARGB(255, 250, 250, 200),
+                          label: "Vàng nhạt",
+                        ),
+                        _BgColorButton(
+                          color: Color.fromARGB(255, 255, 255, 0),
+                          label: "Vàng",
+                        ),
                       ],
                     ),
 
@@ -211,9 +251,18 @@ class SettingsScreen extends StatelessWidget {
                       value: viewModel.fontFamily,
                       isExpanded: true,
                       items: [
-                        DropdownMenuItem(value: 'VniAvo', child: Text("VNI Avo", style: textTheme.bodySmall)),
-                        DropdownMenuItem(value: 'Roboto', child: Text("Roboto", style: textTheme.bodySmall)),
-                        DropdownMenuItem(value: 'Serif', child: Text("Serif", style: textTheme.bodySmall)),
+                        DropdownMenuItem(
+                          value: 'VniAvo',
+                          child: Text("VNI Avo", style: textTheme.bodySmall),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Roboto',
+                          child: Text("Roboto", style: textTheme.bodySmall),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Serif',
+                          child: Text("Serif", style: textTheme.bodySmall),
+                        ),
                       ],
                       onChanged: (String? newValue) {
                         if (newValue != null) {
@@ -221,7 +270,6 @@ class SettingsScreen extends StatelessWidget {
                         }
                       },
                     ),
-
                   ],
                 ),
               ),
@@ -237,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
                     border: Border.all(color: Colors.grey.shade300),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
@@ -253,7 +301,10 @@ class SettingsScreen extends StatelessWidget {
 
               // Footer Navigation Bar
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 24.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -263,27 +314,33 @@ class SettingsScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ChangeNotifierProvider(
-                              create: (context) => EvaluationTestViewModel(
-                                repoManager: context.read<RepoManager>(),
-                              ),
-                              child: const EvaluationTestScreen(),
-                            ),
+                            builder:
+                                (context) => ChangeNotifierProvider(
+                                  create:
+                                      (context) => EvaluationTestViewModel(
+                                        repoManager:
+                                            context.read<RepoManager>(),
+                                      ),
+                                  child: const EvaluationTestScreen(),
+                                ),
                           ),
                         );
                       },
                       icon: const Icon(Icons.assignment_turned_in, size: 24),
                       label: const Text(
                         "Kiểm tra đầu vào",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-        )
+        ),
       ),
     );
   }
@@ -303,11 +360,11 @@ class _ColorButton extends StatelessWidget {
 
     return ActionChip(
       avatar: CircleAvatar(backgroundColor: color),
-      label: Text(label,
-          style: textTheme.bodySmall!.copyWith(
-              fontWeight: FontWeight.bold,
-          )),
-      backgroundColor: isSelected ? color.withOpacity(0.2) : null,
+      label: Text(
+        label,
+        style: textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
+      ),
+      backgroundColor: isSelected ? color.withValues(alpha: 0.2) : null,
       side: isSelected ? BorderSide(color: color, width: 2) : null,
       onPressed: () => viewModel.updateColor(color),
     );
@@ -323,7 +380,7 @@ class _BgColorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SettingsViewModel>();
-    final bool isSelected = viewModel.backgroundColor.value == color.value;
+    final bool isSelected = viewModel.backgroundColor.toARGB32() == color.toARGB32();
     final textTheme = Theme.of(context).textTheme;
 
     return ActionChip(
@@ -332,10 +389,10 @@ class _BgColorButton extends StatelessWidget {
         radius: 10,
         // child: CircleBorder(side: BorderSide(color: Colors.grey.shade400)),
       ),
-      label: Text(label,
-          style: textTheme.bodySmall!.copyWith(
-              fontWeight: FontWeight.bold,
-          )),
+      label: Text(
+        label,
+        style: textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
+      ),
       backgroundColor: isSelected ? Colors.teal.withAlpha(52) : null,
       side: isSelected ? const BorderSide(color: Colors.teal, width: 2) : null,
       onPressed: () => viewModel.updateBackgroundColor(color),

@@ -9,8 +9,8 @@ class SettingsViewModel extends ChangeNotifier {
   SettingsViewModel({
     required NokodoSettings settings,
     required TtsService ttsService,
-  })  : _settings = settings,
-        _ttsService = ttsService {
+  }) : _settings = settings,
+       _ttsService = ttsService {
     _settings.addListener(notifyListeners);
     _ttsService.addListener(notifyListeners);
   }
@@ -60,7 +60,7 @@ class SettingsViewModel extends ChangeNotifier {
     _settings.setFontWeightValue(value);
   }
 
-  Future<void> updateSpeechRate(double value)async {
+  Future<void> updateSpeechRate(double value) async {
     _settings.setTtsSpeechRate(value);
   }
 

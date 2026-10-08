@@ -21,10 +21,7 @@ class PracticeDetailsScreen extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   const SizedBox(height: 48),
-                  Text(
-                    'Bài tập',
-                    style: textTheme.displayLarge,
-                  ),
+                  Text('Bài tập', style: textTheme.displayLarge),
                   const SizedBox(height: 12.0),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -37,14 +34,17 @@ class PracticeDetailsScreen extends StatelessWidget {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey,
-                          width: 1.0,
-                        ),
+                        border: Border.all(color: Colors.grey, width: 1.0),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 16.0),
-                      margin: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 30.0,
+                        horizontal: 16.0,
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 30.0,
+                        horizontal: 16.0,
+                      ),
                       width: double.infinity,
                       child: SingleChildScrollView(
                         child: Text(
@@ -59,7 +59,10 @@ class PracticeDetailsScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 15,
+                      ),
                       textStyle: textTheme.displayMedium,
                     ),
                     child: const Text('Bắt đầu'),
@@ -68,13 +71,13 @@ class PracticeDetailsScreen extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  ReturnButton(),
-                  SettingButton(),
-                ],
+                children: <Widget>[ReturnButton(), SettingButton()],
               ),
             ),
           ],

@@ -10,42 +10,50 @@ abstract class Question {
     final isMultipleChoiceVal = map['isMultipleChoice'] ?? 0;
     if (isMultipleChoiceVal as int == 0) {
       return FillBlankQuestion(
-          map['id'] as String,
-          map['question'] as String,
-          map['answer'] as String);
+        map['id'] as String,
+        map['question'] as String,
+        map['answer'] as String,
+      );
     } else {
       return MultipleChoiceQuestion(
-          map['id'] as String,
-          map['question'] as String,
-          List<String>.from(map['choices'] as List),
-          map['answer'] as String);
+        map['id'] as String,
+        map['question'] as String,
+        List<String>.from(map['choices'] as List),
+        map['answer'] as String,
+      );
     }
   }
 
   bool isAnswerCorrect(String answer);
 
   static double calculateScore(
-      List<Question> questionList,
-      Map<String, String?> answerList)
-  {
+    List<Question> questionList,
+    Map<String, String?> answerList,
+  ) {
     int length = questionList.length;
     int correctAnswerCount = 0;
     for (final question in questionList) {
-      if (answerList[question.id] != null
-          && answerList[question.id]!.toLowerCase() == question.correctAnswer.toLowerCase()) {
+      if (answerList[question.id] != null &&
+          answerList[question.id]!.toLowerCase() ==
+              question.correctAnswer.toLowerCase()) {
         correctAnswerCount++;
       }
-    };
+    }
+    ;
     return 10 * correctAnswerCount / length;
   }
 }
 
-class MultipleChoiceQuestion extends Question{
-
+class MultipleChoiceQuestion extends Question {
   @override
   final List<String> options;
 
-  MultipleChoiceQuestion(super.id, super.content, this.options, super.correctAnswer);
+  MultipleChoiceQuestion(
+    super.id,
+    super.content,
+    this.options,
+    super.correctAnswer,
+  );
 
   @override
   bool isAnswerCorrect(String answer) {
@@ -56,8 +64,7 @@ class MultipleChoiceQuestion extends Question{
   String get type => "MULTIPLE_CHOICES";
 }
 
-class FillBlankQuestion extends Question{
-
+class FillBlankQuestion extends Question {
   FillBlankQuestion(super.id, super.content, super.correctAnswer);
 
   @override
@@ -72,7 +79,7 @@ class FillBlankQuestion extends Question{
   List<String>? get options => null;
 }
 
-enum QuestState {UNANSWERED, CORRECT, INCORRECT}
+enum QuestState { UNANSWERED, CORRECT, INCORRECT }
 
 class TestInfo {
   final String id;
@@ -84,19 +91,27 @@ class TestInfo {
   final int difficulty;
   final double? result;
 
-  TestInfo({required this.id, required this.name, required this.dateCreated, required this.timeLimit, required this.attempts,
-    required this.allowedAttempts, required this.difficulty, required this.result});
+  TestInfo({
+    required this.id,
+    required this.name,
+    required this.dateCreated,
+    required this.timeLimit,
+    required this.attempts,
+    required this.allowedAttempts,
+    required this.difficulty,
+    required this.result,
+  });
 
   factory TestInfo.fromMap(Map<String, Object?> map) {
     return TestInfo(
-        id: map['id'] as String,
-        name: map['name'] as String,
-        dateCreated: map['dateCreated'] as int,
-        timeLimit: map['timeLimit'] as int,
-        attempts: map['attempts'] as int,
-        allowedAttempts: map['allowedAttempts'] as int,
-        difficulty: map['difficulty'] as int,
-        result: (map['result'] as num?)?.toDouble()
+      id: map['id'] as String,
+      name: map['name'] as String,
+      dateCreated: map['dateCreated'] as int,
+      timeLimit: map['timeLimit'] as int,
+      attempts: map['attempts'] as int,
+      allowedAttempts: map['allowedAttempts'] as int,
+      difficulty: map['difficulty'] as int,
+      result: (map['result'] as num?)?.toDouble(),
     );
   }
 }
@@ -108,17 +123,21 @@ class TestSession {
   final int endTime;
   final double score;
 
-  TestSession({required this.testId,
-    required this.studentId, required this.startTime,
-    required this.endTime, required this.score});
+  TestSession({
+    required this.testId,
+    required this.studentId,
+    required this.startTime,
+    required this.endTime,
+    required this.score,
+  });
 
   factory TestSession.fromMap(Map<String, Object?> map) {
     return TestSession(
-        testId: map['testid'] as String,
-        studentId: map['studentid'] as String,
-        startTime: map['dateCreated'] as int,
-        endTime: map['dateFinished'] as int,
-        score: ((map['score'] ?? map['result']) as num).toDouble()
+      testId: map['testid'] as String,
+      studentId: map['studentid'] as String,
+      startTime: map['dateCreated'] as int,
+      endTime: map['dateFinished'] as int,
+      score: ((map['score'] ?? map['result']) as num).toDouble(),
     );
   }
 }
@@ -146,18 +165,24 @@ class Test {
 
   factory Test.fromMap(Map<String, Object?> map) {
     final statusesList = map['studentStatuses'] as List?;
-    final List<TestSession> parsedStatuses = statusesList != null
-        ? statusesList
-            .map((item) => TestSession.fromMap(Map<String, Object?>.from(item as Map)))
-            .toList()
-        : [];
+    final List<TestSession> parsedStatuses =
+        statusesList != null
+            ? statusesList
+                .map(
+                  (item) => TestSession.fromMap(
+                    Map<String, Object?>.from(item as Map),
+                  ),
+                )
+                .toList()
+            : [];
 
     return Test(
       id: map['id'] as String,
       name: (map['name'] ?? '') as String,
       questions: map['questions'] as List<Question>,
       timeLimit: (map['timeLimit'] ?? map['time_limit'] ?? 0) as int,
-      allowedAttempts: (map['allowedAttempts'] ?? map['allowed_attempts'] ?? 0) as int,
+      allowedAttempts:
+          (map['allowedAttempts'] ?? map['allowed_attempts'] ?? 0) as int,
       studentStatuses: parsedStatuses,
     );
   }
@@ -165,5 +190,4 @@ class Test {
   void clearTestState() {
     questionsState = List.filled(questions.length, QuestState.UNANSWERED);
   }
-
 }

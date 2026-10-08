@@ -97,16 +97,18 @@ class EventLogs extends Table {
   Set<Column> get primaryKey => {eventId};
 }
 
-@DriftDatabase(tables: [
-  Lessons,
-  DictionaryEntries,
-  ConvertedFiles,
-  SystemConfigs,
-  Highlights,
-  Sessions,
-  TrialLogs,
-  EventLogs,
-])
+@DriftDatabase(
+  tables: [
+    Lessons,
+    DictionaryEntries,
+    ConvertedFiles,
+    SystemConfigs,
+    Highlights,
+    Sessions,
+    TrialLogs,
+    EventLogs,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 

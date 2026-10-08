@@ -28,10 +28,7 @@ class RepoManager extends ChangeNotifier {
   String webVersion = "undefined";
 
   // Constructor Injection: Pass the dependencies here
-  RepoManager({
-    required this.onlineDatabase,
-    required this.database,
-  });
+  RepoManager({required this.onlineDatabase, required this.database});
 
   Future<Session?> createSession({
     String? examinerId,
@@ -42,7 +39,8 @@ class RepoManager extends ChangeNotifier {
     if (currentStudent == null) return null;
 
     final now = DateTime.now();
-    final dateStr = "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
+    final dateStr =
+        "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
 
     final String formattedSid = currentStudent?.getFormattedSid() ?? "S0";
     final String sessionId = "${formattedSid}_$dateStr";
@@ -53,8 +51,12 @@ class RepoManager extends ChangeNotifier {
       studentId: currentStudent!.uid,
       sessionId: sessionId,
       sessionStartTime: now,
-      examinerId: (examinerId != null && examinerId.trim().isNotEmpty) ? examinerId.trim() : null,
-      siteId: (siteId != null && siteId.trim().isNotEmpty) ? siteId.trim() : null,
+      examinerId:
+          (examinerId != null && examinerId.trim().isNotEmpty)
+              ? examinerId.trim()
+              : null,
+      siteId:
+          (siteId != null && siteId.trim().isNotEmpty) ? siteId.trim() : null,
       device: deviceOs,
       screenWidth: screenWidth,
       screenHeight: screenHeight,
@@ -78,7 +80,9 @@ class RepoManager extends ChangeNotifier {
     if (currentSession != null && !currentSession!.completed) {
       currentSession!.sessionEndTime = DateTime.now();
       currentSession!.completed = true;
-      debugPrint("SESSION: Completed session ${currentSession!.sessionId} at ${currentSession!.sessionEndTime}");
+      debugPrint(
+        "SESSION: Completed session ${currentSession!.sessionId} at ${currentSession!.sessionEndTime}",
+      );
       await database.saveSession(currentSession!);
       try {
         await onlineDatabase.sendSession(currentSession!);
@@ -94,21 +98,18 @@ class RepoManager extends ChangeNotifier {
     currentStudent!.settings = settingsMap;
     try {
       await onlineDatabase.sendUserSettings(currentStudent!.uid, settingsMap);
-      debugPrint("SETTINGS: Online settings synced successfully for ${currentStudent!.uid}");
+      debugPrint(
+        "SETTINGS: Online settings synced successfully for ${currentStudent!.uid}",
+      );
     } catch (e) {
       debugPrint("SETTINGS: Failed to sync settings online: $e");
     }
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     try {
-      final Map<String, Object?>? currentUserMap = await onlineDatabase.studentLogin(
-        email,
-        password,
-      );
+      final Map<String, Object?>? currentUserMap = await onlineDatabase
+          .studentLogin(email, password);
 
       if (currentUserMap == null) {
         throw Exception("Email hoặc mật khẩu không chính xác.");
@@ -158,7 +159,9 @@ class RepoManager extends ChangeNotifier {
         return false;
       }
 
-      final difference = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(lastActive));
+      final difference = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(lastActive),
+      );
       // Inactivity timeout: 24 hours
       if (difference.inHours >= 24) {
         debugPrint("TESTING: Session expired due to inactivity.");
@@ -168,7 +171,8 @@ class RepoManager extends ChangeNotifier {
       }
 
       // Verify token with backend
-      final Map<String, Object?>? studentMap = await onlineDatabase.verifySession(token);
+      final Map<String, Object?>? studentMap = await onlineDatabase
+          .verifySession(token);
       if (studentMap == null) {
         debugPrint("TESTING: Invalid token on backend session check.");
         await _secureStorage.delete(key: 'jwt_token');
@@ -195,7 +199,10 @@ class RepoManager extends ChangeNotifier {
       final profile = await onlineDatabase.verifySession(token);
       if (profile != null) {
         currentStudent = Student.fromMap(profile);
-        await _secureStorage.write(key: 'last_active_time', value: now.toString());
+        await _secureStorage.write(
+          key: 'last_active_time',
+          value: now.toString(),
+        );
         getSystemConfig();
         notifyListeners();
         return true;
@@ -209,14 +216,16 @@ class RepoManager extends ChangeNotifier {
 
   Future<void> getSystemConfig() async {
     if (currentStudent == null) throw Exception("No student logged in.");
-    
+
     try {
       final configs = await onlineDatabase.getSystemConfig();
       remoteDictVersion = configs['dictVersion'];
       appVersion = configs['appVersion']!;
       webVersion = configs['webVersion']!;
-      debugPrint("TESTING: Successfully loaded system config. "
-          "remoteDictVersion: $remoteDictVersion, appVersion: $appVersion, webVersion: $webVersion");
+      debugPrint(
+        "TESTING: Successfully loaded system config. "
+        "remoteDictVersion: $remoteDictVersion, appVersion: $appVersion, webVersion: $webVersion",
+      );
     } catch (e) {
       debugPrint("TESTING: Failed to fetch system config: $e");
     }
@@ -227,38 +236,52 @@ class RepoManager extends ChangeNotifier {
 
     debugPrint("Fetching statistics for student: ${currentStudent!.uid}");
     try {
-      final stats = await onlineDatabase.getStudentStatistics(currentStudent!.uid);
+      final stats = await onlineDatabase.getStudentStatistics(
+        currentStudent!.uid,
+      );
       saveRawStatistics(stats);
       return stats;
     } catch (e) {
       debugPrint("Offline: Fetching statistics from local database...: $e");
-      final cached = await database.getConfig('statistics_${currentStudent!.uid}');
+      final cached = await database.getConfig(
+        'statistics_${currentStudent!.uid}',
+      );
       if (cached != null) {
         return jsonDecode(cached) as Map<String, dynamic>;
       }
-      throw Exception("Không có kết nối mạng và không có dữ liệu thống kê ngoại tuyến.");
+      throw Exception(
+        "Không có kết nối mạng và không có dữ liệu thống kê ngoại tuyến.",
+      );
     }
   }
 
   Future<void> saveRawStatistics(Map<String, dynamic> stats) async {
-    await database.setConfig('statistics_${currentStudent!.uid}', jsonEncode(stats));
+    await database.setConfig(
+      'statistics_${currentStudent!.uid}',
+      jsonEncode(stats),
+    );
   }
 
   Future<List<TestInfo>> getTestList() async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
-    debugPrint("TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}");
-    final List<Map<String, Object?>> testList = await onlineDatabase.getTestList(currentStudent!.uid);
+    debugPrint(
+      "TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}",
+    );
+    final List<Map<String, Object?>> testList = await onlineDatabase
+        .getTestList(currentStudent!.uid);
     debugPrint("TESTING: RepoMan got data");
     return testList.map((map) => TestInfo.fromMap(map)).toList();
   }
 
   Future<List<Lesson>> getLessonList() async {
-
-    debugPrint("TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}");
+    debugPrint(
+      "TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}",
+    );
     try {
       if (currentStudent == null) throw Exception("No student logged in.");
-      final List<Map<String, Object?>> lessonList = await onlineDatabase.getLessonList(currentStudent!.uid, currentStudent!.classid);
+      final List<Map<String, Object?>> lessonList = await onlineDatabase
+          .getLessonList(currentStudent!.uid, currentStudent!.classid);
       final lessons = lessonList.map((map) => Lesson.fromMap(map)).toList();
       await database.saveLessons(lessons);
       return lessons;
@@ -268,7 +291,9 @@ class RepoManager extends ChangeNotifier {
       if (localLessons.isNotEmpty) {
         return localLessons;
       }
-      throw Exception("Không có kết nối mạng và không có dữ liệu bài học ngoại tuyến.");
+      throw Exception(
+        "Không có kết nối mạng và không có dữ liệu bài học ngoại tuyến.",
+      );
     }
   }
 
@@ -276,11 +301,15 @@ class RepoManager extends ChangeNotifier {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("TESTING: RepoMan getting test data...$testId");
-    Map<String, Object?> test = await onlineDatabase.getTestDetails(testId, currentStudent!.uid);
+    Map<String, Object?> test = await onlineDatabase.getTestDetails(
+      testId,
+      currentStudent!.uid,
+    );
     debugPrint("TESTING: RepoMan got test data");
     final List<Map<String, Object?>> questionsList =
-      List<Map<String, Object?>>.from(test['questions'] as List);
-    test['questions'] = questionsList.map((map) => Question.fromMap(map)).toList();
+        List<Map<String, Object?>>.from(test['questions'] as List);
+    test['questions'] =
+        questionsList.map((map) => Question.fromMap(map)).toList();
     return Test.fromMap(test);
   }
 
@@ -291,7 +320,10 @@ class RepoManager extends ChangeNotifier {
     await onlineDatabase.sendTestSessionStatus(testSession);
   }
 
-  Future<void> sendTestAnswers(TestSession testSession, Map<String, dynamic> answersList) async {
+  Future<void> sendTestAnswers(
+    TestSession testSession,
+    Map<String, dynamic> answersList,
+  ) async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("TESTING: RepoMan sending test answers data...");
@@ -299,12 +331,12 @@ class RepoManager extends ChangeNotifier {
       'studentId': testSession.studentId,
       'testId': testSession.testId,
       'startTime': testSession.startTime,
-      'answers': []
+      'answers': [],
     };
     for (final entry in answersList.entries) {
       final Map<String, Object?> answerMap = {
         'questionId': entry.key,
-        'answer': entry.value
+        'answer': entry.value,
       };
       (answersMapList['answers'] as List).add(answerMap);
     }
@@ -314,7 +346,9 @@ class RepoManager extends ChangeNotifier {
   Future<void> sendUsageTime(int totalUsageTime) async {
     if (currentStudent == null) return;
     debugPrint("TESTING: RepoMan sending usage time data...");
-    final cached = await database.getConfig('statistics_${currentStudent!.uid}');
+    final cached = await database.getConfig(
+      'statistics_${currentStudent!.uid}',
+    );
     if (cached != null) {
       var stats = jsonDecode(cached) as Map<String, dynamic>;
       stats['totalUsageTime'] = totalUsageTime;
@@ -325,11 +359,18 @@ class RepoManager extends ChangeNotifier {
     await onlineDatabase.sendUsageTime(totalUsageTime, currentStudent!.uid);
   }
 
-  Future<void> sendLessonResult(String lessonId, Map<String, dynamic> results) async {
+  Future<void> sendLessonResult(
+    String lessonId,
+    Map<String, dynamic> results,
+  ) async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("TESTING: RepoMan sending lesson result data...");
-    await onlineDatabase.sendLessonResult(currentStudent!.uid, lessonId, results);
+    await onlineDatabase.sendLessonResult(
+      currentStudent!.uid,
+      lessonId,
+      results,
+    );
   }
 
   Future<void> sendPersonalLesson(ConvertedFile file) async {
@@ -340,42 +381,52 @@ class RepoManager extends ChangeNotifier {
   }
 
   Future<void> sendAudioFile(XFile audioFile) async {
-     if (kIsWeb) {
-       debugPrint("Saving audio file to device");
-       final bytes = await audioFile.readAsBytes();
-       final recordingName = audioFile.name;
-       await FileSaver.instance.saveFile(
-         name: recordingName,
-         bytes: bytes,            // or file / filePath / link
-         mimeType: MimeType.webm
-       );
-     } else {
-       final bytes = await audioFile.readAsBytes();
-       final recordingName = audioFile.name;
-       await FileSaver.instance.saveFile(
-         name: recordingName,
-         bytes: bytes,
-         mimeType: MimeType.mp4Audio,
-       );
-     }
+    if (kIsWeb) {
+      debugPrint("Saving audio file to device");
+      final bytes = await audioFile.readAsBytes();
+      final recordingName = audioFile.name;
+      await FileSaver.instance.saveFile(
+        name: recordingName,
+        bytes: bytes, // or file / filePath / link
+        mimeType: MimeType.webm,
+      );
+    } else {
+      final bytes = await audioFile.readAsBytes();
+      final recordingName = audioFile.name;
+      await FileSaver.instance.saveFile(
+        name: recordingName,
+        bytes: bytes,
+        mimeType: MimeType.mp4Audio,
+      );
+    }
 
     try {
       if (currentStudent == null) throw Exception("No student logged in.");
 
       debugPrint("TESTING: RepoMan sending audio data...");
       await onlineDatabase.sendAudioFile(
-          audioFile, currentStudent!.uid, trialId: trialLogger.currentTrial?.trialId);
+        audioFile,
+        currentStudent!.uid,
+        trialId: trialLogger.currentTrial?.trialId,
+      );
     } catch (error) {
       debugPrint("$error");
       rethrow;
     }
   }
 
-  Future<void> sendCustomSettings(String lessonId, Map<String, Object?> settings) async {
+  Future<void> sendCustomSettings(
+    String lessonId,
+    Map<String, Object?> settings,
+  ) async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("TESTING: RepoMan sending custom lesson settings...");
-    await onlineDatabase.sendCustomSettings(currentStudent!.uid, lessonId, settings);
+    await onlineDatabase.sendCustomSettings(
+      currentStudent!.uid,
+      lessonId,
+      settings,
+    );
   }
 
   Future<Map<String, dynamic>> getCustomSettings(String lessonId) async {

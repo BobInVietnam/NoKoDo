@@ -30,7 +30,8 @@ class EventLog {
     if (map['payloadJson'] != null) {
       if (map['payloadJson'] is String) {
         try {
-          parsedPayload = jsonDecode(map['payloadJson'] as String) as Map<String, dynamic>;
+          parsedPayload =
+              jsonDecode(map['payloadJson'] as String) as Map<String, dynamic>;
         } catch (_) {
           parsedPayload = {};
         }

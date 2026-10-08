@@ -38,7 +38,9 @@ String? getBrowserLanguage() {
     }
     if (primaryLang.contains('-')) return primaryLang;
     lang = primaryLang;
-  } catch (_) {/* ignore */}
+  } catch (_) {
+    /* ignore */
+  }
 
   // Try navigator.languages next
   try {
@@ -69,7 +71,9 @@ String? getBrowserLanguage() {
         }
       }
     }
-  } catch (_) {/* ignore */}
+  } catch (_) {
+    /* ignore */
+  }
 
   // As a last resort or alternative, try the Intl API
   try {
@@ -81,7 +85,9 @@ String? getBrowserLanguage() {
       return intlLang;
     }
     lang ??= intlLang;
-  } catch (_) {/* ignore */}
+  } catch (_) {
+    /* ignore */
+  }
 
   return lang; // Return whatever we found
 }

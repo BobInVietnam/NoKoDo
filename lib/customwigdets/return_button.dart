@@ -4,10 +4,7 @@ class ReturnButton extends StatelessWidget {
   // 1. Make the callback optional and final for stateless immutability
   final void Function(BuildContext context)? onReturn;
 
-  const ReturnButton({
-    super.key,
-    this.onReturn,
-  });
+  const ReturnButton({super.key, this.onReturn});
 
   @override
   Widget build(BuildContext context) {

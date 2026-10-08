@@ -28,19 +28,28 @@ class NokodoSettings extends ChangeNotifier {
   double get ttsSpeechRate => _ttsSpeechRate;
   double get ttsVolume => _ttsVolume;
 
-
   FontWeight get fontWeight {
     switch (_fontWeightValue) {
-      case 100: return FontWeight.w100;
-      case 200: return FontWeight.w200;
-      case 300: return FontWeight.w300;
-      case 400: return FontWeight.w400;
-      case 500: return FontWeight.w500;
-      case 600: return FontWeight.w600;
-      case 700: return FontWeight.w700;
-      case 800: return FontWeight.w800;
-      case 900: return FontWeight.w900;
-      default: return FontWeight.w400;
+      case 100:
+        return FontWeight.w100;
+      case 200:
+        return FontWeight.w200;
+      case 300:
+        return FontWeight.w300;
+      case 400:
+        return FontWeight.w400;
+      case 500:
+        return FontWeight.w500;
+      case 600:
+        return FontWeight.w600;
+      case 700:
+        return FontWeight.w700;
+      case 800:
+        return FontWeight.w800;
+      case 900:
+        return FontWeight.w900;
+      default:
+        return FontWeight.w400;
     }
   }
 
@@ -102,7 +111,8 @@ class NokodoSettings extends ChangeNotifier {
     int colorValue = prefs.getInt('colorValue') ?? Colors.black.toARGB32();
     _color = Color(colorValue);
 
-    int bgColorValue = prefs.getInt('backgroundColorValue') ?? Colors.white.toARGB32();
+    int bgColorValue =
+        prefs.getInt('backgroundColorValue') ?? Colors.white.toARGB32();
     _backgroundColor = Color(bgColorValue);
     _fontWeightValue = prefs.getInt('fontWeightValue') ?? 400;
 
@@ -206,7 +216,8 @@ class NokodoSettings extends ChangeNotifier {
     if (settingsMap['wordSpacing'] != null) {
       _wordSpacing = (settingsMap['wordSpacing'] as num).toDouble();
     }
-    if (settingsMap['fontFamily'] != null && (settingsMap['fontFamily'] as String).isNotEmpty) {
+    if (settingsMap['fontFamily'] != null &&
+        (settingsMap['fontFamily'] as String).isNotEmpty) {
       _fontFamily = settingsMap['fontFamily'] as String;
     }
     if (settingsMap['colorValue'] != null) {
