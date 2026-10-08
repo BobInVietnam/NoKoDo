@@ -25,14 +25,12 @@ class EditingViewModel extends ChangeNotifier {
   // Getters
   String get fileName => _fileName;
   int get fileId => _fileId;
-  bool get canUndo => _undoStack.isNotEmpty && _undoStack.length < _maxHistorySteps;
+  bool get canUndo =>
+      _undoStack.isNotEmpty && _undoStack.length < _maxHistorySteps;
   bool get canRedo => _redoStack.isNotEmpty;
   bool get showRenameDialog => _showRenameDialog;
 
-  EditingViewModel({
-    required ConvertedFile file,
-    required this.localDatabase
-  }) {
+  EditingViewModel({required ConvertedFile file, required this.localDatabase}) {
     _fileName = file.fileName;
     _fileId = file.id!;
     _lastUpdatedText = file.extractedText;
@@ -43,7 +41,6 @@ class EditingViewModel extends ChangeNotifier {
   }
 
   void _onTextChanged() {
-
     if (textController.text == _lastUpdatedText) return;
 
     // Reset the debounce timer on every single keystroke
@@ -100,7 +97,9 @@ class EditingViewModel extends ChangeNotifier {
     // 3. Update the text controller temporarily without re-triggering history tracking metrics
     textController.removeListener(_onTextChanged);
     textController.text = previousState;
-    textController.selection = TextSelection.collapsed(offset: previousState.length); // Put cursor at end
+    textController.selection = TextSelection.collapsed(
+      offset: previousState.length,
+    ); // Put cursor at end
     textController.addListener(_onTextChanged);
 
     notifyListeners();
@@ -121,7 +120,9 @@ class EditingViewModel extends ChangeNotifier {
     // 3. Apply state modification smoothly to text view node
     textController.removeListener(_onTextChanged);
     textController.text = nextState;
-    textController.selection = TextSelection.collapsed(offset: nextState.length);
+    textController.selection = TextSelection.collapsed(
+      offset: nextState.length,
+    );
     textController.addListener(_onTextChanged);
 
     notifyListeners();
@@ -134,7 +135,9 @@ class EditingViewModel extends ChangeNotifier {
   }
 
   void resetToDefault() {
-    debugPrint("ACTION: Reverting modifications back to original OCR raw text layout.");
+    debugPrint(
+      "ACTION: Reverting modifications back to original OCR raw text layout.",
+    );
     _debounceTimer?.cancel();
     textController.text = _lastSavedText;
     _saveToHistory(textController.text);
@@ -143,29 +146,33 @@ class EditingViewModel extends ChangeNotifier {
   bool get hasUnsavedChanges => textController.text != _lastSavedText;
 
   void saveDocument() {
-    debugPrint("ACTION: Writing text data mutations into LocalDatabase / remote stream.");
+    debugPrint(
+      "ACTION: Writing text data mutations into LocalDatabase / remote stream.",
+    );
     _debounceTimer?.cancel();
     _saveToHistory(textController.text);
     _lastSavedText = _lastUpdatedText;
     localDatabase.insertConvertedFile(
       ConvertedFile(
-          id: fileId,
-          fileName: fileName,
-          extractedText: textController.text,
-          dateConverted: DateTime.now()
-      )
+        id: fileId,
+        fileName: fileName,
+        extractedText: textController.text,
+        dateConverted: DateTime.now(),
+      ),
     );
   }
 
   Future<int> createDuplicateCopy(String newName) async {
-    debugPrint("ACTION: Writing deep copy snapshot copy into persistence layer.");
+    debugPrint(
+      "ACTION: Writing deep copy snapshot copy into persistence layer.",
+    );
     _debounceTimer?.cancel();
     final newId = await localDatabase.insertConvertedFile(
       ConvertedFile(
-          fileName: newName,
-          extractedText: textController.text,
-          dateConverted: DateTime.now()
-      )
+        fileName: newName,
+        extractedText: textController.text,
+        dateConverted: DateTime.now(),
+      ),
     );
     return newId;
   }

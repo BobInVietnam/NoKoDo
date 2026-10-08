@@ -22,8 +22,9 @@ class PracticeDetailsViewModel extends ChangeNotifier {
       NokodoSettings settings = context.read<NokodoSettings>();
       RepoManager repoManager = context.read<RepoManager>();
 
-      Map<String, dynamic> customSettings =
-          await repoManager.getCustomSettings(lesson.id);
+      Map<String, dynamic> customSettings = await repoManager.getCustomSettings(
+        lesson.id,
+      );
       debugPrint(customSettings.toString());
       await settings.updateFromMap(customSettings);
 
@@ -34,39 +35,45 @@ class PracticeDetailsViewModel extends ChangeNotifier {
           context,
           MaterialPageRoute(
             settings: const RouteSettings(name: 'ReadingScreen'),
-            builder: (innerContext) => ChangeNotifierProvider(
-              create: (providerContext) => ReadingViewModel(
-                text: textContent,
-                ttsService: providerContext.read<TtsService>(),
-                localDatabase: providerContext.read<LocalDatabase>(),
-                lessonId: lesson.id,
-                lessonName: lesson.name,
-                repoManager: providerContext.read<RepoManager>(),
-                audioRecorder: providerContext.read<AudioRecorder>()
-              ),
-              child: ReadingScreen(),
-            ),
+            builder:
+                (innerContext) => ChangeNotifierProvider(
+                  create:
+                      (providerContext) => ReadingViewModel(
+                        text: textContent,
+                        ttsService: providerContext.read<TtsService>(),
+                        localDatabase: providerContext.read<LocalDatabase>(),
+                        lessonId: lesson.id,
+                        lessonName: lesson.name,
+                        repoManager: providerContext.read<RepoManager>(),
+                        audioRecorder: providerContext.read<AudioRecorder>(),
+                      ),
+                  child: ReadingScreen(),
+                ),
           ),
         );
       }
     } else if (lesson.type == 1) {
       List<Map<String, dynamic>>? customCases;
       if (lesson.content.containsKey('cases')) {
-        customCases = List<Map<String, dynamic>>.from(lesson.content['cases'] as List);
+        customCases = List<Map<String, dynamic>>.from(
+          lesson.content['cases'] as List,
+        );
       }
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (innerContext) => ChangeNotifierProvider(
-            create: (providerContext) => LetterSearchViewModel(
-              content: customCases,
-              lessonId: lesson.id,
-              lessonName: lesson.name,
-              repoManager: providerContext.read<RepoManager>(),
-            ),
-            child: const LetterSearchScreen(),
-          ),
+          builder:
+              (innerContext) => ChangeNotifierProvider(
+                create:
+                    (providerContext) => LetterSearchViewModel(
+                      content: customCases,
+                      lessonId: lesson.id,
+                      lessonName: lesson.name,
+                      repoManager: providerContext.read<RepoManager>(),
+                    ),
+                child: const LetterSearchScreen(),
+              ),
         ),
       );
     }

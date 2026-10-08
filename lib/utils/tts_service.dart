@@ -6,7 +6,6 @@ import 'package:nodyslexia/modules/settings/text_settings.dart';
 enum TtsState { playing, stopped, paused, error }
 
 class TtsService extends ChangeNotifier {
-
   late FlutterTts _flutterTts;
   TtsState _ttsState = TtsState.stopped;
   TtsState get ttsState => _ttsState;
@@ -17,7 +16,7 @@ class TtsService extends ChangeNotifier {
 
   NokodoSettings settings;
 
-  TtsService({required this.settings})  {
+  TtsService({required this.settings}) {
     _flutterTts = FlutterTts();
     _setTtsEventHandlers();
     _initializeDefaultSettings();
@@ -26,9 +25,13 @@ class TtsService extends ChangeNotifier {
   Future<void> _initializeDefaultSettings() async {
     try {
       if (kIsWeb) {
-        debugPrint("TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}");
+        debugPrint(
+          "TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}",
+        );
       } else {
-        debugPrint("TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}");
+        debugPrint(
+          "TTS INIT: setlanguage: ${await _flutterTts.setLanguage("vi-VN")}",
+        );
       }
       await _flutterTts.setSpeechRate(settings.ttsSpeechRate);
       await _flutterTts.setVolume(settings.ttsVolume);
@@ -72,7 +75,12 @@ class TtsService extends ChangeNotifier {
       notifyListeners();
     });
 
-    _flutterTts.setProgressHandler((String text, int start, int end, String word) {
+    _flutterTts.setProgressHandler((
+      String text,
+      int start,
+      int end,
+      String word,
+    ) {
       onWordProgress?.call(text, start, end, word);
     });
   }
@@ -122,4 +130,3 @@ class TtsService extends ChangeNotifier {
     super.dispose();
   }
 }
-

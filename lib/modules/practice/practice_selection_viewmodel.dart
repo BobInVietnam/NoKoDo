@@ -9,6 +9,8 @@ class PracticeSelectionViewModel extends ChangeNotifier {
 
   List<Lesson> _allLessons = [];
   List<Lesson> _filteredLessons = [];
+  bool _showReading = true; // type 0
+  bool _showFinding = true; // type 1
   bool _isLoading = false;
   SortOption _currentSortOption = SortOption.dateAdded;
   bool _sortAscending = true;
@@ -20,6 +22,8 @@ class PracticeSelectionViewModel extends ChangeNotifier {
 
   List<Lesson> get filteredLessons => _filteredLessons;
   bool get isLoading => _isLoading;
+  bool get showReading => _showReading;
+  bool get showFinding => _showFinding;
   SortOption get currentSortOption => _currentSortOption;
   bool get sortAscending => _sortAscending;
   String get searchQuery => _searchQuery;
@@ -39,6 +43,16 @@ class PracticeSelectionViewModel extends ChangeNotifier {
     }
   }
 
+  void setShowReading(bool value) {
+    _showReading = value;
+    _filterAndSortLessons();
+  }
+
+  void setShowFinding(bool value) {
+    _showFinding = value;
+    _filterAndSortLessons();
+  }
+
   void updateSearchQuery(String query) {
     _searchQuery = query;
     _filterAndSortLessons();
@@ -56,11 +70,19 @@ class PracticeSelectionViewModel extends ChangeNotifier {
 
   void _filterAndSortLessons() {
     final query = _searchQuery.toLowerCase();
-    
+
     // Filter
-    _filteredLessons = _allLessons.where((lesson) {
-      return lesson.name.toLowerCase().contains(query);
-    }).toList();
+    _filteredLessons =
+        _allLessons.where((lesson) {
+          final matchesQuery = lesson.name.toLowerCase().contains(query);
+          final matchesType =
+              lesson.type == 0
+                  ? _showReading
+                  : lesson.type == 1
+                  ? _showFinding
+                  : true;
+          return matchesQuery && matchesType;
+        }).toList();
 
     // Sort
     _filteredLessons.sort((a, b) {

@@ -7,11 +7,7 @@ import 'package:nodyslexia/modules/settings/text_settings.dart';
 
 import 'package:nodyslexia/data/repository_manager.dart';
 
-enum EvalTestState {
-  START,
-  IN_PROGRESS,
-  END,
-}
+enum EvalTestState { START, IN_PROGRESS, END }
 
 class EvaluationTestViewModel extends ChangeNotifier {
   final RepoManager? repoManager;
@@ -38,9 +34,14 @@ class EvaluationTestViewModel extends ChangeNotifier {
 
   Future<void> _loadTestContents() async {
     try {
-      final jsonString = await rootBundle.loadString("assets/eval_test_contents.json");
+      final jsonString = await rootBundle.loadString(
+        "assets/eval_test_contents.json",
+      );
       final List<dynamic> rawList = jsonDecode(jsonString);
-      _evaluationTestList = rawList.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      _evaluationTestList =
+          rawList
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList();
       notifyListeners();
     } catch (e) {
       debugPrint("Error loading eval_test_contents.json: $e");
@@ -59,7 +60,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
     repoManager?.trialLogger.startTrial(
       trialType: 'EVALUATION_TEST',
       trialCode: 'e',
-      trialName: 'Evaluation Test'
+      trialName: 'Evaluation Test',
     );
 
     _setupQuestion();
@@ -101,20 +102,21 @@ class EvaluationTestViewModel extends ChangeNotifier {
 
     switch (currentType) {
       case 0:
-        List<String> fontList = List<String>.from(_currentQuestion!["font"] ?? ["VniAvo"]);
+        List<String> fontList = List<String>.from(
+          _currentQuestion!["font"] ?? ["VniAvo"],
+        );
         List<dynamic> rawSizeList = _currentQuestion!["size"] ?? [18];
-        List<double> sizeList = rawSizeList.map((e) => (e as num).toDouble()).toList();
-        List<String> letterList = List<String>.from(_currentQuestion!["noise"] ?? ["a"]);
+        List<double> sizeList =
+            rawSizeList.map((e) => (e as num).toDouble()).toList();
+        List<String> letterList = List<String>.from(
+          _currentQuestion!["noise"] ?? ["a"],
+        );
         letterList.add(currentTarget);
 
         for (String f in fontList) {
           for (double s in sizeList) {
             for (String c in letterList) {
-              displayAnswerList.add({
-                "letter": c,
-                "font": f,
-                "size": s
-              });
+              displayAnswerList.add({"letter": c, "font": f, "size": s});
             }
           }
         }
@@ -127,15 +129,22 @@ class EvaluationTestViewModel extends ChangeNotifier {
       case 3:
       case 4:
       case 5:
-        List<String> fontList = List<String>.from(_currentQuestion!["font"] ?? ["VniAvo"]);
+        List<String> fontList = List<String>.from(
+          _currentQuestion!["font"] ?? ["VniAvo"],
+        );
         List<dynamic> rawSizeList = _currentQuestion!["size"] ?? [18];
-        List<double> sizeList = rawSizeList.map((e) => (e as num).toDouble()).toList();
+        List<double> sizeList =
+            rawSizeList.map((e) => (e as num).toDouble()).toList();
         List<dynamic> rawWordSList = _currentQuestion!["word_spacing"] ?? [0];
-        List<double> wordSList = rawWordSList.map((e) => (e as num).toDouble()).toList();
-        List<dynamic> rawLetterSList = _currentQuestion!["letter_spacing"] ?? [0];
-        List<double> letterSList = rawLetterSList.map((e) => (e as num).toDouble()).toList();
+        List<double> wordSList =
+            rawWordSList.map((e) => (e as num).toDouble()).toList();
+        List<dynamic> rawLetterSList =
+            _currentQuestion!["letter_spacing"] ?? [0];
+        List<double> letterSList =
+            rawLetterSList.map((e) => (e as num).toDouble()).toList();
         List<dynamic> rawOpacityList = _currentQuestion!["opacity"] ?? [1];
-        List<double> opacityList = rawOpacityList.map((e) => (e as num).toDouble()).toList();
+        List<double> opacityList =
+            rawOpacityList.map((e) => (e as num).toDouble()).toList();
 
         List<Map<String, dynamic>> combinations = [];
         for (String f in fontList) {
@@ -149,9 +158,9 @@ class EvaluationTestViewModel extends ChangeNotifier {
                     "size": s,
                     "word_spacing": ws,
                     "letter_spacing": ls,
-                    "opacity": o
+                    "opacity": o,
                   });
-              }
+                }
               }
             }
           }
@@ -200,7 +209,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
         'type': currentType,
         'optionList': displayAnswerList,
         'isDyslexiaTest': currentType == 0,
-        'target': currentType == 0 ? currentTarget : null
+        'target': currentType == 0 ? currentTarget : null,
       },
     );
 
@@ -210,7 +219,12 @@ class EvaluationTestViewModel extends ChangeNotifier {
   void selectAnswer(Map<String, dynamic> selectedOption) {
     final selectedIndex = displayAnswerList.indexOf(selectedOption);
     final position = selectedIndex >= 0 ? selectedIndex + 1 : 1;
-    final String optionContent = selectedOption['letter'] ?? selectedOption['font'] ?? (selectedOption['bg_color'] is Color ? (selectedOption['bg_color'] as Color).value.toString() : '');
+    final String optionContent =
+        selectedOption['letter'] ??
+        selectedOption['font'] ??
+        (selectedOption['bg_color'] is Color
+            ? (selectedOption['bg_color'] as Color).toARGB32().toString()
+            : '');
 
     if (currentType == 0) {
       bool isCorrect = selectedOption["letter"] == currentTarget;
@@ -221,11 +235,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
         repoManager?.trialLogger.logEvent(
           eventType: 'INCORRECT',
           eventCode: 'incorrect',
-          payload: {
-            'type': 0,
-            'content': optionContent,
-            'position': position,
-          },
+          payload: {'type': 0, 'content': optionContent, 'position': position},
         );
         notifyListeners();
         return; // Prompt user to try again without advancing
@@ -238,11 +248,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
       repoManager?.trialLogger.logEvent(
         eventType: 'CORRECT',
         eventCode: 'correct',
-        payload: {
-          'type': 0,
-          'content': optionContent,
-          'position': position,
-        },
+        payload: {'type': 0, 'content': optionContent, 'position': position},
       );
 
       results.add({
@@ -362,7 +368,7 @@ class EvaluationTestViewModel extends ChangeNotifier {
       results.add({
         'type': currentType,
         "bg_color": selectedOption["bg_color"],
-        "text_color": selectedOption["text_color"]
+        "text_color": selectedOption["text_color"],
       });
     }
 
@@ -393,7 +399,10 @@ class EvaluationTestViewModel extends ChangeNotifier {
   double get type0Accuracy {
     final type0Results = results.where((r) => r["type"] == 0).toList();
     if (type0Results.isEmpty) return 100.0;
-    int totalWrong = type0Results.fold(0, (sum, r) => sum + (r["wrong_attempts"] as int? ?? 0));
+    int totalWrong = type0Results.fold(
+      0,
+      (sum, r) => sum + (r["wrong_attempts"] as int? ?? 0),
+    );
     int totalRounds = type0Results.length;
     if (totalRounds + totalWrong == 0) return 100.0;
     return (totalRounds / (totalRounds + totalWrong)) * 100.0;
@@ -407,50 +416,74 @@ class EvaluationTestViewModel extends ChangeNotifier {
   }
 
   String get preferredFontFamily {
-    final type1Results = results.where(
-            (r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3).toList();
+    final type1Results =
+        results
+            .where((r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3)
+            .toList();
     if (type1Results.isEmpty) return "VniAvo";
-    return _getMode<String>(type1Results.map((r) => r["font"] as String).toList(), "VniAvo");
+    return _getMode<String>(
+      type1Results.map((r) => r["font"] as String).toList(),
+      "VniAvo",
+    );
   }
 
   double get preferredFontSize {
-    final type1Results = results.where(
-            (r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3).toList();
+    final type1Results =
+        results
+            .where((r) => r["type"] == 1 || r["type"] == 2 || r["type"] == 3)
+            .toList();
     if (type1Results.isEmpty) return 20.0;
-    return _getMode<double>(type1Results.map((r) => r["size"] as double).toList(), 20.0);
+    return _getMode<double>(
+      type1Results.map((r) => r["size"] as double).toList(),
+      20.0,
+    );
   }
 
   double get preferredFontOpacity {
     final type1Results = results.where((r) => r["type"] == 5).toList();
     if (type1Results.isEmpty) return 1.0;
-    return _getMode<double>(type1Results.map((r) => r["opacity"] as double).toList(), 1.0);
+    return _getMode<double>(
+      type1Results.map((r) => r["opacity"] as double).toList(),
+      1.0,
+    );
   }
 
   double get preferredWordSpacing {
-    final type1Results = results.where(
-            (r) => r["type"] == 3 || r["type"] == 4).toList();
+    final type1Results =
+        results.where((r) => r["type"] == 3 || r["type"] == 4).toList();
     if (type1Results.isEmpty) return 1.0;
-    return _getMode<double>(type1Results.map((r) => r["word_spacing"] as double).toList(), 1.0);
+    return _getMode<double>(
+      type1Results.map((r) => r["word_spacing"] as double).toList(),
+      1.0,
+    );
   }
 
   double get preferredLetterSpacing {
     final type1Results = results.where((r) => r["type"] == 2).toList();
     if (type1Results.isEmpty) return 1.5;
-    return _getMode<double>(type1Results.map((r) => r["letter_spacing"] as double).toList(), 1.5);
+    return _getMode<double>(
+      type1Results.map((r) => r["letter_spacing"] as double).toList(),
+      1.5,
+    );
   }
 
   Color get preferredBackgroundColor {
     final type2Results = results.where((r) => r["type"] == 6).toList();
     if (type2Results.isEmpty) return Colors.white;
-    return _getMode<Color>(type2Results.map((r) => r["bg_color"] as Color).toList(), Colors.white);
+    return _getMode<Color>(
+      type2Results.map((r) => r["bg_color"] as Color).toList(),
+      Colors.white,
+    );
   }
 
   Color get preferredTextColor {
     final type2Results = results.where((r) => r["type"] == 6).toList();
     if (type2Results.isEmpty) return Colors.white;
-    return _getMode<Color>(type2Results.map((r) => r["text_color"] as Color).toList(), Colors.black);
+    return _getMode<Color>(
+      type2Results.map((r) => r["text_color"] as Color).toList(),
+      Colors.black,
+    );
   }
-
 
   T _getMode<T>(List<T> list, T fallback) {
     if (list.isEmpty) return fallback;

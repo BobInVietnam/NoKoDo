@@ -2,7 +2,8 @@ class DictionaryEntry {
   final String id; // Nullable: Database handles auto-increment on insertion
   final String word;
   final String description;
-  final String imageName; // Stores the file name asset reference (e.g., 'ball.jpg')
+  final String
+  imageName; // Stores the file name asset reference (e.g., 'ball.jpg')
 
   DictionaryEntry({
     required this.id,

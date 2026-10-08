@@ -33,10 +33,12 @@ class LibraryScreen extends StatefulWidget {
   State<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProviderStateMixin {
+class _LibraryScreenState extends State<LibraryScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _dictScrollController = ScrollController();
-  final TextEditingController _highlightInputController = TextEditingController();
+  final TextEditingController _highlightInputController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -58,14 +60,19 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
 
   /// Infinite scrolling listener targeted at the active dictionary tab viewport profile
   void _onDictScroll() {
-    if (_dictScrollController.position.pixels >= _dictScrollController.position.maxScrollExtent - 200) {
+    if (_dictScrollController.position.pixels >=
+        _dictScrollController.position.maxScrollExtent - 200) {
       context.read<LibraryViewModel>().loadNextDictionaryPage();
     }
   }
 
   void _onTabChange() {
-    debugPrint("LIBRARY SCREEN: TabController at index ${_tabController.index}");
-    context.read<LibraryViewModel>().checkTabControllerIndex(_tabController.index);
+    debugPrint(
+      "LIBRARY SCREEN: TabController at index ${_tabController.index}",
+    );
+    context.read<LibraryViewModel>().checkTabControllerIndex(
+      _tabController.index,
+    );
   }
 
   // Generic Placeholder Section UI Component (unchanged)
@@ -79,13 +86,23 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 80, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+            Icon(
+              icon,
+              size: 80,
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 20),
-            Text(title, style: textTheme.displayLarge, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: textTheme.displayLarge,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 10),
             Text(
               message,
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -117,7 +134,9 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
         itemBuilder: (context, index) {
           final ConvertedFile fileItem = viewModel.savedFiles[index];
 
-          final String formattedDate = _formatDateNative(fileItem.dateConverted);
+          final String formattedDate = _formatDateNative(
+            fileItem.dateConverted,
+          );
 
           return Container(
             margin: const EdgeInsets.only(bottom: 14.0),
@@ -143,13 +162,18 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                     Expanded(
                       child: Text(
                         fileItem.fileName,
-                        style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 20),
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       formattedDate,
-                      style: textTheme.bodySmall?.copyWith(color: Colors.grey[900]),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[900],
+                      ),
                     ),
                   ],
                 ),
@@ -165,30 +189,43 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          settings: const RouteSettings(name: 'EditableReadingScreen'),
-                          builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
-                            create: (providerContext) => EditableReadingViewModel(
-                              file: fileItem,
-                              ttsService: viewModel.ttsService,
-                              localDatabase: viewModel.localDatabase,
-                              repoManager: providerContext.read<RepoManager>(),
-                              audioRecorder: providerContext.read<AudioRecorder>()
-                            ),
-                            child: EditableReadingScreen(),
+                          settings: const RouteSettings(
+                            name: 'EditableReadingScreen',
                           ),
+                          builder:
+                              (routeContext) => ChangeNotifierProvider<
+                                EditableReadingViewModel
+                              >(
+                                create:
+                                    (
+                                      providerContext,
+                                    ) => EditableReadingViewModel(
+                                      file: fileItem,
+                                      ttsService: viewModel.ttsService,
+                                      localDatabase: viewModel.localDatabase,
+                                      repoManager:
+                                          providerContext.read<RepoManager>(),
+                                      audioRecorder:
+                                          providerContext.read<AudioRecorder>(),
+                                    ),
+                                child: EditableReadingScreen(),
+                              ),
                         ),
                       );
                     },
                     child: Container(
                       width: double.infinity,
-                      child:  Text(
+                      child: Text(
                         fileItem.extractedText,
-                        style: textTheme.bodyMedium?.copyWith(color: Colors.grey[900], height: 1.4),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[900],
+                          height: 1.4,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                      )
-                    )
-                  )
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -196,45 +233,75 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   children: [
                     ElevatedButton.icon(
                       icon: const Icon(Icons.delete, size: 16),
-                      label: const Text('Xóa',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Xóa',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
-                      onPressed: () => _confirmDeletionDialog(context, viewModel, fileItem),
+                      onPressed:
+                          () => _confirmDeletionDialog(
+                            context,
+                            viewModel,
+                            fileItem,
+                          ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text('Chỉnh sửa',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Chỉnh sửa',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
                       onPressed: () async {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (routeContext) => ChangeNotifierProvider<EditingViewModel>(
-                              create: (providerContext) => EditingViewModel(
-                                file: fileItem,
-                                localDatabase: providerContext.read<LocalDatabase>(),
-                              ),
-                              child: const EditingScreen(),
-                            ),
+                            builder:
+                                (routeContext) =>
+                                    ChangeNotifierProvider<EditingViewModel>(
+                                      create:
+                                          (providerContext) => EditingViewModel(
+                                            file: fileItem,
+                                            localDatabase:
+                                                providerContext
+                                                    .read<LocalDatabase>(),
+                                          ),
+                                      child: const EditingScreen(),
+                                    ),
                           ),
                         );
                         viewModel.loadSavedFiles();
                       },
                     ),
                   ],
-                )
+                ),
               ],
             ),
           );
@@ -243,7 +310,11 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildHighlightsSection(LibraryViewModel viewModel, NokodoSettings textStyleSettings, TextTheme textTheme) {
+  Widget _buildHighlightsSection(
+    LibraryViewModel viewModel,
+    NokodoSettings textStyleSettings,
+    TextTheme textTheme,
+  ) {
     final highlights = textStyleSettings.highlights;
 
     return Column(
@@ -258,7 +329,10 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   decoration: const InputDecoration(
                     hintText: 'Nhập từ hoặc câu cần tô sáng...',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 8.0,
+                    ),
                   ),
                 ),
               ),
@@ -267,60 +341,83 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                 onPressed: () {
                   final text = _highlightInputController.text.trim();
                   if (text.isNotEmpty) {
-                    textStyleSettings.addHighlight(viewModel.localDatabase, text);
+                    textStyleSettings.addHighlight(
+                      viewModel.localDatabase,
+                      text,
+                    );
                     _highlightInputController.clear();
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 14.0,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
-                child: const Text('Thêm', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Thêm',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
         ),
         const Divider(height: 1),
         Expanded(
-          child: highlights.isEmpty
-              ? _buildPlaceholderSection(
-                  'Từ Đã Đánh Dấu',
-                  'Các từ được chọn và đánh dấu trong bài đọc hoặc thêm tại đây sẽ hiển thị ở danh sách.',
-                  Icons.star_outline,
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: highlights.length,
-                  itemBuilder: (context, index) {
-                    final itemText = highlights[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8.0),
-                      elevation: 1,
-                      child: ListTile(
-                        leading: const Icon(Icons.star, color: Colors.amber),
-                        title: Text(
-                          itemText,
-                          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+          child:
+              highlights.isEmpty
+                  ? _buildPlaceholderSection(
+                    'Từ Đã Đánh Dấu',
+                    'Các từ được chọn và đánh dấu trong bài đọc hoặc thêm tại đây sẽ hiển thị ở danh sách.',
+                    Icons.star_outline,
+                  )
+                  : ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: highlights.length,
+                    itemBuilder: (context, index) {
+                      final itemText = highlights[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8.0),
+                        elevation: 1,
+                        child: ListTile(
+                          leading: const Icon(Icons.star, color: Colors.amber),
+                          title: Text(
+                            itemText,
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: () {
+                              textStyleSettings.removeHighlight(
+                                viewModel.localDatabase,
+                                itemText,
+                              );
+                            },
+                          ),
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.redAccent),
-                          onPressed: () {
-                            textStyleSettings.removeHighlight(viewModel.localDatabase, itemText);
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
         ),
       ],
     );
   }
 
   // --- NEW: Tab 3 Layout: Dictionary View Component ---
-  Widget _buildDictionarySection(LibraryViewModel viewModel, TextTheme textTheme) {
+  Widget _buildDictionarySection(
+    LibraryViewModel viewModel,
+    TextTheme textTheme,
+  ) {
     return Column(
       children: [
         if (viewModel.isDictUpdating)
@@ -335,7 +432,9 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                     const SizedBox(height: 24),
                     Text(
                       viewModel.dictUpdateStatus,
-                      style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -379,116 +478,156 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
 
           // Live Search Results / List View
           Expanded(
-            child: viewModel.dictionaryEntries.isEmpty && !viewModel.isDictLoading
-                ? _buildPlaceholderSection(
-                    'Không tìm thấy từ',
-                    'Thử tra cứu với một từ vựng khác.',
-                    Icons.find_in_page_outlined,
-                  )
-                : ListView.builder(
-                    controller: _dictScrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: viewModel.dictionaryEntries.length + (viewModel.hasMoreDictEntries ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      // Show a bottom spinning bubble loader if we are loading the next page segment
-                      if (index == viewModel.dictionaryEntries.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(child: CircularProgressIndicator(color: Colors.teal)),
-                        );
-                      }
+            child:
+                viewModel.dictionaryEntries.isEmpty && !viewModel.isDictLoading
+                    ? _buildPlaceholderSection(
+                      'Không tìm thấy từ',
+                      'Thử tra cứu với một từ vựng khác.',
+                      Icons.find_in_page_outlined,
+                    )
+                    : ListView.builder(
+                      controller: _dictScrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      itemCount:
+                          viewModel.dictionaryEntries.length +
+                          (viewModel.hasMoreDictEntries ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        // Show a bottom spinning bubble loader if we are loading the next page segment
+                        if (index == viewModel.dictionaryEntries.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.teal,
+                              ),
+                            ),
+                          );
+                        }
 
-                      final DictionaryEntry wordItem = viewModel.dictionaryEntries[index];
+                        final DictionaryEntry wordItem =
+                            viewModel.dictionaryEntries[index];
 
-                      return Card(
-                        color: Colors.white,
-                        elevation: 0.5,
-                        margin: const EdgeInsets.only(bottom: 10.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          side: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12.0),
-                          onTap: () {
-                            // Open our static modal pipeline class instance effortlessly
-                            DictionaryDetailDialog.show(
-                              context,
-                              wordItem,
-                              viewModel.ttsService, // Calls your active singleton service provider
-                            );
-                          },
-                          leading: FutureBuilder<Directory>(
-                            future: getApplicationDocumentsDirectory(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return Container(width: 50, height: 50, color: Colors.grey.shade100);
-                              }
-
-                              // Construct the path pointer matching where we copied the file
-                              final String imagePath = p.join(snapshot.data!.path, wordItem.imageName);
-                              final File imageFile = File(imagePath);
-
-                              return Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.teal.shade50,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: imageFile.existsSync() // Fallback safety validation
-                                      ? Image.file(imageFile, fit: BoxFit.cover)
-                                      : const Icon(Icons.menu_book_rounded, color: Colors.teal),
-                                ),
+                        return Card(
+                          color: Colors.white,
+                          elevation: 0.5,
+                          margin: const EdgeInsets.only(bottom: 10.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            side: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(12.0),
+                            onTap: () {
+                              // Open our static modal pipeline class instance effortlessly
+                              DictionaryDetailDialog.show(
+                                context,
+                                wordItem,
+                                viewModel
+                                    .ttsService, // Calls your active singleton service provider
                               );
                             },
-                          ),
-                          title: Text(
-                            wordItem.word,
-                            style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              wordItem.description,
-                              style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                            leading: FutureBuilder<Directory>(
+                              future: getApplicationDocumentsDirectory(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: Colors.grey.shade100,
+                                  );
+                                }
+
+                                // Construct the path pointer matching where we copied the file
+                                final String imagePath = p.join(
+                                  snapshot.data!.path,
+                                  wordItem.imageName,
+                                );
+                                final File imageFile = File(imagePath);
+
+                                return Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.shade50,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child:
+                                        imageFile
+                                                .existsSync() // Fallback safety validation
+                                            ? Image.file(
+                                              imageFile,
+                                              fit: BoxFit.cover,
+                                            )
+                                            : const Icon(
+                                              Icons.menu_book_rounded,
+                                              color: Colors.teal,
+                                            ),
+                                  ),
+                                );
+                              },
+                            ),
+                            title: Text(
+                              wordItem.word,
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text(
+                                wordItem.description,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
           ),
         ],
       ],
     );
   }
 
-  void _confirmDeletionDialog(BuildContext context, LibraryViewModel viewModel, ConvertedFile file) {
+  void _confirmDeletionDialog(
+    BuildContext context,
+    LibraryViewModel viewModel,
+    ConvertedFile file,
+  ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Bạn có chắc chắn muốn xóa vĩnh viễn tập tin "${file.fileName}" không? Hành động này không thể hoàn tác.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+      builder:
+          (context) => AlertDialog(
+            title: const Text(
+              'Xác nhận xóa',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'Bạn có chắc chắn muốn xóa vĩnh viễn tập tin "${file.fileName}" không? Hành động này không thể hoàn tác.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                onPressed: () {
+                  viewModel.deleteFile(file.id!);
+                  Navigator.pop(context);
+                },
+                child: const Text('Xóa', style: TextStyle(color: Colors.white)),
+              ),
+            ],
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () {
-              viewModel.deleteFile(file.id!);
-              Navigator.pop(context);
-            },
-            child: const Text('Xóa', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -499,7 +638,10 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Tạo văn bản mới', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text(
+            'Tạo văn bản mới',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: nameController,
             decoration: const InputDecoration(
@@ -526,8 +668,11 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   dateConverted: DateTime.now(),
                 );
 
-                final fileId = await viewModel.localDatabase.insertConvertedFile(newFile);
-                newFile = await viewModel.localDatabase.getConvertedFileById(fileId);
+                final fileId = await viewModel.localDatabase
+                    .insertConvertedFile(newFile);
+                newFile = await viewModel.localDatabase.getConvertedFileById(
+                  fileId,
+                );
                 await viewModel.loadSavedFiles();
 
                 // Navigate directly to the editor
@@ -535,17 +680,26 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      settings: const RouteSettings(name: 'EditableReadingScreen'),
-                      builder: (routeContext) => ChangeNotifierProvider<EditableReadingViewModel>(
-                        create: (providerContext) => EditableReadingViewModel(
-                            localDatabase: viewModel.localDatabase,
-                            ttsService: viewModel.ttsService,
-                            file: newFile!,
-                            repoManager: providerContext.read<RepoManager>(),
-                            audioRecorder: providerContext.read<AudioRecorder>()
-                        ),
-                        child: EditableReadingScreen(),
+                      settings: const RouteSettings(
+                        name: 'EditableReadingScreen',
                       ),
+                      builder:
+                          (routeContext) =>
+                              ChangeNotifierProvider<EditableReadingViewModel>(
+                                create:
+                                    (
+                                      providerContext,
+                                    ) => EditableReadingViewModel(
+                                      localDatabase: viewModel.localDatabase,
+                                      ttsService: viewModel.ttsService,
+                                      file: newFile!,
+                                      repoManager:
+                                          providerContext.read<RepoManager>(),
+                                      audioRecorder:
+                                          providerContext.read<AudioRecorder>(),
+                                    ),
+                                child: EditableReadingScreen(),
+                              ),
                     ),
                   ).then((_) => viewModel.loadSavedFiles());
                 }
@@ -591,7 +745,9 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
               controller: _tabController,
               indicatorColor: Colors.teal,
               labelColor: Colors.teal,
-              labelStyle: textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+              labelStyle: textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
               unselectedLabelColor: Colors.grey[600],
               tabs: const [
                 Tab(text: 'Văn bản'),
@@ -605,23 +761,41 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                 controller: _tabController,
                 children: <Widget>[
                   _buildHistorySection(viewModel, textTheme),
-                  _buildHighlightsSection(viewModel, context.watch<NokodoSettings>(), textTheme),
-                  _buildDictionarySection(viewModel, textTheme), // Injected dynamic dictionary page section
+                  _buildHighlightsSection(
+                    viewModel,
+                    context.watch<NokodoSettings>(),
+                    textTheme,
+                  ),
+                  _buildDictionarySection(
+                    viewModel,
+                    textTheme,
+                  ), // Injected dynamic dictionary page section
                 ],
               ),
             ),
             const SizedBox(height: 10),
 
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   ReturnButton(),
-                  if (viewModel.isAtConvertedFile) ElevatedButton.icon(
-                      onPressed: () => _showCreateFileDialog(context, viewModel),
-                      label: Text("Tạo file mới",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                  if (viewModel.isAtConvertedFile)
+                    ElevatedButton.icon(
+                      onPressed:
+                          () => _showCreateFileDialog(context, viewModel),
+                      label: Text(
+                        "Tạo file mới",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   SettingButton(),
                 ],
               ),

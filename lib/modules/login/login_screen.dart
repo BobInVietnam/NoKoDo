@@ -13,11 +13,12 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => LoginViewModel(
-        repoManager: context.read<RepoManager>(),
-        textSettings: context.read<NokodoSettings>(),
-        usageTimeTracker: context.read<UsageTimeTracker>(),
-      ),
+      create:
+          (context) => LoginViewModel(
+            repoManager: context.read<RepoManager>(),
+            textSettings: context.read<NokodoSettings>(),
+            usageTimeTracker: context.read<UsageTimeTracker>(),
+          ),
       child: const _LoginContent(),
     );
   }
@@ -90,11 +91,7 @@ class _LoginContentState extends State<_LoginContent> {
     }
 
     if (viewModel.isCheckingAutoLogin) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
@@ -138,25 +135,29 @@ class _LoginContentState extends State<_LoginContent> {
                 Text(
                   viewModel.displayMessage,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.red,
-                  ),
+                  style: const TextStyle(fontSize: 18, color: Colors.red),
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: viewModel.isLoading ? null : () => _handleLogin(viewModel),
+                  onPressed:
+                      viewModel.isLoading
+                          ? null
+                          : () => _handleLogin(viewModel),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     textStyle: textTheme.displayMedium,
                   ),
-                  child: viewModel.isLoading
-                      ? const Text('Đang xử lý...')
-                      : const Text('Đăng nhập'),
+                  child:
+                      viewModel.isLoading
+                          ? const Text('Đang xử lý...')
+                          : const Text('Đăng nhập'),
                 ),
                 const SizedBox(height: 15),
                 OutlinedButton(
-                  onPressed: viewModel.isLoading ? null : () => _handleOfflineLogin(viewModel),
+                  onPressed:
+                      viewModel.isLoading
+                          ? null
+                          : () => _handleOfflineLogin(viewModel),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     side: const BorderSide(color: Colors.blue),

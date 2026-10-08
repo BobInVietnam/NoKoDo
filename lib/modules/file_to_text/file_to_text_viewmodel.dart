@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,9 +11,7 @@ class FileToTextViewModel extends ChangeNotifier {
   final OCRService ocrService; // Use the interface for flexibility
   final LocalDatabase localDatabase;
 
-  FileToTextViewModel({
-    required this.ocrService,
-    required this.localDatabase});
+  FileToTextViewModel({required this.ocrService, required this.localDatabase});
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -30,23 +27,27 @@ class FileToTextViewModel extends ChangeNotifier {
     try {
       // 1. Pick the image using image_picker
       final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: sourceIndex == 0 ? ImageSource.camera : ImageSource.gallery);
+      final XFile? image = await picker.pickImage(
+        source: sourceIndex == 0 ? ImageSource.camera : ImageSource.gallery,
+      );
       if (image == null) return null; // User cancelled
 
       // 2. Send to backend via ApiService
-      final String? formattedResult =
-        await ocrService.extractText(await image.readAsBytes(), image.name);
+      final String? formattedResult = await ocrService.extractText(
+        await image.readAsBytes(),
+        image.name,
+      );
 
       final file = ConvertedFile(
-          fileName: image.name,
-          extractedText: formattedResult!,
-          dateConverted: DateTime.now());
+        fileName: image.name,
+        extractedText: formattedResult!,
+        dateConverted: DateTime.now(),
+      );
       final id = await localDatabase.insertConvertedFile(file);
       final fileWithId = await localDatabase.getConvertedFileById(id);
       _addToHistory(fileWithId!);
 
       return fileWithId;
-
     } catch (e) {
       debugPrint("Error processing image: $e");
       return null;

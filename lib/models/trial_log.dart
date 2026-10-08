@@ -1,7 +1,8 @@
 class TrialLog {
   final String sessionId;
   final String trialId;
-  final String trialType; // READING (r), LETTER_SEARCH (s), READING_LOCAL (rl), EVALUATION_TEST (e)
+  final String
+  trialType; // READING (r), LETTER_SEARCH (s), READING_LOCAL (rl), EVALUATION_TEST (e)
   final String trialName;
   final int trialStartTime; // millisecondsSinceEpoch
   int? trialEndTime; // millisecondsSinceEpoch
@@ -57,14 +58,19 @@ class TrialLog {
       trialType: map['trialType'] as String,
       trialName: map['trialName'] as String,
       trialStartTime: (map['trialStartTime'] as num).toInt(),
-      trialEndTime: map['trialEndTime'] != null ? (map['trialEndTime'] as num).toInt() : null,
+      trialEndTime:
+          map['trialEndTime'] != null
+              ? (map['trialEndTime'] as num).toInt()
+              : null,
       conditionId: map['conditionId'] as String?,
       conditionName: map['conditionName'] as String?,
       comment: map['comment'] as String?,
       validTrial: map['validTrial'] == 1 || map['validTrial'] == true,
-      assistanceGiven: map['assistanceGiven'] == 1 || map['assistanceGiven'] == true,
+      assistanceGiven:
+          map['assistanceGiven'] == 1 || map['assistanceGiven'] == true,
       interrupted: map['interrupted'] == 1 || map['interrupted'] == true,
-      technicalIssue: map['technicalIssue'] == 1 || map['technicalIssue'] == true,
+      technicalIssue:
+          map['technicalIssue'] == 1 || map['technicalIssue'] == true,
       invalidReason: map['invalidReason'] as String?,
     );
   }

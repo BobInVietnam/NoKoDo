@@ -4,12 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../data/repository_manager.dart';
 
-enum GameState {
-  START,
-  COUNTDOWN,
-  IN_PROGRESS,
-  FINISHED
-}
+enum GameState { START, COUNTDOWN, IN_PROGRESS, FINISHED }
 
 class LetterSearchViewModel extends ChangeNotifier {
   static const List<Map<String, dynamic>> defaultMockContent = [
@@ -21,7 +16,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "chance": 0.35,
       "gap": 0,
       "spacing": 0.0,
-      "size": 42.0
+      "size": 42.0,
     },
     {
       "height": 7,
@@ -31,7 +26,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "chance": 0.40,
       "gap": 0,
       "spacing": 6.0,
-      "size": 28.0
+      "size": 28.0,
     },
     {
       "height": 7,
@@ -41,7 +36,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "chance": 0.45,
       "gap": 0,
       "spacing": 2.0,
-      "size": 56.0
+      "size": 56.0,
     },
     {
       "height": 5,
@@ -51,7 +46,7 @@ class LetterSearchViewModel extends ChangeNotifier {
       "chance": 0.80,
       "gap": 0,
       "spacing": 1.0,
-      "size": 40.0
+      "size": 40.0,
     },
     {
       "height": 5,
@@ -61,8 +56,8 @@ class LetterSearchViewModel extends ChangeNotifier {
       "chance": 0.80,
       "gap": 0,
       "spacing": 3.0,
-      "size": 66.0
-    }
+      "size": 66.0,
+    },
   ];
 
   final List<Map<String, dynamic>> _content;
@@ -73,19 +68,22 @@ class LetterSearchViewModel extends ChangeNotifier {
   int _currentRound = 0;
   int _totalRounds = 0;
   GameState _currentState = GameState.START;
-  
+
   List<Map<String, dynamic>> _results = [];
   List<List<String>> _displayGrid = List.generate(7, (_) => List.filled(9, ""));
-  
+
   int _countdownSeconds = 3;
   Timer? _countdownTimer;
   String _target = "";
-  
+
   double _elapsedSeconds = 0.0;
   Timer? _gameTimer;
-  
+
   int _attempts = 0;
   String? _feedbackMessage;
+  int _targetRow = 0;
+  int _targetCol = 0;
+  bool _hintRequested = false;
 
   // Getters
   int get currentRound => _currentRound;
@@ -98,11 +96,38 @@ class LetterSearchViewModel extends ChangeNotifier {
   int get attempts => _attempts;
   String? get feedbackMessage => _feedbackMessage;
   List<Map<String, dynamic>> get results => _results;
-  double get currentSpacing => (_content[_currentRound]['spacing'] as num?)?.toDouble() ?? 4.0;
-  double get currentSize => (_content[_currentRound]['size'] as num?)?.toDouble() ?? 22.0;
+  double get currentSpacing =>
+      (_content[_currentRound]['spacing'] as num?)?.toDouble() ?? 4.0;
+  double get currentSize =>
+      (_content[_currentRound]['size'] as num?)?.toDouble() ?? 22.0;
   int get currentGridHeight => _content[_currentRound]['height'] as int;
   int get currentGridWidth => _content[_currentRound]['width'] as int;
   int get currentGap => (_content[_currentRound]['gap'] as num?)?.toInt() ?? 0;
+  bool get hintRequested => _hintRequested;
+
+  // 5x5 window centered on the target, pushed back inside the grid at edges/corners
+  int get hintRowStart =>
+      (_targetRow - 2).clamp(0, max(0, currentGridHeight - 5)).toInt();
+  int get hintColStart =>
+      (_targetCol - 2).clamp(0, max(0, currentGridWidth - 5)).toInt();
+
+  bool isInHintArea(int r, int c) =>
+      _hintRequested &&
+      r >= hintRowStart &&
+      r < hintRowStart + 5 &&
+      c >= hintColStart &&
+      c < hintColStart + 5;
+
+  void requestHint() {
+    if (_currentState != GameState.IN_PROGRESS || _hintRequested) return;
+    _hintRequested = true;
+    notifyListeners();
+    repoManager?.trialLogger.logEvent(
+      eventType: 'HINT_REQUESTED',
+      eventCode: 'hint',
+      payload: {'hintRowStart': hintRowStart, 'hintColStart': hintColStart},
+    );
+  }
 
   LetterSearchViewModel({
     List<Map<String, dynamic>>? content,
@@ -122,7 +147,9 @@ class LetterSearchViewModel extends ChangeNotifier {
         'results': _results,
       });
     } else {
-      debugPrint("LETTER_SEARCH: Exit checked. Game NOT completed or missing references.");
+      debugPrint(
+        "LETTER_SEARCH: Exit checked. Game NOT completed or missing references.",
+      );
     }
   }
 
@@ -132,7 +159,7 @@ class LetterSearchViewModel extends ChangeNotifier {
     repoManager?.trialLogger.startTrial(
       trialType: 'LETTER_SEARCH',
       trialCode: 's',
-      trialName: lessonName
+      trialName: lessonName,
     );
     _startCountdown();
   }
@@ -160,6 +187,7 @@ class LetterSearchViewModel extends ChangeNotifier {
     _attempts = 0;
     _elapsedSeconds = 0.0;
     _feedbackMessage = null;
+    _hintRequested = false;
     _loadSymbols();
 
     _gameTimer?.cancel();
@@ -173,17 +201,24 @@ class LetterSearchViewModel extends ChangeNotifier {
     final currentRoundData = _content[_currentRound];
     _target = currentRoundData['target'] as String;
     final int gap = currentGap;
-    final double chance = (currentRoundData['chance'] as num?)?.toDouble() ?? 0.35;
-    final List<String> noiseList = List<String>.from(currentRoundData['noise'] as List);
+    final double chance =
+        (currentRoundData['chance'] as num?)?.toDouble() ?? 0.35;
+    final List<String> noiseList = List<String>.from(
+      currentRoundData['noise'] as List,
+    );
 
     final Random random = Random();
-    _displayGrid = List.generate(currentGridHeight,
-            (_) => List.filled(currentGridWidth, ""));
+    _displayGrid = List.generate(
+      currentGridHeight,
+      (_) => List.filled(currentGridWidth, ""),
+    );
 
     if (gap == 0) {
       int targetRow = random.nextInt(currentGridHeight);
       int targetCol = random.nextInt(currentGridWidth);
       _displayGrid[targetRow][targetCol] = target;
+      _targetRow = targetRow;
+      _targetCol = targetCol;
 
       for (int r = 0; r < currentGridHeight; r++) {
         for (int c = 0; c < currentGridWidth; c++) {
@@ -203,6 +238,8 @@ class LetterSearchViewModel extends ChangeNotifier {
 
       if (validIndices.isNotEmpty) {
         int targetIndex = validIndices[random.nextInt(validIndices.length)];
+        _targetRow = targetIndex ~/ currentGridWidth;
+        _targetCol = targetIndex % currentGridWidth;
 
         for (int idx in validIndices) {
           int r = idx ~/ currentGridWidth;

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/data/persistence.dart';
@@ -26,7 +25,9 @@ class FileToTextScreen extends StatelessWidget {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     // Call the ViewModel logic
-    final ConvertedFile? result = await viewModel.processImageFromSource(sourceIndex);
+    final ConvertedFile? result = await viewModel.processImageFromSource(
+      sourceIndex,
+    );
 
     // If context is still valid and we got a result, navigate to the next screen
     if (context.mounted && result != null) {
@@ -34,21 +35,26 @@ class FileToTextScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
           settings: const RouteSettings(name: 'EditableReadingScreen'),
-          builder: (context) => ChangeNotifierProvider(
-            create: (context) => EditableReadingViewModel(
-                file: result,
-                ttsService: context.read<TtsService>(),
-                localDatabase: context.read<LocalDatabase>(),
-                repoManager: context.read<RepoManager>(),
-                audioRecorder: context.read<AudioRecorder>()),
-            child: EditableReadingScreen(),
-          ),
+          builder:
+              (context) => ChangeNotifierProvider(
+                create:
+                    (context) => EditableReadingViewModel(
+                      file: result,
+                      ttsService: context.read<TtsService>(),
+                      localDatabase: context.read<LocalDatabase>(),
+                      repoManager: context.read<RepoManager>(),
+                      audioRecorder: context.read<AudioRecorder>(),
+                    ),
+                child: EditableReadingScreen(),
+              ),
         ),
       );
       viewModel.updateHistory(editedFile!);
     } else if (context.mounted && result == null && !viewModel.isLoading) {
       // Optional: Show an error or cancellation message
-      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Không thể xử lý ảnh.')),
+      );
     }
   }
 
@@ -57,8 +63,8 @@ class FileToTextScreen extends StatelessWidget {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-    required bool isSmall})
-  {
+    required bool isSmall,
+  }) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -69,7 +75,9 @@ class FileToTextScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal[600],
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.all(12),
             ),
             child: Column(
@@ -77,7 +85,11 @@ class FileToTextScreen extends StatelessWidget {
               children: <Widget>[
                 Icon(icon, size: isSmall ? 32 : 56),
                 const SizedBox(height: 8),
-                Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: isSmall ? 24 : 32)),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: isSmall ? 24 : 32),
+                ),
               ],
             ),
           ),
@@ -102,14 +114,22 @@ class FileToTextScreen extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 8.0),
-              child: Text('Chuyển file sang văn bản',
-                  style: textTheme.displayLarge, textAlign: TextAlign.center),
+              child: Text(
+                'Chuyển file sang văn bản',
+                style: textTheme.displayLarge,
+                textAlign: TextAlign.center,
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-              child: Text('Hãy chọn phương thức nhập ảnh',
-                  style: isSmall ? textTheme.bodySmall : textTheme.bodyMedium,
-                  textAlign: TextAlign.center),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 8.0,
+              ),
+              child: Text(
+                'Hãy chọn phương thức nhập ảnh',
+                style: isSmall ? textTheme.bodySmall : textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 30),
 
@@ -117,25 +137,36 @@ class FileToTextScreen extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: viewModel.isLoading
-                    ? const Center(child: CircularProgressIndicator()) // Show loading state
-                    : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    _buildActionButton(
-                      icon: Icons.camera_alt_outlined,
-                      label: 'Chụp ảnh',
-                      isSmall: isSmall,
-                      onPressed: () => _handleImageAction(context, 0), // 0 for Camera
-                    ),
-                    _buildActionButton(
-                      icon: Icons.folder_open_outlined,
-                      label: 'Nhập từ máy',
-                      isSmall: isSmall,
-                      onPressed: () => _handleImageAction(context, 1), // 1 for Gallery
-                    ),
-                  ],
-                ),
+                child:
+                    viewModel.isLoading
+                        ? const Center(
+                          child: CircularProgressIndicator(),
+                        ) // Show loading state
+                        : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            _buildActionButton(
+                              icon: Icons.camera_alt_outlined,
+                              label: 'Chụp ảnh',
+                              isSmall: isSmall,
+                              onPressed:
+                                  () => _handleImageAction(
+                                    context,
+                                    0,
+                                  ), // 0 for Camera
+                            ),
+                            _buildActionButton(
+                              icon: Icons.folder_open_outlined,
+                              label: 'Nhập từ máy',
+                              isSmall: isSmall,
+                              onPressed:
+                                  () => _handleImageAction(
+                                    context,
+                                    1,
+                                  ), // 1 for Gallery
+                            ),
+                          ],
+                        ),
               ),
             ),
             const SizedBox(height: 30),
@@ -160,55 +191,93 @@ class FileToTextScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: viewModel.history.isEmpty
-                      ? Center(
-                    child: Text('Lịch sử chuyển đổi sẽ xuất hiện ở đây.',
-                        style: isSmall? textTheme.bodySmall : textTheme.bodyMedium),
-                  )
-                      : ListView.builder(
-                    itemCount: viewModel.history.length,
-                    itemBuilder: (context, index) {
-                      final item = viewModel.history[index];
-                      return ListTile(
-                        leading: const Icon(Icons.description),
-                        title: Text(item.fileName),
-                        subtitle: Text(item.extractedText, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        onTap: () async {
-                          // Re-open a past result
-                          viewModel.setLoading(true);
-                          try {
-                            final file = await viewModel.localDatabase.getConvertedFileById(item.id!);
-                            if (context.mounted) {
-                              final editedFile = await Navigator.push<
-                                  ConvertedFile>(
-                                context,
-                                MaterialPageRoute(
-                                  settings: const RouteSettings(name: 'EditableReadingScreen'),
-                                  builder: (context) =>
-                                      ChangeNotifierProvider(
-                                        create: (context) =>
-                                            EditableReadingViewModel(
-                                                file: file!,
-                                                ttsService: context.read<TtsService>(),
-                                                localDatabase: context.read<LocalDatabase>(),
-                                                repoManager: context.read<RepoManager>(),
-                                                audioRecorder: context.read<AudioRecorder>()
-                                            ),
-                                        child: EditableReadingScreen(),
-                                      ),
+                  child:
+                      viewModel.history.isEmpty
+                          ? Center(
+                            child: Text(
+                              'Lịch sử chuyển đổi sẽ xuất hiện ở đây.',
+                              style:
+                                  isSmall
+                                      ? textTheme.bodySmall
+                                      : textTheme.bodyMedium,
+                            ),
+                          )
+                          : ListView.builder(
+                            itemCount: viewModel.history.length,
+                            itemBuilder: (context, index) {
+                              final item = viewModel.history[index];
+                              return ListTile(
+                                leading: const Icon(Icons.description),
+                                title: Text(item.fileName),
+                                subtitle: Text(
+                                  item.extractedText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                onTap: () async {
+                                  // Re-open a past result
+                                  viewModel.setLoading(true);
+                                  try {
+                                    final file = await viewModel.localDatabase
+                                        .getConvertedFileById(item.id!);
+                                    if (context.mounted) {
+                                      final editedFile = await Navigator.push<
+                                        ConvertedFile
+                                      >(
+                                        context,
+                                        MaterialPageRoute(
+                                          settings: const RouteSettings(
+                                            name: 'EditableReadingScreen',
+                                          ),
+                                          builder:
+                                              (
+                                                context,
+                                              ) => ChangeNotifierProvider(
+                                                create:
+                                                    (
+                                                      context,
+                                                    ) => EditableReadingViewModel(
+                                                      file: file!,
+                                                      ttsService:
+                                                          context
+                                                              .read<
+                                                                TtsService
+                                                              >(),
+                                                      localDatabase:
+                                                          context
+                                                              .read<
+                                                                LocalDatabase
+                                                              >(),
+                                                      repoManager:
+                                                          context
+                                                              .read<
+                                                                RepoManager
+                                                              >(),
+                                                      audioRecorder:
+                                                          context
+                                                              .read<
+                                                                AudioRecorder
+                                                              >(),
+                                                    ),
+                                                child: EditableReadingScreen(),
+                                              ),
+                                        ),
+                                      );
+                                      viewModel.updateHistory(editedFile!);
+                                    }
+                                  } catch (e) {
+                                    scaffoldMessenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Không thể xử lý ảnh.'),
+                                      ),
+                                    );
+                                  } finally {
+                                    viewModel.setLoading(false);
+                                  }
+                                },
                               );
-                              viewModel.updateHistory(editedFile!);
-                            }
-                          } catch (e) {
-                            scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Không thể xử lý ảnh.')));
-                          } finally {
-                            viewModel.setLoading(false);
-                          }
-                        },
-                      );
-                    },
-                  ),
+                            },
+                          ),
                 ),
               ),
             ),
@@ -216,13 +285,13 @@ class FileToTextScreen extends StatelessWidget {
 
             // Bottom Navigation Bar
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  const ReturnButton(),
-                  SettingButton()
-                ],
+                children: <Widget>[const ReturnButton(), SettingButton()],
               ),
             ),
           ],

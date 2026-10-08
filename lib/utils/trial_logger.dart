@@ -21,7 +21,9 @@ class TrialLogger {
     if (_eventBuffer.isEmpty) return;
     final eventsToSend = List<EventLog>.from(_eventBuffer);
     _eventBuffer.clear();
-    debugPrint("TRIAL_LOGGER: Flushing ${eventsToSend.length} event log(s) to remote database.");
+    debugPrint(
+      "TRIAL_LOGGER: Flushing ${eventsToSend.length} event log(s) to remote database.",
+    );
     await repoManager.onlineDatabase.sendEventLogsBatch(eventsToSend);
   }
 
@@ -45,8 +47,12 @@ class TrialLogger {
     flushEvents();
 
     _sessionTrialIndex++;
-    final String paddedTrialIndex = _sessionTrialIndex.toString().padLeft(2, '0');
-    final String trialId = '${session.sessionId}_${paddedTrialIndex}_$trialCode';
+    final String paddedTrialIndex = _sessionTrialIndex.toString().padLeft(
+      2,
+      '0',
+    );
+    final String trialId =
+        '${session.sessionId}_${paddedTrialIndex}_$trialCode';
 
     _currentTrialEventIndex = 0;
     _currentTrial = TrialLog(
@@ -79,13 +85,19 @@ class TrialLogger {
     required Map<String, dynamic> payload,
   }) {
     if (_currentTrial == null) {
-      debugPrint("TRIAL_LOGGER: Cannot log event $eventType ($eventCode). No active Trial.");
+      debugPrint(
+        "TRIAL_LOGGER: Cannot log event $eventType ($eventCode). No active Trial.",
+      );
       return null;
     }
 
     _currentTrialEventIndex++;
-    final String paddedEventIndex = _currentTrialEventIndex.toString().padLeft(3, '0');
-    final String eventId = '${_currentTrial!.trialId}_${paddedEventIndex}_$eventCode';
+    final String paddedEventIndex = _currentTrialEventIndex.toString().padLeft(
+      3,
+      '0',
+    );
+    final String eventId =
+        '${_currentTrial!.trialId}_${paddedEventIndex}_$eventCode';
 
     final eventLog = EventLog(
       trialId: _currentTrial!.trialId,
@@ -127,11 +139,7 @@ class TrialLogger {
 
     // Log the END event first before closing
     _currentTrial = trialToClose; // temporarily restore to log END event
-    logEvent(
-      eventType: 'END',
-      eventCode: 'end',
-      payload: {},
-    );
+    logEvent(eventType: 'END', eventCode: 'end', payload: {});
     _currentTrial = null;
 
     trialToClose.trialEndTime = DateTime.now().millisecondsSinceEpoch;
@@ -142,7 +150,9 @@ class TrialLogger {
     if (invalidReason != null) trialToClose.invalidReason = invalidReason;
     if (comment != null) trialToClose.comment = comment;
 
-    debugPrint("TRIAL_LOGGER: Ended trial ${trialToClose.trialId} at ${trialToClose.trialEndTime}");
+    debugPrint(
+      "TRIAL_LOGGER: Ended trial ${trialToClose.trialId} at ${trialToClose.trialEndTime}",
+    );
 
     // Flush all accumulated event logs (including END event) to server
     await flushEvents();

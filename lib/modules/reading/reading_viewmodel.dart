@@ -75,16 +75,16 @@ class ReadingViewModel extends ChangeNotifier {
     required this.lessonName,
     required this.audioRecorder,
     required this.repoManager,
-  })  : _ttsService = ttsService,
-        _extractedText = text,
-        _localDatabase = localDatabase {
+  }) : _ttsService = ttsService,
+       _extractedText = text,
+       _localDatabase = localDatabase {
     _initializeTts();
     _extractParagraphs();
 
     repoManager.trialLogger.startTrial(
       trialType: 'READING',
       trialCode: 'r',
-      trialName: lessonName
+      trialName: lessonName,
     );
     repoManager.trialLogger.logEvent(
       eventType: 'STIMULUS_SHOWN',
@@ -115,11 +115,12 @@ class ReadingViewModel extends ChangeNotifier {
   }
 
   void _extractParagraphs() {
-    _paragraphs = extractedText
-        .split('\n\n')
-        .map((p) => p.trim())
-        .where((p) => p.isNotEmpty)
-        .toList();
+    _paragraphs =
+        extractedText
+            .split('\n\n')
+            .map((p) => p.trim())
+            .where((p) => p.isNotEmpty)
+            .toList();
   }
 
   void toggleTtsParagraph() {
@@ -139,24 +140,28 @@ class ReadingViewModel extends ChangeNotifier {
       _currentOffset = 0;
       _currentWordStart = -1;
       _currentWordEnd = -1;
-      if (_paragraphs.isNotEmpty && _selectedParagraphIndex < _paragraphs.length) {
+      if (_paragraphs.isNotEmpty &&
+          _selectedParagraphIndex < _paragraphs.length) {
         final textToRead = _paragraphs[_selectedParagraphIndex];
         repoManager.trialLogger.logEvent(
           eventType: 'TTS_START',
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
         );
-        _ttsService.speak(textToRead, onComplete: () {
-          _currentTtsMode = TtsMode.none;
-          _currentWordStart = -1;
-          _currentWordEnd = -1;
-          repoManager.trialLogger.logEvent(
-            eventType: 'TTS_STOP',
-            eventCode: 'ttsstop',
-            payload: {},
-          );
-          notifyListeners();
-        });
+        _ttsService.speak(
+          textToRead,
+          onComplete: () {
+            _currentTtsMode = TtsMode.none;
+            _currentWordStart = -1;
+            _currentWordEnd = -1;
+            repoManager.trialLogger.logEvent(
+              eventType: 'TTS_STOP',
+              eventCode: 'ttsstop',
+              payload: {},
+            );
+            notifyListeners();
+          },
+        );
       }
       notifyListeners();
     }
@@ -184,17 +189,20 @@ class ReadingViewModel extends ChangeNotifier {
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
         );
-        _ttsService.speak(textToRead, onComplete: () {
-          _currentTtsMode = TtsMode.none;
-          _currentWordStart = -1;
-          _currentWordEnd = -1;
-          repoManager.trialLogger.logEvent(
-            eventType: 'TTS_STOP',
-            eventCode: 'ttsstop',
-            payload: {},
-          );
-          notifyListeners();
-        });
+        _ttsService.speak(
+          textToRead,
+          onComplete: () {
+            _currentTtsMode = TtsMode.none;
+            _currentWordStart = -1;
+            _currentWordEnd = -1;
+            repoManager.trialLogger.logEvent(
+              eventType: 'TTS_STOP',
+              eventCode: 'ttsstop',
+              payload: {},
+            );
+            notifyListeners();
+          },
+        );
         notifyListeners();
       }
     }
@@ -243,7 +251,9 @@ class ReadingViewModel extends ChangeNotifier {
         'scrolledToBottom': _scrolledToBottom,
       });
     } else {
-      debugPrint("READING: Criteria NOT met. hasRead: $hasRead, scrolledToBottom: $_scrolledToBottom");
+      debugPrint(
+        "READING: Criteria NOT met. hasRead: $hasRead, scrolledToBottom: $_scrolledToBottom",
+      );
     }
   }
 
@@ -255,21 +265,24 @@ class ReadingViewModel extends ChangeNotifier {
       _currentWordEnd = -1;
       notifyListeners();
 
-      _ttsService.speak(_paragraphs[index], onComplete: () {
-        if (_currentTtsMode == TtsMode.all) {
-          _readParagraphSequentially(index + 1);
-        } else {
-          _currentTtsMode = TtsMode.none;
-          _currentWordStart = -1;
-          _currentWordEnd = -1;
-          repoManager.trialLogger.logEvent(
-            eventType: 'TTS_STOP',
-            eventCode: 'ttsstop',
-            payload: {},
-          );
-          notifyListeners();
-        }
-      });
+      _ttsService.speak(
+        _paragraphs[index],
+        onComplete: () {
+          if (_currentTtsMode == TtsMode.all) {
+            _readParagraphSequentially(index + 1);
+          } else {
+            _currentTtsMode = TtsMode.none;
+            _currentWordStart = -1;
+            _currentWordEnd = -1;
+            repoManager.trialLogger.logEvent(
+              eventType: 'TTS_STOP',
+              eventCode: 'ttsstop',
+              payload: {},
+            );
+            notifyListeners();
+          }
+        },
+      );
     } else {
       handleStopReading();
     }
@@ -301,16 +314,15 @@ class ReadingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<DictionaryEntry?>  getWordDefinition() async {
-    final entry = await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
+  Future<DictionaryEntry?> getWordDefinition() async {
+    final entry = await _localDatabase.getDictionaryEntryByWord(
+      currentSelection!.toLowerCase(),
+    );
     if (currentSelection != null) {
       repoManager.trialLogger.logEvent(
         eventType: 'DICTIONARY_LOOKUP',
         eventCode: 'dictlookup',
-        payload: {
-          'content': currentSelection,
-          'success': entry != null,
-        },
+        payload: {'content': currentSelection, 'success': entry != null},
       );
     }
     return entry;
@@ -326,28 +338,28 @@ class ReadingViewModel extends ChangeNotifier {
 
   Future<void> startRecorder() async {
     await audioRecorder.record(
-        sid: repoManager.currentStudent?.getFormattedSid() ?? "S0");
+      sid: repoManager.currentStudent?.getFormattedSid() ?? "S0",
+    );
     repoManager.trialLogger.logEvent(
-        eventType: "RECORD_START",
-        eventCode: "record",
-        payload: {
-          "name": audioRecorder.recordingName
-        });
+      eventType: "RECORD_START",
+      eventCode: "record",
+      payload: {"name": audioRecorder.recordingName},
+    );
     notifyListeners();
   }
 
   Future<void> stopRecorder() async {
     final audioFile = await audioRecorder.stop(); // XFile?
     repoManager.trialLogger.logEvent(
-        eventType: "RECORD_END",
-        eventCode: "recordend",
-        payload: {});
+      eventType: "RECORD_END",
+      eventCode: "recordend",
+      payload: {},
+    );
     _isUploadingAudio = true;
     notifyListeners();
     try {
       if (audioFile == null) throw Exception('Recording failed');
-      await repoManager.sendAudioFile(
-          audioFile);
+      await repoManager.sendAudioFile(audioFile);
       _isUploadingAudio = false;
       _audioMessage = "Đã lưu audio trên CSDL";
       _isMessageUpdated = true;

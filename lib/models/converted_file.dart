@@ -22,7 +22,8 @@ class ConvertedFile {
   // Map representation for Database insertions
   Map<String, Object?> toMap() {
     return {
-      if (id != null) 'id': id, // Let SQLite handle auto-increment if id is null
+      if (id != null)
+        'id': id, // Let SQLite handle auto-increment if id is null
       'name': fileName,
       'extractedText': extractedText,
       'createdDate': dateConverted.millisecondsSinceEpoch,
@@ -35,7 +36,9 @@ class ConvertedFile {
       id: map['id'] as int?,
       fileName: map['name'] as String,
       extractedText: (map['extractedText'] ?? map['extracted_text']) as String,
-      dateConverted: DateTime.fromMillisecondsSinceEpoch((map['createdDate'] ?? map['created_date']) as int),
+      dateConverted: DateTime.fromMillisecondsSinceEpoch(
+        (map['createdDate'] ?? map['created_date']) as int,
+      ),
     );
   }
 }

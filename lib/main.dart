@@ -24,34 +24,40 @@ import 'modules/settings/settings_viewmodel.dart';
 import 'modules/testing_screen.dart';
 import 'package:provider/provider.dart';
 
-
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   UrlProvider();
   runApp(
-    MultiProvider(providers: [
-      ChangeNotifierProvider(
-        create: (context) => RepoManager(
-            onlineDatabase: LocalhostRemoteDatabase(),
-            database: TestLocalDatabase())
-      ),
-      ChangeNotifierProvider<LocalDatabase>(
-        create: (context) => TestLocalDatabase()
-      ),
-      ChangeNotifierProvider(
-        create: (context) => NokodoSettings(context.read<LocalDatabase>())
-      ),
-      ChangeNotifierProvider(
-        create: (context) => UsageTimeTracker(repoManager: context.read<RepoManager>())
-      ),
-      ChangeNotifierProvider<TtsService>(
-        create: (context) => TtsService(settings: context.read<NokodoSettings>()),
-      ),
-      ChangeNotifierProvider<AudioRecorder>(
-          create: (context) => AudioRecorder() )
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create:
+              (context) => RepoManager(
+                onlineDatabase: LocalhostRemoteDatabase(),
+                database: TestLocalDatabase(),
+              ),
+        ),
+        ChangeNotifierProvider<LocalDatabase>(
+          create: (context) => TestLocalDatabase(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NokodoSettings(context.read<LocalDatabase>()),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  UsageTimeTracker(repoManager: context.read<RepoManager>()),
+        ),
+        ChangeNotifierProvider<TtsService>(
+          create:
+              (context) => TtsService(settings: context.read<NokodoSettings>()),
+        ),
+        ChangeNotifierProvider<AudioRecorder>(
+          create: (context) => AudioRecorder(),
+        ),
       ],
-    child: const NokodoApp())
+      child: const NokodoApp(),
+    ),
   );
 }
 
@@ -65,13 +71,15 @@ class NokodoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.teal,
-            brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
+          seedColor: Colors.teal,
+          brightness: Brightness.light,
+          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        ),
         textTheme: TextTheme(
           titleLarge: GoogleFonts.paytoneOne(
             fontSize: 52,
             fontWeight: FontWeight.bold,
-            color: Colors.teal[700]
+            color: Colors.teal[700],
           ),
           displayLarge: GoogleFonts.paytoneOne(
             fontSize: 40,
@@ -82,36 +90,34 @@ class NokodoApp extends StatelessWidget {
             fontFamily: "VniAvo",
             fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: Colors.teal[700]
+            color: Colors.teal[700],
           ),
           bodyLarge: TextStyle(
-              fontFamily: "VniAvo",
-              fontSize: 28,
-              color: Colors.grey[800]
+            fontFamily: "VniAvo",
+            fontSize: 28,
+            color: Colors.grey[800],
           ),
           bodyMedium: TextStyle(
             fontFamily: "VniAvo",
             fontSize: 24,
-            color: Colors.grey[900]
+            color: Colors.grey[900],
           ),
           bodySmall: TextStyle(
-              fontFamily: "VniAvo",
-              fontSize: 16,
-              color: Colors.grey[900]
+            fontFamily: "VniAvo",
+            fontSize: 16,
+            color: Colors.grey[900],
           ),
         ),
-        tabBarTheme: TabBarThemeData(
-
-        ),
+        tabBarTheme: TabBarThemeData(),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             textStyle: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: "VniAvo"
-            )
-          )
-        )  ,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: "VniAvo",
+            ),
+          ),
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.teal[700],
@@ -119,7 +125,7 @@ class NokodoApp extends StatelessWidget {
             textStyle: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              fontFamily: "VniAvo"
+              fontFamily: "VniAvo",
             ),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
             shape: RoundedRectangleBorder(
@@ -131,13 +137,14 @@ class NokodoApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: ChangeNotifierProvider(
-          create: (context) => LoginViewModel(
-            repoManager: context.read<RepoManager>(),
-            textSettings: context.read<NokodoSettings>(),
-            usageTimeTracker: context.read<UsageTimeTracker>(),
-          ),
-          child: const LoginScreen()
-      )
+        create:
+            (context) => LoginViewModel(
+              repoManager: context.read<RepoManager>(),
+              textSettings: context.read<NokodoSettings>(),
+              usageTimeTracker: context.read<UsageTimeTracker>(),
+            ),
+        child: const LoginScreen(),
+      ),
     );
   }
 }
@@ -154,13 +161,15 @@ class TestNokodoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.teal,
-            brightness: Brightness.light,dynamicSchemeVariant: DynamicSchemeVariant.fidelity),
+          seedColor: Colors.teal,
+          brightness: Brightness.light,
+          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        ),
         textTheme: TextTheme(
           titleLarge: GoogleFonts.galindo(
-              fontSize: 52,
-              fontWeight: FontWeight.bold,
-              color: Colors.teal[700]
+            fontSize: 52,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal[700],
           ),
           displayLarge: GoogleFonts.rowdies(
             fontSize: 40,
@@ -172,21 +181,14 @@ class TestNokodoApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: Colors.teal[800],
           ),
-          bodyLarge: GoogleFonts.poppins(
-              fontSize: 30,
-              color: Colors.grey[700]
-          ),
+          bodyLarge: GoogleFonts.poppins(fontSize: 30, color: Colors.grey[700]),
           bodyMedium: GoogleFonts.poppins(
-              fontSize: 22,
-              color: Colors.grey[800]
+            fontSize: 22,
+            color: Colors.grey[800],
           ),
-          bodySmall: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.grey[800]
-          ),
+          bodySmall: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[800]),
         ),
-        tabBarTheme: TabBarThemeData(
-        ),
+        tabBarTheme: TabBarThemeData(),
       ),
       debugShowCheckedModeBanner: true, // Removes the debug banner
       // home: AScreen()
@@ -202,12 +204,13 @@ class TestNokodoApp extends StatelessWidget {
       //     child: LibraryScreen()
       // )
       home: ChangeNotifierProvider(
-          create: (context) => SettingsViewModel(
-            settings: context.read<NokodoSettings>(),
-            ttsService: context.read<TtsService>(),
-          ),
-          child: SettingsScreen(),
-        )
+        create:
+            (context) => SettingsViewModel(
+              settings: context.read<NokodoSettings>(),
+              ttsService: context.read<TtsService>(),
+            ),
+        child: SettingsScreen(),
+      ),
     );
   }
 }

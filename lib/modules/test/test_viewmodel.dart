@@ -48,48 +48,59 @@ class TestViewModel extends ChangeNotifier {
       }
       notifyListeners();
     });
-    _repoManager.trialLogger.startTrial(trialType: "TEST", trialCode: "t", trialName: test.name);
-    _repoManager.trialLogger.logEvent(eventType: "STIMULUS_SHOWN",
-        eventCode: "shown",
-        payload: {
-          "questionId": questions[currentPage].id,
-          "type": questions[currentPage].type,
-          "content": questions[currentPage].content,
-          "options": questions[currentPage].options,
-          "correctAnswer": questions[currentPage].correctAnswer,
-        });
+    _repoManager.trialLogger.startTrial(
+      trialType: "TEST",
+      trialCode: "t",
+      trialName: test.name,
+    );
+    _repoManager.trialLogger.logEvent(
+      eventType: "STIMULUS_SHOWN",
+      eventCode: "shown",
+      payload: {
+        "questionId": questions[currentPage].id,
+        "type": questions[currentPage].type,
+        "content": questions[currentPage].content,
+        "options": questions[currentPage].options,
+        "correctAnswer": questions[currentPage].correctAnswer,
+      },
+    );
   }
 
   void setCurrentPage(int index) {
-    _repoManager.trialLogger.logEvent(eventType: "QUESTION_SWITCH",
-        eventCode: "qchange",
-        payload: {
-          "from": currentPage,
-          "to": index,
-        });
+    _repoManager.trialLogger.logEvent(
+      eventType: "QUESTION_SWITCH",
+      eventCode: "qchange",
+      payload: {"from": currentPage, "to": index},
+    );
     _currentPage = index;
-    _repoManager.trialLogger.logEvent(eventType: "STIMULUS_SHOWN",
-        eventCode: "shown",
-        payload: {
-          "questionId": questions[index].id,
-          "type": questions[index].type,
-          "content": questions[index].content,
-          "options": questions[index].options,
-          "correctAnswer": questions[index].correctAnswer,
-        });
+    _repoManager.trialLogger.logEvent(
+      eventType: "STIMULUS_SHOWN",
+      eventCode: "shown",
+      payload: {
+        "questionId": questions[index].id,
+        "type": questions[index].type,
+        "content": questions[index].content,
+        "options": questions[index].options,
+        "correctAnswer": questions[index].correctAnswer,
+      },
+    );
     notifyListeners();
   }
 
   void registerAnswer(String questionId, String answer) {
     _answers[questionId] = answer;
-    _repoManager.trialLogger.logEvent(eventType: "INPUT_ANSWER",
-        eventCode: "answer",
-        payload: {
-          "questionId": questionId,
-          "type": questions[currentPage].type,
-          "answer": answer,
-          "isCorrect": answer.toLowerCase() == questions[currentPage].correctAnswer.toLowerCase(),
-        });
+    _repoManager.trialLogger.logEvent(
+      eventType: "INPUT_ANSWER",
+      eventCode: "answer",
+      payload: {
+        "questionId": questionId,
+        "type": questions[currentPage].type,
+        "answer": answer,
+        "isCorrect":
+            answer.toLowerCase() ==
+            questions[currentPage].correctAnswer.toLowerCase(),
+      },
+    );
     notifyListeners();
 
     if (_currentPage < questions.length - 1) {
@@ -117,8 +128,10 @@ class TestViewModel extends ChangeNotifier {
       testId: testSession.testId,
       studentId: testSession.studentId,
       startTime: testSession.startTime,
-      endTime: min(DateTime.now().millisecondsSinceEpoch,
-          testSession.startTime + test.timeLimit * 1000),
+      endTime: min(
+        DateTime.now().millisecondsSinceEpoch,
+        testSession.startTime + test.timeLimit * 1000,
+      ),
       score: finalScore,
     );
     _repoManager.trialLogger.endTrial(validTrial: isValid);

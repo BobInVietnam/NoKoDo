@@ -29,7 +29,9 @@ class UrlProvider {
     if (_serverUrl == null || _serverUrl == "") {
       debugPrint("No Url supplied. Fallback to default.");
       if (kIsWeb) return 'http://127.0.0.1:3000';
-      return Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://127.0.0.1:3000';
+      return Platform.isAndroid
+          ? 'http://10.0.2.2:3000'
+          : 'http://127.0.0.1:3000';
     }
     debugPrint("Server URL: $_serverUrl");
     return _serverUrl!;

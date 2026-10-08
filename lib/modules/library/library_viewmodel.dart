@@ -53,17 +53,24 @@ class LibraryViewModel extends ChangeNotifier {
   double get dictUpdateProgress => _dictUpdateProgress;
   String get dictUpdateStatus => _dictUpdateStatus;
 
-  LibraryViewModel({required this.localDatabase, required this.repoManager, required this.ttsService}) {
+  LibraryViewModel({
+    required this.localDatabase,
+    required this.repoManager,
+    required this.ttsService,
+  }) {
     loadSavedFiles();
     _checkAndUpdateDictionary();
   }
 
   Future<void> _checkAndUpdateDictionary() async {
-    final String localVersion = await localDatabase.getConfig('dictVersion') ?? '';
+    final String localVersion =
+        await localDatabase.getConfig('dictVersion') ?? '';
     await repoManager.getSystemConfig();
     final String remoteVersion = repoManager.remoteDictVersion ?? 'v1';
 
-    debugPrint("DICTIONARY SYNC CHECK: local: '$localVersion', remote: '$remoteVersion'");
+    debugPrint(
+      "DICTIONARY SYNC CHECK: local: '$localVersion', remote: '$remoteVersion'",
+    );
     if (localVersion != remoteVersion) {
       await _performDictionaryUpdate(remoteVersion);
     } else {
@@ -78,7 +85,8 @@ class LibraryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final Map<String, dynamic> data = await repoManager.onlineDatabase.getDictionaryData();
+      final Map<String, dynamic> data =
+          await repoManager.onlineDatabase.getDictionaryData();
       final List<dynamic> entries = data['entries'] ?? [];
       final int total = entries.length;
 
@@ -94,9 +102,13 @@ class LibraryViewModel extends ChangeNotifier {
           final String? imageData = entry['imageData'] ?? entry['image_data'];
 
           // If raw base64 data is supplied, decode and save to app document path
-          if (imageData != null && imageData.isNotEmpty && newDictEntry.imageName.isNotEmpty) {
+          if (imageData != null &&
+              imageData.isNotEmpty &&
+              newDictEntry.imageName.isNotEmpty) {
             try {
-              final File file = File(p.join(docDir.path, newDictEntry.imageName));
+              final File file = File(
+                p.join(docDir.path, newDictEntry.imageName),
+              );
               await file.writeAsBytes(base64Decode(imageData));
             } catch (e) {
               debugPrint("Error writing dictionary image file: $e");
@@ -115,7 +127,6 @@ class LibraryViewModel extends ChangeNotifier {
       // Overwrite version values
       await localDatabase.setConfig('dictVersion', remoteVersion);
       _dictUpdateStatus = "Hoàn thành!";
-      
     } catch (e) {
       debugPrint("Error updating dictionary: $e");
       _dictUpdateStatus = "Lỗi cập nhật: $e";
@@ -149,7 +160,9 @@ class LibraryViewModel extends ChangeNotifier {
       _savedFiles.removeWhere((file) => file.id == fileId);
       notifyListeners();
     } catch (e) {
-      debugPrint("❌ [LibraryViewModel]: Deletion execution pipeline failed: $e");
+      debugPrint(
+        "❌ [LibraryViewModel]: Deletion execution pipeline failed: $e",
+      );
     }
   }
 
@@ -191,9 +204,16 @@ class LibraryViewModel extends ChangeNotifier {
       List<DictionaryEntry> fetchedPage;
 
       if (_searchQuery.trim().isEmpty) {
-        fetchedPage = await localDatabase.getDictionaryEntriesPaginated(_pageSize, _currentOffset);
+        fetchedPage = await localDatabase.getDictionaryEntriesPaginated(
+          _pageSize,
+          _currentOffset,
+        );
       } else {
-        fetchedPage = await localDatabase.searchDictionaryWords(_searchQuery, _pageSize, _currentOffset);
+        fetchedPage = await localDatabase.searchDictionaryWords(
+          _searchQuery,
+          _pageSize,
+          _currentOffset,
+        );
       }
 
       if (fetchedPage.length < _pageSize) {

@@ -21,7 +21,6 @@ class PracticeSelectionScreen extends StatefulWidget {
 
 class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -36,23 +35,38 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
   }
 
   void _onSearchChanged() {
-    context.read<PracticeSelectionViewModel>().updateSearchQuery(_searchController.text);
+    context.read<PracticeSelectionViewModel>().updateSearchQuery(
+      _searchController.text,
+    );
   }
 
-  Widget _buildSortButton(BuildContext context, SortOption option, String label, IconData icon) {
+  Widget _buildSortButton(
+    BuildContext context,
+    SortOption option,
+    String label,
+    IconData icon,
+  ) {
     final viewModel = context.watch<PracticeSelectionViewModel>();
     bool isActive = viewModel.currentSortOption == option;
     return TextButton.icon(
       icon: Icon(
-        isActive ? (viewModel.sortAscending ? Icons.arrow_downward : Icons.arrow_upward) : icon,
-        color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
+        isActive
+            ? (viewModel.sortAscending
+                ? Icons.arrow_downward
+                : Icons.arrow_upward)
+            : icon,
+        color:
+            isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
         size: 24,
       ),
       label: Text(
         label,
         style: TextStyle(
           fontSize: 18,
-          color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[700],
+          color:
+              isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey[700],
           fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
         ),
       ),
@@ -64,10 +78,33 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
     );
   }
 
+  Widget _buildTypeCheckbox(
+    String label,
+    bool value,
+    ValueChanged<bool?> onChanged,
+  ) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: onChanged,
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          Text(label, style: const TextStyle(fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = getSize(context);
-    final isSmall = screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
+    final isSmall =
+        screenSize == ScreenSize.Compact || screenSize == ScreenSize.Medium;
     final viewModel = context.watch<PracticeSelectionViewModel>();
     final textTheme = Theme.of(context).textTheme;
     final Color primaryColor = Theme.of(context).colorScheme.primary;
@@ -110,7 +147,10 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                         borderRadius: BorderRadius.circular(25.0),
                         borderSide: BorderSide(color: primaryColor, width: 1.5),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 15.0,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -118,9 +158,38 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
-                      _buildSortButton(context, SortOption.name, 'Tên', Icons.sort_by_alpha),
-                      _buildSortButton(context, SortOption.dateAdded, 'Ngày', Icons.date_range),
-                      _buildSortButton(context, SortOption.difficulty, 'Độ khó', Icons.stairs_outlined),
+                      Text(
+                        'Tổng: ${viewModel.filteredLessons.length} bài học',
+                        style: textTheme.bodyMedium,
+                      ),
+                      _buildSortButton(
+                        context,
+                        SortOption.name,
+                        'Tên',
+                        Icons.sort_by_alpha,
+                      ),
+                      _buildSortButton(
+                        context,
+                        SortOption.dateAdded,
+                        'Ngày',
+                        Icons.date_range,
+                      ),
+                      _buildSortButton(
+                        context,
+                        SortOption.difficulty,
+                        'Độ khó',
+                        Icons.stairs_outlined,
+                      ),
+                      _buildTypeCheckbox(
+                        'Luyện tập đọc',
+                        viewModel.showReading,
+                        (v) => viewModel.setShowReading(v ?? true),
+                      ),
+                      _buildTypeCheckbox(
+                        'Tìm chữ',
+                        viewModel.showFinding,
+                        (v) => viewModel.setShowFinding(v ?? true),
+                      ),
                     ],
                   ),
                 ],
@@ -130,35 +199,38 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
 
             // Lesson List
             Expanded(
-              child: viewModel.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : viewModel.filteredLessons.isEmpty
+              child:
+                  viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : viewModel.filteredLessons.isEmpty
                       ? Center(
-                          child: Text(
-                            'Không tìm thấy bài học nào.',
-                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        child: Text(
+                          'Không tìm thấy bài học nào.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          itemCount: viewModel.filteredLessons.length,
-                          itemBuilder: (context, index) {
-                            final lesson = viewModel.filteredLessons[index];
-                            return _buildLessonCard(context, lesson, isSmall);
-                          },
                         ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        itemCount: viewModel.filteredLessons.length,
+                        itemBuilder: (context, index) {
+                          final lesson = viewModel.filteredLessons[index];
+                          return _buildLessonCard(context, lesson, isSmall);
+                        },
+                      ),
             ),
             const SizedBox(height: 10), // Spacer before bottom bar
-
             // Bottom Navigation Bar
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  ReturnButton(),
-                  SettingButton(),
-                ],
+                children: <Widget>[ReturnButton(), SettingButton()],
               ),
             ),
           ],
@@ -167,11 +239,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
     );
   }
 
-  Widget _buildLessonCard(
-      BuildContext context,
-      Lesson lesson,
-      bool isSmall
-      ) {
+  Widget _buildLessonCard(BuildContext context, Lesson lesson, bool isSmall) {
     final textTheme = Theme.of(context).textTheme;
     String statusText;
     Color statusColor;
@@ -199,7 +267,10 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
         difficultyText = 'Không xác định';
     }
 
-    final dateVal = lesson.dateCreated < 1000000000000 ? lesson.dateCreated * 1000 : lesson.dateCreated;
+    final dateVal =
+        lesson.dateCreated < 1000000000000
+            ? lesson.dateCreated * 1000
+            : lesson.dateCreated;
     final DateTime createdDate = DateTime.fromMillisecondsSinceEpoch(dateVal);
 
     return Card(
@@ -211,10 +282,13 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider(
-                create: (innerContext) => PracticeDetailsViewModel(lesson: lesson),
-                child: const PracticeDetailsScreen(),
-              ),
+              builder:
+                  (context) => ChangeNotifierProvider(
+                    create:
+                        (innerContext) =>
+                            PracticeDetailsViewModel(lesson: lesson),
+                    child: const PracticeDetailsScreen(),
+                  ),
             ),
           );
           if (context.mounted) {
@@ -251,12 +325,14 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      isSmall ? Text(
-                        statusText,
-                        style: textTheme.bodyMedium?.copyWith(
-                            color: statusColor
-                        ),
-                      ) : Container(),
+                      isSmall
+                          ? Text(
+                            statusText,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: statusColor,
+                            ),
+                          )
+                          : Container(),
                       Text(
                         'Độ khó: $difficultyText',
                         style: textTheme.bodyMedium,
@@ -268,17 +344,19 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
                       ),
                     ],
                   ),
-                  isSmall ? Container() : Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        statusText,
-                        style: textTheme.bodyMedium?.copyWith(
-                            color: statusColor
-                        ),
+                  isSmall
+                      ? Container()
+                      : Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            statusText,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: statusColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ]
-                  )
                 ],
               ),
             ],

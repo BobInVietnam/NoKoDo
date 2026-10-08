@@ -27,7 +27,7 @@ class Student {
       'lastname': lastname,
       'classid': classid,
       'totalTime': totalTime,
-      'settings': settings
+      'settings': settings,
     };
   }
 
@@ -39,9 +39,12 @@ class Student {
     Map<String, dynamic> parsedSettings = {};
     if (map['settings'] is Map) {
       parsedSettings = Map<String, dynamic>.from(map['settings'] as Map);
-    } else if (map['settings'] is String && (map['settings'] as String).isNotEmpty) {
+    } else if (map['settings'] is String &&
+        (map['settings'] as String).isNotEmpty) {
       try {
-        parsedSettings = Map<String, dynamic>.from(jsonDecode(map['settings'] as String));
+        parsedSettings = Map<String, dynamic>.from(
+          jsonDecode(map['settings'] as String),
+        );
       } catch (_) {}
     }
 

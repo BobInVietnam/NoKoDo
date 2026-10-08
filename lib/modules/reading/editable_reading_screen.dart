@@ -66,8 +66,11 @@ class EditableReadingScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: List.generate(viewModel.paragraphs.length, (index) {
-                          final isSelected = index == viewModel.selectedParagraphIndex;
+                        children: List.generate(viewModel.paragraphs.length, (
+                          index,
+                        ) {
+                          final isSelected =
+                              index == viewModel.selectedParagraphIndex;
                           final paragraphText = viewModel.paragraphs[index];
 
                           return GestureDetector(
@@ -79,16 +82,25 @@ class EditableReadingScreen extends StatelessWidget {
                               margin: const EdgeInsets.symmetric(vertical: 4.0),
                               padding: const EdgeInsets.all(12.0),
                               decoration: BoxDecoration(
-                                color: isSelected ? context.watch<NokodoSettings>().backgroundColor : Colors.grey.shade100,
+                                color:
+                                    isSelected
+                                        ? context
+                                            .watch<NokodoSettings>()
+                                            .backgroundColor
+                                        : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(8.0),
                                 border: Border.all(
-                                  color: isSelected ? Colors.teal : Colors.transparent,
+                                  color:
+                                      isSelected
+                                          ? Colors.teal
+                                          : Colors.transparent,
                                   width: 1.5,
                                 ),
                               ),
                               child: IntrinsicHeight(
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     const SizedBox(width: 8),
                                     Expanded(
@@ -97,46 +109,78 @@ class EditableReadingScreen extends StatelessWidget {
                                         child: SelectableAdjustableText(
                                           key: isSelected ? _textKey : null,
                                           paragraphText,
-                                          isSelected ? viewModel.currentWordStart : -1,
-                                          isSelected ? viewModel.currentWordEnd : -1,
+                                          isSelected
+                                              ? viewModel.currentWordStart
+                                              : -1,
+                                          isSelected
+                                              ? viewModel.currentWordEnd
+                                              : -1,
                                           textAlign: TextAlign.justify,
                                           onTextSelected: (selection, offset) {
                                             if (isSelected) {
-                                              viewModel.updateSelection(selection, offset);
+                                              viewModel.updateSelection(
+                                                selection,
+                                                offset,
+                                              );
                                             }
                                           },
                                           onReadPressed: () {
                                             viewModel.toggleTtsSelection();
                                           },
                                           onDefinePressed: () async {
-                                            final dictionaryEntry = await viewModel.getWordDefinition();
+                                            final dictionaryEntry =
+                                                await viewModel
+                                                    .getWordDefinition();
                                             if (context.mounted) {
                                               DictionaryDetailDialog.show(
-                                                  context,
-                                                  dictionaryEntry,
-                                                  viewModel.ttsService);
+                                                context,
+                                                dictionaryEntry,
+                                                viewModel.ttsService,
+                                              );
                                             }
                                           },
                                           onHighlightPressed: () {
-                                            if (viewModel.currentSelection != null) {
-                                              final String text = viewModel.currentSelection!;
-                                              final settings = context.read<NokodoSettings>();
-                                              final db = context.read<LocalDatabase>();
-                                              final isHighlighted = settings.highlights.contains(text.trim());
+                                            if (viewModel.currentSelection !=
+                                                null) {
+                                              final String text =
+                                                  viewModel.currentSelection!;
+                                              final settings =
+                                                  context
+                                                      .read<NokodoSettings>();
+                                              final db =
+                                                  context.read<LocalDatabase>();
+                                              final isHighlighted = settings
+                                                  .highlights
+                                                  .contains(text.trim());
                                               if (isHighlighted) {
-                                                settings.removeHighlight(db, text);
-                                                viewModel.repoManager?.trialLogger.logEvent(
-                                                  eventType: 'UNHIGHLIGHT_TEXT',
-                                                  eventCode: 'unhighlight',
-                                                  payload: {'content': text},
+                                                settings.removeHighlight(
+                                                  db,
+                                                  text,
                                                 );
+                                                viewModel
+                                                    .repoManager
+                                                    ?.trialLogger
+                                                    .logEvent(
+                                                      eventType:
+                                                          'UNHIGHLIGHT_TEXT',
+                                                      eventCode: 'unhighlight',
+                                                      payload: {
+                                                        'content': text,
+                                                      },
+                                                    );
                                               } else {
                                                 settings.addHighlight(db, text);
-                                                viewModel.repoManager?.trialLogger.logEvent(
-                                                  eventType: 'HIGHLIGHT_TEXT',
-                                                  eventCode: 'highlight',
-                                                  payload: {'content': text},
-                                                );
+                                                viewModel
+                                                    .repoManager
+                                                    ?.trialLogger
+                                                    .logEvent(
+                                                      eventType:
+                                                          'HIGHLIGHT_TEXT',
+                                                      eventCode: 'highlight',
+                                                      payload: {
+                                                        'content': text,
+                                                      },
+                                                    );
                                               }
                                             }
                                           },
@@ -153,11 +197,18 @@ class EditableReadingScreen extends StatelessWidget {
                                         width: 28,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: isSelected ? Colors.teal : Colors.grey.shade400,
-                                          borderRadius: BorderRadius.circular(6.0),
+                                          color:
+                                              isSelected
+                                                  ? Colors.teal
+                                                  : Colors.grey.shade400,
+                                          borderRadius: BorderRadius.circular(
+                                            6.0,
+                                          ),
                                         ),
                                         child: Icon(
-                                          isSelected ? Icons.check : Icons.circle_outlined,
+                                          isSelected
+                                              ? Icons.check
+                                              : Icons.circle_outlined,
                                           color: Colors.white,
                                           size: 16,
                                         ),
@@ -192,82 +243,132 @@ class EditableReadingScreen extends StatelessWidget {
                         },
                       ),
                       ElevatedButton.icon(
-                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph
-                            ? Icons.stop_circle_outlined
-                            : Icons.play_circle_outline),
+                        icon: Icon(
+                          viewModel.ttsState == TtsState.playing &&
+                                  viewModel.currentTtsMode == TtsMode.paragraph
+                              ? Icons.stop_circle_outlined
+                              : Icons.play_circle_outline,
+                        ),
                         label: Text(
-                            isSmall
-                            ? ""
-                            : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? 'Dừng' : 'Đọc đoạn chọn',
-                            style: textTheme.bodySmall!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white
-                            )),
+                          isSmall
+                              ? ""
+                              : viewModel.ttsState == TtsState.playing &&
+                                  viewModel.currentTtsMode == TtsMode.paragraph
+                              ? 'Dừng'
+                              : 'Đọc đoạn chọn',
+                          style: textTheme.bodySmall!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         onPressed: viewModel.toggleTtsParagraph,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.paragraph ? Colors.redAccent : Colors.teal,
+                          backgroundColor:
+                              viewModel.ttsState == TtsState.playing &&
+                                      viewModel.currentTtsMode ==
+                                          TtsMode.paragraph
+                                  ? Colors.redAccent
+                                  : Colors.teal,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                       ),
                       ElevatedButton.icon(
-                        icon: Icon(viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all
-                            ? Icons.stop_circle_outlined
-                            : Icons.menu_book_outlined),
+                        icon: Icon(
+                          viewModel.ttsState == TtsState.playing &&
+                                  viewModel.currentTtsMode == TtsMode.all
+                              ? Icons.stop_circle_outlined
+                              : Icons.menu_book_outlined,
+                        ),
                         label: Text(
-                            isSmall
-                            ? ""
-                            : viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? 'Dừng' : 'Đọc toàn bộ',
-                            style: textTheme.bodySmall!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white
-                            )),
+                          isSmall
+                              ? ""
+                              : viewModel.ttsState == TtsState.playing &&
+                                  viewModel.currentTtsMode == TtsMode.all
+                              ? 'Dừng'
+                              : 'Đọc toàn bộ',
+                          style: textTheme.bodySmall!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         onPressed: viewModel.toggleTtsAll,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.ttsState == TtsState.playing && viewModel.currentTtsMode == TtsMode.all ? Colors.redAccent : Colors.teal[800],
+                          backgroundColor:
+                              viewModel.ttsState == TtsState.playing &&
+                                      viewModel.currentTtsMode == TtsMode.all
+                                  ? Colors.redAccent
+                                  : Colors.teal[800],
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                       ),
                       ElevatedButton.icon(
-                        icon: Icon(viewModel.audioRecorder.isRecording
-                            ? Icons.stop_circle_outlined
-                            : Icons.mic_none_rounded),
+                        icon: Icon(
+                          viewModel.audioRecorder.isRecording
+                              ? Icons.stop_circle_outlined
+                              : Icons.mic_none_rounded,
+                        ),
                         label: Text(
-                            isSmall
-                                ? ""
-                                : viewModel.audioRecorder.isRecording ? 'Dừng ghi âm' : 'Ghi âm',
-                            style: textTheme.bodySmall!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white
-                            )),
+                          isSmall
+                              ? ""
+                              : viewModel.audioRecorder.isRecording
+                              ? 'Dừng ghi âm'
+                              : 'Ghi âm',
+                          style: textTheme.bodySmall!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         onPressed: viewModel.toggleRecording,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: viewModel.isUploadingAudio ?
-                              Colors.grey[500]
-                            : viewModel.audioRecorder.isRecording ? Colors.redAccent : Colors.teal[800],
+                          backgroundColor:
+                              viewModel.isUploadingAudio
+                                  ? Colors.grey[500]
+                                  : viewModel.audioRecorder.isRecording
+                                  ? Colors.redAccent
+                                  : Colors.teal[800],
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit_outlined),
                         label: Text(
-                            isSmall
-                                ? ""
-                                : 'Chỉnh sửa',
-                            style: textTheme.bodySmall!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white
-                            )),
+                          isSmall ? "" : 'Chỉnh sửa',
+                          style: textTheme.bodySmall!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal[600],
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                         onPressed: () async {
                           // Stop TTS playback automatically before leaving the screen context
@@ -279,19 +380,27 @@ class EditableReadingScreen extends StatelessWidget {
                           final newFile = await Navigator.push<ConvertedFile>(
                             context,
                             MaterialPageRoute(
-                              builder: (routeContext) => ChangeNotifierProvider<EditingViewModel>(
-                                create: (providerContext) => EditingViewModel(
-                                  file: viewModel.file,
-                                  localDatabase: providerContext.read<LocalDatabase>(), // Read database up the context tree
-                                ),
-                                child: const EditingScreen(),
-                              ),
+                              builder:
+                                  (
+                                    routeContext,
+                                  ) => ChangeNotifierProvider<EditingViewModel>(
+                                    create:
+                                        (providerContext) => EditingViewModel(
+                                          file: viewModel.file,
+                                          localDatabase:
+                                              providerContext
+                                                  .read<
+                                                    LocalDatabase
+                                                  >(), // Read database up the context tree
+                                        ),
+                                    child: const EditingScreen(),
+                                  ),
                             ),
                           );
                           viewModel.refreshContent(newFile!);
                         },
                       ),
-                      SettingButton(syncEnabled: false)
+                      SettingButton(syncEnabled: false),
                     ],
                   ),
                 ],

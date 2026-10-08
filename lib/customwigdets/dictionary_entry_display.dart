@@ -17,10 +17,15 @@ class DictionaryDetailDialog extends StatelessWidget {
   });
 
   /// Static helper method to cleanly present this dialog from any screen context
-  static void show(BuildContext context, DictionaryEntry? item, TtsService tts) {
+  static void show(
+    BuildContext context,
+    DictionaryEntry? item,
+    TtsService tts,
+  ) {
     showDialog(
       context: context,
-      builder: (context) => DictionaryDetailDialog(wordItem: item, ttsService: tts),
+      builder:
+          (context) => DictionaryDetailDialog(wordItem: item, ttsService: tts),
     );
   }
 
@@ -31,7 +36,9 @@ class DictionaryDetailDialog extends StatelessWidget {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      contentPadding: const EdgeInsets.all(24.0), // Slightly expanded padding for the error layout look
+      contentPadding: const EdgeInsets.all(
+        24.0,
+      ), // Slightly expanded padding for the error layout look
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -40,16 +47,15 @@ class DictionaryDetailDialog extends StatelessWidget {
             // --- FALLBACK STATE: Word not found layout ---
             const SizedBox(height: 10),
             Icon(
-              Icons.sentiment_dissatisfied_outlined, // Clean, native sad face icon
+              Icons
+                  .sentiment_dissatisfied_outlined, // Clean, native sad face icon
               size: 72,
               color: Colors.grey[400],
             ),
             const SizedBox(height: 16),
             Text(
               'Không tìm thấy từ trong thư viện',
-              style: textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
@@ -68,11 +74,16 @@ class DictionaryDetailDialog extends StatelessWidget {
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(12.0),
                     ),
-                    child: const Center(child: CircularProgressIndicator(color: Colors.teal)),
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.teal),
+                    ),
                   );
                 }
 
-                final String imagePath = p.join(snapshot.data!.path, wordItem!.imageName);
+                final String imagePath = p.join(
+                  snapshot.data!.path,
+                  wordItem!.imageName,
+                );
                 final File imageFile = File(imagePath);
 
                 return Container(
@@ -84,9 +95,18 @@ class DictionaryDetailDialog extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12.0),
-                    child: imageFile.existsSync()
-                        ? Image.file(imageFile, fit: BoxFit.cover, alignment: Alignment.center)
-                        : const Icon(Icons.menu_book_rounded, size: 60, color: Colors.teal),
+                    child:
+                        imageFile.existsSync()
+                            ? Image.file(
+                              imageFile,
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                            )
+                            : const Icon(
+                              Icons.menu_book_rounded,
+                              size: 60,
+                              color: Colors.teal,
+                            ),
                   ),
                 );
               },
@@ -107,7 +127,10 @@ class DictionaryDetailDialog extends StatelessWidget {
             // 3. Description Segment Content
             Text(
               wordItem!.description,
-              style: textTheme.bodyLarge!.copyWith(color: Colors.grey[700], height: 1.5),
+              style: textTheme.bodyLarge!.copyWith(
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
               textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 20),
@@ -115,13 +138,20 @@ class DictionaryDetailDialog extends StatelessWidget {
             // 4. Core Audio Playback Interaction Action Button
             ElevatedButton.icon(
               icon: const Icon(Icons.volume_up_rounded, size: 22),
-              label: Text('Đọc thành tiếng',
-                  style: textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+              label: Text(
+                'Đọc thành tiếng',
+                style: textTheme.bodySmall!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 45),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 elevation: 1,
               ),
               onPressed: () {
@@ -135,7 +165,8 @@ class DictionaryDetailDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             if (!isWordNull) {
-              ttsService.stop(); // Only attempt stop if TTS was possibly triggered
+              ttsService
+                  .stop(); // Only attempt stop if TTS was possibly triggered
             }
             Navigator.pop(context);
           },

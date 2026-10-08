@@ -40,7 +40,7 @@ class Session {
       'screenHeight': screenHeight,
       'completed': completed ? 1 : 0,
       'appVersion': appVersion,
-      'webVersion': webVersion
+      'webVersion': webVersion,
     };
   }
 
@@ -49,7 +49,10 @@ class Session {
       studentId: map['studentId'] as String,
       sessionId: map['sessionId'] as String,
       sessionStartTime: DateTime.parse(map['sessionStartTime'] as String),
-      sessionEndTime: map['sessionEndTime'] != null ? DateTime.parse(map['sessionEndTime'] as String) : null,
+      sessionEndTime:
+          map['sessionEndTime'] != null
+              ? DateTime.parse(map['sessionEndTime'] as String)
+              : null,
       examinerId: map['examinerId'] as String?,
       siteId: map['siteId'] as String?,
       device: map['device'] as String,
