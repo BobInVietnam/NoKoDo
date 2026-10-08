@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/models/test.dart';
 import 'package:nodyslexia/modules/test/test_viewmodel.dart';
+import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 
 class TestScreen extends StatelessWidget {
@@ -256,10 +257,22 @@ class TestScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
-                child: Text(
-                  question.content,
-                  style: textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      question.content,
+                      style: textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    IconButton.outlined(
+                        onPressed: () {
+                          TtsService ttsService = context.read<TtsService>();
+                          ttsService.speak(question.content);
+                        },
+                        icon: const Icon(Icons.volume_up)
+                    )
+                  ],
                 ),
               ),
             ),
@@ -315,13 +328,26 @@ class TestScreen extends StatelessWidget {
               ] : null,
             ),
             child: Center(
-              child: Text(
-                option,
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.blue.shade900 : Colors.black87,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    option,
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.blue.shade900 : Colors.black87,
+                    )
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton.outlined(
+                      onPressed: () {
+                        TtsService ttsService = context.read<TtsService>();
+                        ttsService.speak(option);
+                      },
+                      icon: const Icon(Icons.volume_up)
+                  )
+                ]
               ),
             ),
           ),

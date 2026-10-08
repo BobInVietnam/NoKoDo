@@ -109,12 +109,6 @@ class AudioRecorder extends ChangeNotifier {
           mimeType: 'audio/webm',
         );
       } else {
-        final bytes = await File(_mPath).readAsBytes();
-        await FileSaver.instance.saveFile(
-          name: "$recordingName.mp4",
-          bytes: bytes,
-          mimeType: MimeType.mp4Audio,
-        );
         result = XFile(_mPath, name: "$recordingName.mp4");
       }
       notifyListeners();

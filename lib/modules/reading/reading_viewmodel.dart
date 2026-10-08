@@ -346,8 +346,8 @@ class ReadingViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       if (audioFile == null) throw Exception('Recording failed');
-      await repoManager.onlineDatabase.sendAudioFile(
-          audioFile, repoManager.currentStudent!.uid);
+      await repoManager.sendAudioFile(
+          audioFile);
       _isUploadingAudio = false;
       _audioMessage = "Đã lưu audio trên CSDL";
       _isMessageUpdated = true;

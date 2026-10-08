@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'package:cross_file/cross_file.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -335,6 +337,38 @@ class RepoManager extends ChangeNotifier {
 
     debugPrint("TESTING: RepoMan sending custom lesson data...");
     await onlineDatabase.sendPersonalLesson(currentStudent!.uid, file);
+  }
+
+  Future<void> sendAudioFile(XFile audioFile) async {
+     if (kIsWeb) {
+       debugPrint("Saving audio file to device");
+       final bytes = await audioFile.readAsBytes();
+       final recordingName = audioFile.name;
+       await FileSaver.instance.saveFile(
+         name: recordingName,
+         bytes: bytes,            // or file / filePath / link
+         mimeType: MimeType.webm
+       );
+     } else {
+       final bytes = await audioFile.readAsBytes();
+       final recordingName = audioFile.name;
+       await FileSaver.instance.saveFile(
+         name: recordingName,
+         bytes: bytes,
+         mimeType: MimeType.mp4Audio,
+       );
+     }
+
+    try {
+      if (currentStudent == null) throw Exception("No student logged in.");
+
+      debugPrint("TESTING: RepoMan sending audio data...");
+      await onlineDatabase.sendAudioFile(
+          audioFile, currentStudent!.uid, trialId: trialLogger.currentTrial?.trialId);
+    } catch (error) {
+      debugPrint("$error");
+      rethrow;
+    }
   }
 
   Future<void> sendCustomSettings(String lessonId, Map<String, Object?> settings) async {

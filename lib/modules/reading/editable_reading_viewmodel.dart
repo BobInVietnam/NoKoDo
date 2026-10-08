@@ -20,7 +20,7 @@ class EditableReadingViewModel extends ChangeNotifier {
   int _fileId = 0;
   final TtsService _ttsService;
   final LocalDatabase _localDatabase;
-  final RepoManager? repoManager;
+  final RepoManager repoManager;
   final AudioRecorder audioRecorder;
 
   int _currentWordStart = -1;
@@ -28,7 +28,6 @@ class EditableReadingViewModel extends ChangeNotifier {
   int _currentOffset = 0;
   String? _currentSelection;
   OverlayEntry? _selectionMenuOverlay;
-  double _currentReadingSpeed = 0.5;
   int _selectedParagraphIndex = 0;
   TtsMode _currentTtsMode = TtsMode.none;
   bool _isUploadingAudio = false;
@@ -38,7 +37,6 @@ class EditableReadingViewModel extends ChangeNotifier {
   // Getters
   ConvertedFile get file => _file;
   String? get currentSelection => _currentSelection;
-  double get currentReadingSpeed => _currentReadingSpeed;
   int get currentWordStart => _currentWordStart;
   int get currentWordEnd => _currentWordEnd;
   TtsService get ttsService => _ttsService;
@@ -57,8 +55,8 @@ class EditableReadingViewModel extends ChangeNotifier {
     if (index >= 0 && index < paragraphs.length) {
       final oldIndex = _selectedParagraphIndex;
       _selectedParagraphIndex = index;
-      if (repoManager != null && oldIndex != index) {
-        repoManager!.trialLogger.logEvent(
+      if (oldIndex != index) {
+        repoManager.trialLogger.logEvent(
           eventType: 'PARAGRAPH_CHANGE',
           eventCode: 'pgchange',
           payload: {'from': oldIndex, 'to': index},
@@ -73,27 +71,25 @@ class EditableReadingViewModel extends ChangeNotifier {
     required TtsService ttsService,
     required LocalDatabase localDatabase,
     required this.audioRecorder,
-    this.repoManager,
+    required this.repoManager,
   })  : _ttsService = ttsService, _file = file, _localDatabase = localDatabase {
     _extractedText = _file.extractedText;
     _fileId = _file.id!;
     _initializeTts();
-
-    if (repoManager != null) {
-      repoManager!.trialLogger.startTrial(
-        trialType: 'READING_LOCAL',
-        trialCode: 'rl',
-        trialName: file.fileName
-      );
-      repoManager!.trialLogger.logEvent(
-        eventType: 'STIMULUS_SHOWN',
-        eventCode: 'shown',
-        payload: {
-          'content': _extractedText,
-          'initialSettings': repoManager!.currentStudent?.settings ?? {},
-        },
-      );
-    }
+    
+    repoManager.trialLogger.startTrial(
+      trialType: 'READING_LOCAL',
+      trialCode: 'rl',
+      trialName: file.fileName
+    );
+    repoManager.trialLogger.logEvent(
+      eventType: 'STIMULUS_SHOWN',
+      eventCode: 'shown',
+      payload: {
+        'content': _extractedText,
+        'initialSettings': repoManager.currentStudent?.settings ?? {},
+      },
+    );
   }
 
   void refreshContent(ConvertedFile file) {
@@ -126,7 +122,7 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -138,7 +134,7 @@ class EditableReadingViewModel extends ChangeNotifier {
       _currentWordEnd = -1;
       if (paragraphs.isNotEmpty && _selectedParagraphIndex < paragraphs.length) {
         final textToRead = paragraphs[_selectedParagraphIndex];
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_START',
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
@@ -147,7 +143,7 @@ class EditableReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -165,7 +161,7 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -176,7 +172,7 @@ class EditableReadingViewModel extends ChangeNotifier {
         _currentWordStart = -1;
         _currentWordEnd = -1;
         final textToRead = currentSelection!;
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_START',
           eventCode: 'ttsstart',
           payload: {'content': textToRead},
@@ -185,7 +181,7 @@ class EditableReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -203,7 +199,7 @@ class EditableReadingViewModel extends ChangeNotifier {
     } else {
       if (ttsState == TtsState.playing) {
         _ttsService.stop();
-        repoManager?.trialLogger.logEvent(
+        repoManager.trialLogger.logEvent(
           eventType: 'TTS_STOP',
           eventCode: 'ttsstop',
           payload: {},
@@ -211,7 +207,7 @@ class EditableReadingViewModel extends ChangeNotifier {
       }
       selectParagraph(0);
       _currentTtsMode = TtsMode.all;
-      repoManager?.trialLogger.logEvent(
+      repoManager.trialLogger.logEvent(
         eventType: 'TTS_START',
         eventCode: 'ttsstart',
         payload: {'content': _extractedText},
@@ -235,7 +231,7 @@ class EditableReadingViewModel extends ChangeNotifier {
           _currentTtsMode = TtsMode.none;
           _currentWordStart = -1;
           _currentWordEnd = -1;
-          repoManager?.trialLogger.logEvent(
+          repoManager.trialLogger.logEvent(
             eventType: 'TTS_STOP',
             eventCode: 'ttsstop',
             payload: {},
@@ -249,7 +245,7 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
 
   void handleStopReading() {
-    repoManager?.trialLogger.logEvent(
+    repoManager.trialLogger.logEvent(
       eventType: 'TTS_STOP',
       eventCode: 'ttsstop',
       payload: {},
@@ -276,8 +272,8 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   Future<DictionaryEntry?>  getWordDefinition() async {
     final entry = await _localDatabase.getDictionaryEntryByWord(currentSelection!.toLowerCase());
-    if (repoManager != null && currentSelection != null) {
-      repoManager!.trialLogger.logEvent(
+    if (currentSelection != null) {
+      repoManager.trialLogger.logEvent(
         eventType: 'DICTIONARY_LOOKUP',
         eventCode: 'dictlookup',
         payload: {
@@ -299,8 +295,8 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   Future<void> startRecorder() async {
     await audioRecorder.record(
-        sid: repoManager?.currentStudent?.getFormattedSid() ?? "S0");
-    repoManager?.trialLogger.logEvent(
+        sid: repoManager.currentStudent?.getFormattedSid() ?? "S0");
+    repoManager.trialLogger.logEvent(
         eventType: "RECORD_START",
         eventCode: "record",
         payload: {
@@ -311,7 +307,7 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   Future<void> stopRecorder() async {
     final audioFile = await audioRecorder.stop(); // XFile?
-    repoManager?.trialLogger.logEvent(
+    repoManager.trialLogger.logEvent(
         eventType: "RECORD_END",
         eventCode: "recordend",
         payload: {});
@@ -319,8 +315,7 @@ class EditableReadingViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       if (audioFile == null) throw Exception('Recording failed');
-      await repoManager?.onlineDatabase.sendAudioFile(
-          audioFile, repoManager!.currentStudent!.uid);
+      await repoManager.sendAudioFile(audioFile);
       _isUploadingAudio = false;
       _audioMessage = "Đã lưu audio trên CSDL";
       _isMessageUpdated = true;
@@ -340,7 +335,7 @@ class EditableReadingViewModel extends ChangeNotifier {
   }
   @override
   void dispose() {
-    repoManager?.trialLogger.endTrial();
+    repoManager.trialLogger.endTrial();
     _ttsService.removeListener(_onTtsChanged);
     _ttsService.stop();
     // Ensure overlay entries are safely detached out of global stack references
