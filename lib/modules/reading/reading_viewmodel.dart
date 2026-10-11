@@ -75,6 +75,7 @@ class ReadingViewModel extends ChangeNotifier {
     required this.lessonName,
     required this.audioRecorder,
     required this.repoManager,
+    Map<String, dynamic>? customSettings,
   }) : _ttsService = ttsService,
        _extractedText = text,
        _localDatabase = localDatabase {
@@ -91,7 +92,7 @@ class ReadingViewModel extends ChangeNotifier {
       eventCode: 'shown',
       payload: {
         'content': _extractedText,
-        'initialSettings': repoManager.currentStudent?.settings ?? {},
+        'initialSettings': customSettings ?? repoManager.currentStudent?.settings ?? {},
       },
     );
   }

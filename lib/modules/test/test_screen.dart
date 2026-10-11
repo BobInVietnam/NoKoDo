@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/customwigdets/adjustable_text.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
+import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/models/test.dart';
+import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/modules/test/test_viewmodel.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
@@ -292,7 +295,9 @@ class TestScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: context
+                        .watch<NokodoSettings>()
+                        .backgroundColor,
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -300,11 +305,12 @@ class TestScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text(
+                        Expanded(child: AdjustableText(
                           question.content,
-                          style: textTheme.bodyLarge,
                           textAlign: TextAlign.center,
-                        ),
+                          maxLines: 256,
+                        )),
+                        const SizedBox(width: 10),
                         IconButton.outlined(
                           onPressed: () {
                             TtsService ttsService = context.read<TtsService>();
@@ -340,7 +346,7 @@ class TestScreen extends StatelessWidget {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 4 / 1,
+        childAspectRatio: 3 / 1,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -357,7 +363,9 @@ class TestScreen extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.blue.shade100 : Colors.white,
+              color: isSelected ?
+                Colors.blue.shade100 :
+                context.watch<NokodoSettings>().backgroundColor,
               border: Border.all(
                 color: isSelected ? Colors.blue.shade800 : Colors.blue,
                 width: isSelected ? 3.5 : 2,
@@ -378,15 +386,11 @@ class TestScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text(
+                  Expanded(child: AdjustableText(
                     option,
                     textAlign: TextAlign.center,
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.blue.shade900 : Colors.black87,
-                    ),
-                  ),
+                    maxLines: 256,
+                  )),
                   const SizedBox(width: 10),
                   IconButton.outlined(
                     onPressed: () {
@@ -527,9 +531,15 @@ class TestScreen extends StatelessWidget {
       child: Column(
         children: [
           // Collapse Button
-          IconButton(
-            icon: const Icon(Icons.arrow_downward),
-            onPressed: viewModel.toggleExpandTray,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              IconButton(
+                iconSize: 36,
+                icon: const Icon(Icons.arrow_downward),
+                onPressed: viewModel.toggleExpandTray,
+              )
+            ]
           ),
           // Question Grid
           Expanded(
@@ -575,6 +585,7 @@ class TestScreen extends StatelessWidget {
                 onPressed: () => _submitTest(context, viewModel),
                 child: Text("Nộp bài", style: const TextStyle(fontSize: 20)),
               ),
+              SettingButton(syncEnabled: false)
             ],
           ),
         ],

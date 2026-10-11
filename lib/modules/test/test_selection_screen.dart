@@ -50,6 +50,28 @@ class TestSelectionScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTypeCheckbox(
+      String label,
+      bool value,
+      ValueChanged<bool?> onChanged,
+      ) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: onChanged,
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          Text(label, style: const TextStyle(fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = getSize(context);
@@ -131,6 +153,14 @@ class TestSelectionScreen extends StatelessWidget {
                         'Độ khó',
                         Icons.stairs_outlined,
                       ),
+                      _buildTypeCheckbox(
+                        'Đã hoàn thành'
+                        , viewModel.showFinished
+                        , (v) => viewModel.setShowFinished(v ?? true)),
+                      _buildTypeCheckbox(
+                        'Chưa hoàn thành'
+                        , viewModel.showUnfinished
+                        , (v) => viewModel.setShowUnfinished(v ?? true)),
                     ],
                   ),
                 ],

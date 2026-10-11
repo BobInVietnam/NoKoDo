@@ -6,6 +6,8 @@ class TestDetailViewModel extends ChangeNotifier {
   Test test;
   final RepoManager _repoManager;
 
+  RepoManager get repoManager => _repoManager;
+
   TestDetailViewModel({required this.test, required RepoManager repoManager})
     : _repoManager = repoManager;
 

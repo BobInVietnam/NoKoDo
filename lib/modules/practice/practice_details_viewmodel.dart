@@ -44,6 +44,7 @@ class PracticeDetailsViewModel extends ChangeNotifier {
                         localDatabase: providerContext.read<LocalDatabase>(),
                         lessonId: lesson.id,
                         lessonName: lesson.name,
+                        customSettings: settings.toMap(),
                         repoManager: providerContext.read<RepoManager>(),
                         audioRecorder: providerContext.read<AudioRecorder>(),
                       ),

@@ -14,9 +14,13 @@ class TestSelectionViewModel extends ChangeNotifier {
 
   SortOption _currentSortOption = SortOption.dateCreated;
   bool _sortAscending = true;
+  bool _showFinished = true;
+  bool _showUnfinished = true;
 
   List<TestInfo> get filteredTests => _filteredTests;
   bool get isLoading => _isLoading;
+  bool get showFinished => _showFinished;
+  bool get showUnfinished => _showUnfinished;
   SortOption get currentSortOption => _currentSortOption;
   bool get sortAscending => _sortAscending;
 
@@ -45,11 +49,24 @@ class TestSelectionViewModel extends ChangeNotifier {
     _loadData();
   }
 
+  void setShowFinished(bool v) {
+    _showFinished = v;
+    _filterTests();
+  }
+
+  void setShowUnfinished(bool v) {
+    _showUnfinished = v;
+    _filterTests();
+  }
+
   void _filterTests() {
     final query = searchController.text.toLowerCase();
     _filteredTests =
         _allTests.where((testInfo) {
-          return testInfo.name.toLowerCase().contains(query);
+          final isDone = testInfo.attempts > 0;
+          final passed =
+            (isDone && _showFinished) || (!isDone && _showUnfinished);
+          return testInfo.name.toLowerCase().contains(query) && passed;
         }).toList();
     _sortTests();
     notifyListeners();
