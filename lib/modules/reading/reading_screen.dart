@@ -288,6 +288,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                             settings.updateFromMap(
                               viewModel.repoManager.currentStudent!.settings,
                             );
+                            viewModel.repoManager.sendHighlightList();
                             Navigator.pop(context);
                           },
                         ),

@@ -338,13 +338,14 @@ class _LibraryScreenState extends State<LibraryScreen>
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final text = _highlightInputController.text.trim();
                   if (text.isNotEmpty) {
-                    textStyleSettings.addHighlight(
+                    await textStyleSettings.addHighlight(
                       viewModel.localDatabase,
                       text,
                     );
+                    await viewModel.repoManager.sendHighlightList();
                     _highlightInputController.clear();
                   }
                 },
@@ -397,11 +398,12 @@ class _LibraryScreenState extends State<LibraryScreen>
                               Icons.delete,
                               color: Colors.redAccent,
                             ),
-                            onPressed: () {
-                              textStyleSettings.removeHighlight(
+                            onPressed: () async {
+                              await textStyleSettings.removeHighlight(
                                 viewModel.localDatabase,
                                 itemText,
                               );
+                              await viewModel.repoManager.sendHighlightList();
                             },
                           ),
                         ),

@@ -92,11 +92,24 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   void _onLoginSuccess() {
+    debugPrint("${repoManager.currentStudent?.toMap()}");
     if (repoManager.currentStudent?.settings != null) {
       try {
+        debugPrint("LOGIN: Updating settings");
         textSettings.updateFromMap(repoManager.currentStudent!.settings);
       } catch (e) {
         debugPrint("LOGIN: Personal settings sync failed: $e");
+      }
+    }
+
+    if (repoManager.currentStudent?.highlightedWords != null) {
+      try {
+        debugPrint("LOGIN: Updating highlighted words list");
+        for (final word in repoManager.currentStudent!.highlightedWords) {
+          textSettings.addHighlight(repoManager.database, word);
+        }
+      } catch (e) {
+        debugPrint("LOGIN: Highlighted words sync failed: $e");
       }
     }
 

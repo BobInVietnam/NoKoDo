@@ -240,6 +240,7 @@ class EditableReadingScreen extends StatelessWidget {
                       ReturnButton(
                         onReturn: (context) {
                           Navigator.pop(context, viewModel.file);
+                          viewModel.repoManager.sendHighlightList();
                         },
                       ),
                       ElevatedButton.icon(

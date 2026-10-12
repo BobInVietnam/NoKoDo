@@ -441,4 +441,15 @@ class RepoManager extends ChangeNotifier {
       return {};
     }
   }
+
+  Future<void> sendHighlightList() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    debugPrint("TESTING: RepoMan sending highlighted words list...");
+    final highlightedWords = await database.getAllHighlights();
+    await onlineDatabase.sendHighlightList(
+      currentStudent!.uid,
+      highlightedWords,
+    );
+  }
 }

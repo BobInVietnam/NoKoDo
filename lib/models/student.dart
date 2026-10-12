@@ -7,6 +7,7 @@ class Student {
   final String lastname;
   final String classid;
   Map<String, dynamic> settings;
+  List<String> highlightedWords;
   int totalTime;
 
   Student({
@@ -16,6 +17,7 @@ class Student {
     required this.lastname,
     required this.classid,
     required this.settings,
+    required this.highlightedWords,
     required this.totalTime,
   });
 
@@ -28,6 +30,7 @@ class Student {
       'classid': classid,
       'totalTime': totalTime,
       'settings': settings,
+      'highlightedWords': highlightedWords
     };
   }
 
@@ -37,6 +40,7 @@ class Student {
 
   factory Student.fromMap(Map<String, Object?> map) {
     Map<String, dynamic> parsedSettings = {};
+    List<String> parsedHighlightList = [];
     if (map['settings'] is Map) {
       parsedSettings = Map<String, dynamic>.from(map['settings'] as Map);
     } else if (map['settings'] is String &&
@@ -48,6 +52,12 @@ class Student {
       } catch (_) {}
     }
 
+    if (map['highlightedWords'] is List) {
+      parsedHighlightList = List<String>.from(map['highlightedWords'] as List);
+    } else if (map['highlightedWords'] is String && (map['highlightedWords'] as String).isNotEmpty) {
+      parsedHighlightList = List<String>.from(jsonDecode(map['highlightedWords'] as String));
+    }
+
     return Student(
       uid: map['uid'] as String,
       sid: (map['sid'] ?? map['s_id'] ?? 0) as int,
@@ -56,6 +66,7 @@ class Student {
       classid: (map['classid'] ?? map['class_id'] ?? '') as String,
       totalTime: (map['totalTime'] ?? map['total_time'] ?? 0) as int,
       settings: parsedSettings,
+      highlightedWords: parsedHighlightList,
     );
   }
 }

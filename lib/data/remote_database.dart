@@ -39,6 +39,7 @@ abstract class RemoteDatabase {
     String studentId, {
     String? trialId,
   });
+  Future<void> sendHighlightList(String uid, List<String> highlightList);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
   Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
@@ -423,6 +424,12 @@ class TestRemoteDatabase extends RemoteDatabase {
     Map<String, Object?> settings,
   ) {
     // TODO: implement sendCustomSettings
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendHighlightList(String uid, List<String> highlightList) {
+    // TODO: implement sendHighlightList
     throw UnimplementedError();
   }
 }
@@ -1229,6 +1236,46 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint(
         'HTTP CRITICAL EXCEPTION: Failed to sync lesson result. Details: $error',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendHighlightList(String uid, List<String> highlightList) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/user/$uid');
+
+    try {
+      debugPrint(
+        'HTTP REQUEST: Syncing highlighted words to $targetUrl...',
+      );
+
+      // Dispatch a POST network request to perform a partial update on the student record
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode({
+          'highlightedWords':
+          highlightList, // Matches the 'totalTime' schema keyword on your Prisma backend
+        }),
+      );
+      // Evaluate the HTTP status codes
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204) {
+        debugPrint(
+          'HTTP SUCCESS: Highlighted words synced successfully.',
+        );
+      } else {
+        debugPrint(
+          'HTTP ERROR: Server rejected highlight words payload with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected highlight words payload with status code: ${response.statusCode}',
+        );
+      }
+    } catch (error) {
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to sync highlight words payload. Details: $error',
       );
       rethrow;
     }
