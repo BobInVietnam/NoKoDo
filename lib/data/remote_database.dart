@@ -30,7 +30,7 @@ abstract class RemoteDatabase {
   Future<void> sendUsageTime(int totalUsageTime, String uid);
   Future<void> sendSession(Session session);
   Future<void> sendUserSettings(String uid, Map<String, dynamic> settings);
-  Future<void> sendPersonalLesson(String uid, ConvertedFile file);
+  Future<void> sendCustomLesson(String uid, ConvertedFile file, String email, String password);
   Future<void> sendTrialLog(TrialLog trial);
   Future<void> sendEventLog(EventLog event);
   Future<void> sendEventLogsBatch(List<EventLog> events);
@@ -405,11 +405,6 @@ class TestRemoteDatabase extends RemoteDatabase {
     throw UnimplementedError();
   }
 
-  @override
-  Future<void> sendPersonalLesson(String uid, ConvertedFile file) {
-    // TODO: implement sendPersonalLesson
-    throw UnimplementedError();
-  }
 
   @override
   Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId) {
@@ -430,6 +425,12 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<void> sendHighlightList(String uid, List<String> highlightList) {
     // TODO: implement sendHighlightList
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendCustomLesson(String uid, ConvertedFile file, String email, String password) {
+    // TODO: implement sendCustomLesson
     throw UnimplementedError();
   }
 }
@@ -1157,9 +1158,39 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<void> sendPersonalLesson(String uid, ConvertedFile file) {
-    // TODO: implement sendPersonalLesson
-    throw UnimplementedError();
+  Future<void> sendCustomLesson(String uid, ConvertedFile file, String email, String password) async {
+    final Uri targetUrl = Uri.parse('$_baseUrl/api/customlesson');
+
+    try {
+      debugPrint('HTTP REQUEST: Sending custom lesson ${file.fileName} to server...');
+
+      final http.Response response = await _post(
+        targetUrl,
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+          "name": file.fileName,
+          "content": file.extractedText,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('HTTP SUCCESS: Custom lesson saved on the server.');
+      } else {
+        debugPrint(
+          'HTTP ERROR: Server rejected custom lesson with status code: ${response.statusCode}, ${response.body}',
+        );
+        // Surface the server's message (e.g. wrong email/password) to the SnackBar
+        String message = 'Lỗi máy chủ (${response.statusCode})';
+        try {
+          message = (jsonDecode(response.body) as Map)['error'] as String? ?? message;
+        } catch (_) {}
+        throw Exception(message);
+      }
+    } catch (error) {
+      debugPrint('HTTP CRITICAL EXCEPTION: Failed to send custom lesson. Details: $error');
+      rethrow;
+    }
   }
 
   @override

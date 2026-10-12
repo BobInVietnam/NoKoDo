@@ -1,5 +1,6 @@
 // modules/editing/editing_screen.dart
 import 'package:flutter/material.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
@@ -159,6 +160,121 @@ class EditingScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showSaveToServerDialog(BuildContext context, EditingViewModel viewModel) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final repoManager = context.read<RepoManager>();
+    final messenger = ScaffoldMessenger.of(context);
+    bool isLoading = false;
+    bool obscurePassword = true;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (_, setState) {
+            return AlertDialog(
+              title: const Text(
+                'Lưu trên hệ thống',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+              ),
+              content: SizedBox(
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: emailController,
+                      enabled: !isLoading,
+                      autofocus: true,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passwordController,
+                      enabled: !isLoading,
+                      obscureText: obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Mật khẩu',
+                        border: const OutlineInputBorder(),
+                        errorText: errorText,
+                        suffixIcon: IconButton(
+                          icon: Icon(obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                          onPressed: () =>
+                              setState(() => obscurePassword = !obscurePassword),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Đóng', style: TextStyle(color: Colors.black87)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    final email = emailController.text.trim();
+                    final password = passwordController.text;
+                    if (email.isEmpty || password.isEmpty) {
+                      setState(() => errorText = 'Vui lòng nhập email và mật khẩu');
+                      return;
+                    }
+
+                    setState(() {
+                      isLoading = true;
+                      errorText = null;
+                    });
+
+                    String message;
+                    try {
+                      await repoManager.sendCustomLesson(
+                        viewModel.toConvertedFile(),
+                        email,
+                        password,
+                      );
+                      message = 'Đã lưu bài học lên hệ thống!';
+                    } catch (e) {
+                      message = 'Lỗi: $e';
+                    }
+
+                    if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    messenger.showSnackBar(SnackBar(content: Text(message)));
+                  },
+                  child: isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      emailController.dispose();
+      passwordController.dispose();
+    });
   }
 
   @override
@@ -383,6 +499,11 @@ class EditingScreen extends StatelessWidget {
                           label: Text(isSmall ? "" : 'Lưu thành bản sao'),
                           onPressed:
                               () => _showSaveAsCopyDialog(context, viewModel),
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.cloud_upload_outlined),
+                          label: Text(isSmall ? "" : 'Lưu trên hệ thống'),
+                          onPressed: () => _showSaveToServerDialog(context, viewModel),
                         ),
                         SettingButton(),
                       ],

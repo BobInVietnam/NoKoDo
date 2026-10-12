@@ -373,11 +373,11 @@ class RepoManager extends ChangeNotifier {
     );
   }
 
-  Future<void> sendPersonalLesson(ConvertedFile file) async {
+  Future<void> sendCustomLesson(ConvertedFile file, String email, String password) async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint("TESTING: RepoMan sending custom lesson data...");
-    await onlineDatabase.sendPersonalLesson(currentStudent!.uid, file);
+    await onlineDatabase.sendCustomLesson(currentStudent!.uid, file, email, password);
   }
 
   Future<void> sendAudioFile(XFile audioFile) async {

@@ -177,6 +177,13 @@ class EditingViewModel extends ChangeNotifier {
     return newId;
   }
 
+  ConvertedFile toConvertedFile() => ConvertedFile(
+    id: fileId,
+    fileName: fileName,
+    extractedText: textController.text, // includes unsaved edits
+    dateConverted: DateTime.now(),
+  );
+
   @override
   void dispose() {
     textController.removeListener(_onTextChanged);
