@@ -23,12 +23,12 @@ class _LetterSearchScreenState extends State<LetterSearchScreen>
     super.initState();
     _hintController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 300),
     );
     // Starts from the same color at alpha 0 so the fade doesn't pass through dark tints
     _hintColor = ColorTween(
       begin: const Color.fromARGB(0, 250, 250, 200),
-      end: const Color.fromARGB(255, 250, 250, 200),
+      end: const Color.fromARGB(255, 250, 250, 180),
     ).animate(_hintController);
 
     _viewModel = context.read<LetterSearchViewModel>();
@@ -36,7 +36,7 @@ class _LetterSearchScreenState extends State<LetterSearchScreen>
   }
 
   void _resetHintOnNewRound() {
-    if (!_viewModel.hintRequested && _hintController.value != 0) {
+    if (_viewModel.hintRequested == 0  && _hintController.value != 0) {
       _hintController.value = 0;
     }
   }
@@ -167,11 +167,13 @@ class _LetterSearchScreenState extends State<LetterSearchScreen>
                     viewModel.currentState == GameState.IN_PROGRESS
                         ? ElevatedButton.icon(
                           onPressed:
-                              viewModel.hintRequested
+                              viewModel.hintRequested == 2
                                   ? null
                                   : () {
                                     viewModel.requestHint();
-                                    _hintController.forward(from: 0);
+                                    if (viewModel.hintRequested == 1) {
+                                      _hintController.forward(from: 0);
+                                    }
                                   },
                           icon: const Icon(Icons.lightbulb_outline),
                           label: const Text("Gợi ý"),
@@ -325,6 +327,10 @@ class _LetterSearchScreenState extends State<LetterSearchScreen>
                                                   fontSize:
                                                       viewModel.currentSize,
                                                   height: 1.0,
+                                                  color: viewModel.isTargetHint(rowIndex, colIndex)
+                                                      ? Colors.red.shade800 : Colors.black87,
+                                                  fontWeight: viewModel.isTargetHint(rowIndex, colIndex)
+                                                      ? FontWeight.bold : FontWeight.normal
                                                 ),
                                           ),
                                         ),

@@ -10,13 +10,15 @@ import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/modules/settings/settings_viewmodel.dart';
 
-/// Check if SettingsScreen was opened from ReadingScreen or EditableReadingScreen.
+/// Check if SettingsScreen was opened from ReadingScreen or EditableReadingScreen or TestScreen.
 bool isOpenedFromReadingScreen(BuildContext context) {
   bool isFromReading = false;
 
   Navigator.of(context).popUntil((route) {
     final routeName = route.settings.name;
-    if (routeName == 'ReadingScreen' || routeName == 'EditableReadingScreen') {
+    if (routeName == 'ReadingScreen'
+        || routeName == 'EditableReadingScreen'
+        || routeName == 'TestScreen') {
       isFromReading = true;
     }
     return true; // Return true immediately so NO routes are popped

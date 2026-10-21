@@ -83,7 +83,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   String? _feedbackMessage;
   int _targetRow = 0;
   int _targetCol = 0;
-  bool _hintRequested = false;
+  int _hintRequested = 0;
 
   // Getters
   int get currentRound => _currentRound;
@@ -103,7 +103,9 @@ class LetterSearchViewModel extends ChangeNotifier {
   int get currentGridHeight => _content[_currentRound]['height'] as int;
   int get currentGridWidth => _content[_currentRound]['width'] as int;
   int get currentGap => (_content[_currentRound]['gap'] as num?)?.toInt() ?? 0;
-  bool get hintRequested => _hintRequested;
+  int get hintRequested => _hintRequested;
+  int get targetRow => _targetRow;
+  int get targetCol => _targetCol;
 
   // 5x5 window centered on the target, pushed back inside the grid at edges/corners
   int get hintRowStart =>
@@ -112,20 +114,25 @@ class LetterSearchViewModel extends ChangeNotifier {
       (_targetCol - 2).clamp(0, max(0, currentGridWidth - 5)).toInt();
 
   bool isInHintArea(int r, int c) =>
-      _hintRequested &&
+      _hintRequested > 0 &&
       r >= hintRowStart &&
       r < hintRowStart + 5 &&
       c >= hintColStart &&
       c < hintColStart + 5;
 
+  bool isTargetHint(int r, int c) =>
+      _hintRequested == 2 &&
+      r == targetRow &&
+      c == targetCol;
+
   void requestHint() {
-    if (_currentState != GameState.IN_PROGRESS || _hintRequested) return;
-    _hintRequested = true;
+    if (_currentState != GameState.IN_PROGRESS) return;
+    _hintRequested++;
     notifyListeners();
     repoManager?.trialLogger.logEvent(
       eventType: 'HINT_REQUESTED',
       eventCode: 'hint',
-      payload: {'hintRowStart': hintRowStart, 'hintColStart': hintColStart},
+      payload: {"hintLevel" : hintRequested},
     );
   }
 
@@ -187,7 +194,7 @@ class LetterSearchViewModel extends ChangeNotifier {
     _attempts = 0;
     _elapsedSeconds = 0.0;
     _feedbackMessage = null;
-    _hintRequested = false;
+    _hintRequested = 0;
     _loadSymbols();
 
     _gameTimer?.cancel();
