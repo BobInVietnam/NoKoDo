@@ -121,7 +121,7 @@ class _PracticeSelectionScreenState extends State<PracticeSelectionScreen> {
             // Screen Title
             Padding(
               padding: const EdgeInsets.only(top: 30.0, bottom: 16.0),
-              child: Text('Luyện tập', style: textTheme.displayLarge),
+              child: Text('Luyện tập - ${viewModel.categoryName}', style: textTheme.displayLarge),
             ),
 
             // Search and Sort Area

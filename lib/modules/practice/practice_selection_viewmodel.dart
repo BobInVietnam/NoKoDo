@@ -15,8 +15,15 @@ class PracticeSelectionViewModel extends ChangeNotifier {
   SortOption _currentSortOption = SortOption.dateAdded;
   bool _sortAscending = true;
   String _searchQuery = '';
+  final String unitId; // only lessons of this unit
+  final int category;          // only lessons of this PracticeCategory (its index)
+  final String categoryName;
 
-  PracticeSelectionViewModel({required this.repoManager}) {
+  PracticeSelectionViewModel({
+    required this.repoManager,
+    required this.unitId,
+    required this.category, required this.categoryName,
+  }) {
     fetchLessons();
   }
 
@@ -33,7 +40,7 @@ class PracticeSelectionViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _allLessons = await repoManager.getLessonList();
+      _allLessons = await repoManager.getLessonList(unitId, category);
       _filterAndSortLessons();
     } catch (e) {
       debugPrint("Error fetching lessons: $e");

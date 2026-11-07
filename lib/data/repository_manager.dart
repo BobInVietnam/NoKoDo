@@ -11,6 +11,7 @@ import 'package:nodyslexia/models/lesson.dart';
 import 'package:nodyslexia/models/session.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
+import 'package:nodyslexia/models/unit.dart';
 import 'package:nodyslexia/utils/trial_logger.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 
@@ -262,26 +263,26 @@ class RepoManager extends ChangeNotifier {
     );
   }
 
-  Future<List<TestInfo>> getTestList() async {
+  Future<List<TestInfo>> getTestList(String unitId) async {
     if (currentStudent == null) throw Exception("No student logged in.");
 
     debugPrint(
       "TESTING: RepoMan getting data...${currentStudent?.uid} in ${currentStudent?.classid}",
     );
     final List<Map<String, Object?>> testList = await onlineDatabase
-        .getTestList(currentStudent!.uid);
+        .getTestList(currentStudent!.uid, unitId);
     debugPrint("TESTING: RepoMan got data");
     return testList.map((map) => TestInfo.fromMap(map)).toList();
   }
 
-  Future<List<Lesson>> getLessonList() async {
+  Future<List<Lesson>> getLessonList(String unitId, int category) async {
     debugPrint(
       "TESTING: RepoMan getting lesson list...${currentStudent?.uid} in ${currentStudent?.classid}",
     );
     try {
       if (currentStudent == null) throw Exception("No student logged in.");
       final List<Map<String, Object?>> lessonList = await onlineDatabase
-          .getLessonList(currentStudent!.uid, currentStudent!.classid);
+          .getLessonList(currentStudent!.uid, unitId, category);
       final lessons = lessonList.map((map) => Lesson.fromMap(map)).toList();
       await database.saveLessons(lessons);
       return lessons;
@@ -438,6 +439,7 @@ class RepoManager extends ChangeNotifier {
           .getCustomSettings(currentStudent!.uid, lessonId);
       return customSettings;
     } catch (error) {
+      debugPrint("$error");
       return {};
     }
   }
@@ -451,5 +453,38 @@ class RepoManager extends ChangeNotifier {
       currentStudent!.uid,
       highlightedWords,
     );
+  }
+
+  Future<List<Unit>> getUnitList() async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    try {
+      debugPrint("TESTING: RepoMan getting unit list...");
+      final List<Map<String, Object?>> unitJson = await onlineDatabase.getUnitList(
+        currentStudent!.uid,
+        currentStudent!.classid
+      );
+      final units = unitJson.map((map) => Unit.fromMap(map)).toList();
+      return units;
+    } catch (error) {
+      debugPrint("$error");
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> getUnitDetail(String unitId) async {
+    if (currentStudent == null) throw Exception("No student logged in.");
+
+    try {
+      debugPrint("TESTING: RepoMan getting unit list...");
+      Map<String, dynamic> units = await onlineDatabase.getUnitDetails(
+          currentStudent!.uid,
+          unitId
+      );
+      return units;
+    } catch (error) {
+      debugPrint("$error");
+      return {};
+    }
   }
 }

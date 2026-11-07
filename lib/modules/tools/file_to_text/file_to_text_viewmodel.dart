@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/models/converted_file.dart';
+import 'package:nodyslexia/utils/ocr_service.dart';
 
-import '../../utils/ocr_service.dart';
 
 class FileToTextViewModel extends ChangeNotifier {
   final OCRService ocrService; // Use the interface for flexibility

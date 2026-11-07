@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/data/persistence.dart';
+import 'package:nodyslexia/data/repository_manager.dart';
+import 'package:nodyslexia/device_size.dart';
+import 'package:nodyslexia/models/converted_file.dart';
+import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_viewmodel.dart';
 import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
@@ -8,18 +13,12 @@ import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 
-// Import your ViewModel
-import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
-
-import '../../data/repository_manager.dart';
-import '../../device_size.dart';
-import '../../models/converted_file.dart';
-import '../reading/editable_reading_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_viewmodel.dart';
 
 class FileToTextScreen extends StatelessWidget {
   const FileToTextScreen({super.key});
 
-  // Helper method to handle button taps and navigation cleanly
+  // Helper method to handle button taps and unit cleanly
   Future<void> _handleImageAction(BuildContext context, int sourceIndex) async {
     final viewModel = context.read<FileToTextViewModel>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);

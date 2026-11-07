@@ -3,17 +3,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
-import 'package:nodyslexia/modules/file_to_text/file_to_text_screen.dart';
+import 'package:nodyslexia/modules/practice/unit/unit_selection_screen.dart';
+import 'package:nodyslexia/modules/practice/unit/unit_selection_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
-import 'package:nodyslexia/modules/simplifier/simplifier_screen.dart';
-import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/simplifier/simplifier_screen.dart';
+import 'package:nodyslexia/modules/tools/simplifier/simplifier_viewmodel.dart';
 import 'package:nodyslexia/modules/statistics/statistics_screen.dart';
 import 'package:nodyslexia/modules/statistics/statistics_viewmodel.dart';
 import 'package:nodyslexia/modules/test/test_selection_screen.dart';
 import 'package:nodyslexia/modules/test/test_selection_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/tools_navigation_screen.dart';
 import 'package:nodyslexia/utils/simplifier_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
@@ -22,7 +25,7 @@ import 'package:provider/provider.dart';
 import '../customwigdets/return_button.dart';
 import '../device_size.dart';
 import '../utils/ocr_service.dart';
-import 'file_to_text/file_to_text_viewmodel.dart';
+import 'tools/file_to_text/file_to_text_viewmodel.dart';
 import 'library/library_viewmodel.dart';
 import 'login/login_screen.dart';
 import 'login/login_viewmodel.dart';
@@ -94,22 +97,17 @@ class _MainScreenState extends State<MainScreen> {
 
   void _openPractice() => _openScreen(
     createViewModel: (ctx) =>
-        PracticeSelectionViewModel(repoManager: ctx.read<RepoManager>()),
-    screen: const PracticeSelectionScreen(),
+        UnitSelectionViewModel(repoManager: ctx.read<RepoManager>()),
+    screen: const UnitSelectionScreen(),
   );
 
-  void _openTest() => _requireOnline(
-        () => _openScreen(
-      createViewModel: (ctx) =>
-          TestSelectionViewModel(repoManager: ctx.read<RepoManager>()),
-      screen: const TestSelectionScreen(),
-    ),
-  );
-
-  void _openSimplifier() => _openScreen(
-    createViewModel: (_) =>
-        SimplifierViewModel(simplifierService: LocalSimplifierService(token: _token)),
-    screen: const SimplifierScreen(),
+  void _openTools() => _requireOnline(
+      () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ToolsNavigationScreen(token: _token)
+            )
+      )
   );
 
   void _openLibrary() => _openScreen(
@@ -119,14 +117,6 @@ class _MainScreenState extends State<MainScreen> {
       ttsService: ctx.read<TtsService>(),
     ),
     screen: const LibraryScreen(),
-  );
-
-  void _openOcr() => _openScreen(
-    createViewModel: (ctx) => FileToTextViewModel(
-      ocrService: LocalOCRService(token: _token),
-      localDatabase: ctx.read<LocalDatabase>(),
-    ),
-    screen: const FileToTextScreen(),
   );
 
   void _openStatistics() => _requireOnline(
@@ -234,12 +224,8 @@ class _MainScreenState extends State<MainScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     final menuItems = <_MenuItem>[
-      _MenuItem(icon: Icons.play_circle_outline, label: 'LUYỆN TẬP', onPressed: _openPractice),
-      _MenuItem(icon: Icons.book_outlined, label: 'LÀM BÀI KIỂM TRA', onPressed: _openTest),
-      _MenuItem(icon: Icons.abc_outlined, label: 'ĐƠN GIẢN HÓA CÂU TỪ', onPressed: _openSimplifier),
+      _MenuItem(icon: Icons.camera_outlined, label: 'CÔNG CỤ', onPressed: _openTools),
       _MenuItem(icon: Icons.bar_chart_outlined, label: 'THƯ VIỆN', onPressed: _openLibrary),
-      _MenuItem(icon: Icons.settings_outlined, label: 'CHUYỂN ẢNH SANG VĂN BẢN', onPressed: _openOcr),
-      _MenuItem(icon: Icons.help_outline, label: 'THEO DÕI TIẾN ĐỘ', onPressed: _openStatistics),
     ];
 
     return PopScope(
@@ -260,7 +246,13 @@ class _MainScreenState extends State<MainScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: SingleChildScrollView(
-                    child: _MenuGrid(items: menuItems, singleColumn: isSingleColumn),
+                    child: Column (
+                      children: [
+                        _BigButton(item: _MenuItem(icon: Icons.play_circle_outline, label: 'LUYỆN TẬP', onPressed: _openPractice)),
+                        _MenuGrid(items: menuItems, singleColumn: isSingleColumn),
+                        _SmallButton(item: _MenuItem(icon: Icons.help_outline, label: 'THEO DÕI TIẾN ĐỘ', onPressed: _openStatistics))
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -374,6 +366,88 @@ class _MenuButton extends StatelessWidget {
     return expand
         ? Expanded(child: button)
         : SizedBox(width: double.infinity, child: button);
+  }
+}
+
+class _BigButton extends StatelessWidget {
+  final _MenuItem item;
+
+  const _BigButton({required this.item});
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return SizedBox (
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ElevatedButton.icon(
+          icon: Icon(item.icon, size: 42),
+          label: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 42.0, horizontal: 20.0),
+            child: Text(
+              item.label,
+              style: textTheme.displayMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          onPressed: item.onPressed,
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.black,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Colors.teal, width: 8),
+            ),
+            elevation: 3,
+          ),
+        ),
+      )
+    );
+  }
+}
+
+class _SmallButton extends StatelessWidget {
+  final _MenuItem item;
+
+  const _SmallButton({required this.item});
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: <Widget>[
+        const Spacer(flex: 1),
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton.icon(
+              icon: Icon(item.icon, size: 42),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 42.0, horizontal: 20.0),
+                child: Text(
+                  item.label,
+                  style: textTheme.displayMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              onPressed: item.onPressed,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Colors.teal, width: 8),
+                ),
+                elevation: 3,
+              ),
+            ),
+          ), // 2 / (1 + 2 + 1) = 1/2 of the row width
+        ),
+        const Spacer(flex: 1),
+      ],
+    );
   }
 }
 

@@ -3,20 +3,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/models/converted_file.dart';
 import 'package:nodyslexia/modules/evaluation_test/evaluation_test_screen.dart';
 import 'package:nodyslexia/modules/evaluation_test/evaluation_test_viewmodel.dart';
-import 'package:nodyslexia/modules/file_to_text/file_to_text_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_viewmodel.dart';
 import 'package:nodyslexia/modules/library/library_screen.dart';
 import 'package:nodyslexia/modules/library/library_viewmodel.dart';
+import 'package:nodyslexia/modules/practice/unit/lesson_or_category_screen.dart';
 import 'package:nodyslexia/modules/reading/editable_reading_viewmodel.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/remote_database.dart';
+import 'package:nodyslexia/modules/tools/tools_navigation_screen.dart';
 import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/ocr_service.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
 import 'package:nodyslexia/utils/usage_time_tracker.dart';
 import 'data/repository_manager.dart';
-import 'modules/file_to_text/file_to_text_screen.dart';
+import 'modules/tools/file_to_text/file_to_text_screen.dart';
 import 'modules/login/login_screen.dart';
 import 'modules/login/login_viewmodel.dart';
 import 'modules/settings/settings_screen.dart';
@@ -203,14 +205,15 @@ class TestNokodoApp extends StatelessWidget {
       //     LibraryViewModel(localDatabase: context.read<LocalDatabase>()),
       //     child: LibraryScreen()
       // )
-      home: ChangeNotifierProvider(
-        create:
-            (context) => SettingsViewModel(
-              settings: context.read<NokodoSettings>(),
-              ttsService: context.read<TtsService>(),
-            ),
-        child: SettingsScreen(),
-      ),
+      // home: ChangeNotifierProvider(
+      //   create:
+      //       (context) => SettingsViewModel(
+      //         settings: context.read<NokodoSettings>(),
+      //         ttsService: context.read<TtsService>(),
+      //       ),
+      //   child: SettingsScreen(),
+      // ),
+      home: const ToolsNavigationScreen(token: "abc",)
     );
   }
 }

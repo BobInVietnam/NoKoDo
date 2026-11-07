@@ -17,7 +17,9 @@ import '../models/event_log.dart';
 abstract class RemoteDatabase {
   Future<bool> testConnection();
   Future<Map<String, Object?>?> getUser(String uid);
-  Future<List<Map<String, Object?>>> getTestList(String uid);
+  Future<List<Map<String, Object?>>> getUnitList(String uid, String classId);
+  Future<Map<String, Object?>> getUnitDetails(String uid, String unitId);
+  Future<List<Map<String, Object?>>> getTestList(String uid, String unitId);
   Future<Map<String, Object?>> getTestDetails(String testId, String studentId);
   Future<Map<String, Object?>> getCustomSettings(String uid, String lessonId);
   Future<void> sendCustomSettings(
@@ -42,7 +44,7 @@ abstract class RemoteDatabase {
   Future<void> sendHighlightList(String uid, List<String> highlightList);
 
   Future<Map<String, dynamic>> getStudentStatistics(String uid);
-  Future<List<Map<String, Object?>>> getLessonList(String uid, String classId);
+  Future<List<Map<String, Object?>>> getLessonList(String uid, String unitId, int category);
   Future<void> sendLessonResult(
     String studentId,
     String lessonId,
@@ -130,23 +132,26 @@ class TestRemoteDatabase extends RemoteDatabase {
   @override
   Future<List<Map<String, Object?>>> getLessonList(
     String uid,
-    String classId,
+    String unitId,
+    int category
   ) async {
-    final db = await database;
-    final List<Map<String, Object?>> maps = await db.query('Lesson');
-    return maps
-        .map(
-          (map) => {
-            ...map,
-            'dateCreated': map['created_date'],
-            'isDone': false,
-          },
-        )
-        .toList();
+    // final db = await database;
+    // final List<Map<String, Object?>> maps = await db.query('Lesson');
+    // return maps
+    //     .map(
+    //       (map) => {
+    //         ...map,
+    //         'dateCreated': map['created_date'],
+    //         'isDone': false,
+    //       },
+    //     )
+    //     .toList();
+    // TODO: implement sendHighlightList
+    throw UnimplementedError();
   }
 
   @override
-  Future<List<Map<String, Object?>>> getTestList(String uid) async {
+  Future<List<Map<String, Object?>>> getTestList(String uid, String unitId) async {
     final db = await database;
 
     debugPrint("TESTING: Querying database for TestInfo...");
@@ -433,6 +438,18 @@ class TestRemoteDatabase extends RemoteDatabase {
     // TODO: implement sendCustomLesson
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<Map<String, Object?>>> getUnitList(String uid, String classId) {
+    // TODO: implement getUnitList
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, Object?>> getUnitDetails(String uid, String unitId) {
+    // TODO: implement getUnitDetails
+    throw UnimplementedError();
+  }
 }
 
 class LocalhostRemoteDatabase extends RemoteDatabase {
@@ -546,10 +563,11 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   @override
   Future<List<Map<String, Object?>>> getLessonList(
     String uid,
-    String classId,
+    String unitId,
+    int category
   ) async {
     final Uri targetUrl = Uri.parse('$_baseUrl/api/lesson').replace(
-      queryParameters: {'classid': classId.toString(), 'studentid': uid},
+      queryParameters: {'unitid': unitId, 'studentid': uid, 'category': category.toString()},
     );
 
     try {
@@ -584,10 +602,10 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
   }
 
   @override
-  Future<List<Map<String, Object?>>> getTestList(String uid) async {
+  Future<List<Map<String, Object?>>> getTestList(String uid, String unitId) async {
     final Uri targetUrl = Uri.parse(
       '$_baseUrl/api/exam',
-    ).replace(queryParameters: {'studentid': uid});
+    ).replace(queryParameters: {'studentid': uid, 'unitid': unitId});
 
     try {
       debugPrint('HTTP REQUEST: Initiating GET request to $targetUrl...');
@@ -1307,6 +1325,76 @@ class LocalhostRemoteDatabase extends RemoteDatabase {
     } catch (error) {
       debugPrint(
         'HTTP CRITICAL EXCEPTION: Failed to sync highlight words payload. Details: $error',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> getUnitList(String uid, String classId) async {
+    final Uri targetUrl = Uri.parse(
+      '$_baseUrl/api/unit',
+    ).replace(queryParameters: {'classid': classId, 'studentid': uid});
+
+    try {
+      final http.Response response = await _get(targetUrl);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> jsonContents =
+        jsonDecode(response.body) as Map<String, dynamic>;
+
+        final List<Map<String, Object?>> unitList =
+        List<Map<String, Object?>>.from(jsonContents["units"] as List);
+        // 4. Log the target JSON value cleanly to your debug terminal console window
+        debugPrint('JSON Content: $jsonContents');
+        debugPrint(
+          'HTTP SUCCESS: Student units fetched successfully.',
+        );
+        return unitList;
+      } else {
+        debugPrint(
+          'HTTP ERROR: Server rejected units fetch with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected units fetch with status code: ${response.statusCode}',
+        );
+      }
+    } catch (error) {
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to get units. Details: $error.',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, Object?>> getUnitDetails(String uid, String unitId) async {
+    final Uri targetUrl = Uri.parse(
+      '$_baseUrl/api/unit/$unitId',
+    ).replace(queryParameters: {'studentid': uid});
+
+    try {
+      final http.Response response = await _get(targetUrl);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> jsonContents =
+        jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 4. Log the target JSON value cleanly to your debug terminal console window
+        debugPrint('JSON Content: $jsonContents');
+        debugPrint(
+          'HTTP SUCCESS: Student units fetched successfully.',
+        );
+        return jsonContents;
+      } else {
+        debugPrint(
+          'HTTP ERROR: Server rejected units fetch with status code: ${response.statusCode}, ${response.body}',
+        );
+        throw Exception(
+          'Server rejected units fetch with status code: ${response.statusCode}',
+        );
+      }
+    } catch (error) {
+      debugPrint(
+        'HTTP CRITICAL EXCEPTION: Failed to get units. Details: $error.',
       );
       rethrow;
     }

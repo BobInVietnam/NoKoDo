@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
-import 'package:nodyslexia/modules/simplifier/simplifier_viewmodel.dart';
+import 'package:nodyslexia/modules/tools/simplifier/simplifier_viewmodel.dart';
 
 class SimplifierScreen extends StatefulWidget {
   const SimplifierScreen({super.key});

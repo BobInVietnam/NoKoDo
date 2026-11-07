@@ -7,6 +7,7 @@ enum SortOption { name, dateCreated, difficulty }
 class TestSelectionViewModel extends ChangeNotifier {
   final RepoManager _repoManager;
   final TextEditingController searchController = TextEditingController();
+  final String unitId;
 
   List<TestInfo> _allTests = [];
   List<TestInfo> _filteredTests = [];
@@ -24,7 +25,7 @@ class TestSelectionViewModel extends ChangeNotifier {
   SortOption get currentSortOption => _currentSortOption;
   bool get sortAscending => _sortAscending;
 
-  TestSelectionViewModel({required RepoManager repoManager})
+  TestSelectionViewModel({required RepoManager repoManager, required this.unitId})
     : _repoManager = repoManager {
     _loadData();
     searchController.addListener(_filterTests);
@@ -35,7 +36,7 @@ class TestSelectionViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _allTests = await _repoManager.getTestList();
+      _allTests = await _repoManager.getTestList(unitId);
       _filterTests();
     } catch (e) {
       debugPrint("Error loading tests: $e");

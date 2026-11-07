@@ -4,6 +4,7 @@ class Lesson {
   final String id;
   final String name;
   final int type;
+  final int category;
   final String description;
   final Map<String, dynamic> content; // Maps to Prisma Json layout
   final int difficulty;
@@ -14,6 +15,7 @@ class Lesson {
     required this.id,
     required this.name,
     required this.type,
+    required this.category,
     required this.description,
     this.content = const {},
     required this.difficulty,
@@ -27,6 +29,7 @@ class Lesson {
       'id': id,
       'name': name,
       'type': type,
+      'category': category,
       'description': description,
       'content': jsonEncode(content),
       'difficulty': difficulty,
@@ -51,6 +54,7 @@ class Lesson {
       id: map['id'] as String,
       name: map['name'] as String,
       type: map['type'] as int,
+      category: map['category'] as int,
       description: map['description'] as String,
       content: parsedContent,
       difficulty: map['difficulty'] as int,
