@@ -6,7 +6,7 @@ class UnitViewModel extends ChangeNotifier {
   final RepoManager repoManager;
   final Unit unit;
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String? _error;
 
   bool get isLoading => _isLoading;

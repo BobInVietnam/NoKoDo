@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
@@ -16,9 +14,8 @@ class LocalOCRService implements OCRService {
   final http.Client client;
   final String? _token;
 
-  LocalOCRService({http.Client? client, String? token})
-    : client = client ?? http.Client(),
-      _token = token;
+  LocalOCRService({http.Client? client, this._token})
+    : client = client ?? http.Client();
 
   @override
   Future<String?> extractText(Uint8List imageData, String fileName) async {

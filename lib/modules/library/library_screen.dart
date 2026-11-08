@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -23,7 +22,6 @@ import '../../customwigdets/dictionary_entry_display.dart';
 import '../../data/repository_manager.dart';
 import '../../models/dictionary_entry.dart';
 import '../../utils/audio_recorder.dart';
-import '../../utils/tts_service.dart';
 import '../reading/editable_reading_viewmodel.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -213,7 +211,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                         ),
                       );
                     },
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       child: Text(
                         fileItem.extractedText,

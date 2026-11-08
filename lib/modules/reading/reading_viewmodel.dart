@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
@@ -69,16 +68,14 @@ class ReadingViewModel extends ChangeNotifier {
 
   ReadingViewModel({
     required String text,
-    required TtsService ttsService,
-    required LocalDatabase localDatabase,
+    required this._ttsService,
+    required this._localDatabase,
     required this.lessonId,
     required this.lessonName,
     required this.audioRecorder,
     required this.repoManager,
     Map<String, dynamic>? customSettings,
-  }) : _ttsService = ttsService,
-       _extractedText = text,
-       _localDatabase = localDatabase {
+  }) : _extractedText = text {
     _initializeTts();
     _extractParagraphs();
 

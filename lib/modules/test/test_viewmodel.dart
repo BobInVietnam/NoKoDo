@@ -31,8 +31,8 @@ class TestViewModel extends ChangeNotifier {
   TestViewModel({
     required this.test,
     required this.testSession,
-    required RepoManager repoManager,
-  }) : _repoManager = repoManager {
+    required this._repoManager,
+  }) {
     _remainingTime = test.timeLimit;
     for (int i = 0; i < questions.length; i++) {
       _answers[questions[i].id] = null;

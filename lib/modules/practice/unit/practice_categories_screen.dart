@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/menu_button.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
-import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
-import 'package:nodyslexia/models/unit.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_screen.dart';
 import 'package:nodyslexia/modules/practice/practice_selection_viewmodel.dart';
 import 'package:nodyslexia/modules/practice/unit/unit_viewmodel.dart';

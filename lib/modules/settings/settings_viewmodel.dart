@@ -7,10 +7,9 @@ class SettingsViewModel extends ChangeNotifier {
   final TtsService _ttsService;
 
   SettingsViewModel({
-    required NokodoSettings settings,
-    required TtsService ttsService,
-  }) : _settings = settings,
-       _ttsService = ttsService {
+    required this._settings,
+    required this._ttsService,
+  }) {
     _settings.addListener(notifyListeners);
     _ttsService.addListener(notifyListeners);
   }

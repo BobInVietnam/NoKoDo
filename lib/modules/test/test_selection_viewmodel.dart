@@ -25,8 +25,7 @@ class TestSelectionViewModel extends ChangeNotifier {
   SortOption get currentSortOption => _currentSortOption;
   bool get sortAscending => _sortAscending;
 
-  TestSelectionViewModel({required RepoManager repoManager, required this.unitId})
-    : _repoManager = repoManager {
+  TestSelectionViewModel({required this._repoManager, required this.unitId}) {
     _loadData();
     searchController.addListener(_filterTests);
   }

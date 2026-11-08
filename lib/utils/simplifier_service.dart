@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:nodyslexia/utils/url_provider.dart';
@@ -14,9 +12,8 @@ class LocalSimplifierService implements SimplifierService {
   final http.Client client;
   final String? _token;
 
-  LocalSimplifierService({http.Client? client, String? token})
-    : client = client ?? http.Client(),
-      _token = token;
+  LocalSimplifierService({http.Client? client, this._token})
+    : client = client ?? http.Client();
 
   @override
   Future<String?> simplifyText(String text) async {

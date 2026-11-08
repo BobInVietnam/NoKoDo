@@ -149,7 +149,7 @@ class LetterSearchViewModel extends ChangeNotifier {
   void syncLessonResultIfCompleted() {
     if (_currentState == GameState.FINISHED && repoManager != null) {
       debugPrint("LETTER_SEARCH: Game completed. Syncing result.");
-      repoManager!.sendLessonResult(lessonId!, {
+      repoManager!.sendLessonResult(lessonId, {
         'completed': true,
         'results': _results,
       });

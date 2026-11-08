@@ -9,7 +9,6 @@ import 'package:nodyslexia/models/dictionary_entry.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final LocalDatabase localDatabase;
@@ -21,7 +20,7 @@ class LibraryViewModel extends ChangeNotifier {
   bool _isAtConvertedFile = true;
 
   // --- Dictionary State Variables ---
-  List<DictionaryEntry> _dictionaryEntries = [];
+  final List<DictionaryEntry> _dictionaryEntries = [];
   bool _isDictLoading = false;
   String _searchQuery = "";
 

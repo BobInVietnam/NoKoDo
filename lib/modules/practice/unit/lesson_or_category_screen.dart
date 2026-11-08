@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nodyslexia/customwigdets/menu_button.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/modules/practice/unit/unit_selection_screen.dart';
-import 'package:nodyslexia/modules/practice/unit/unit_viewmodel.dart';
 import 'package:provider/provider.dart';
-import 'package:nodyslexia/modules/practice/unit/practice_categories_screen.dart';
 
-import 'package:flutter/widget_previews.dart';
 
 class LessonOrCategoryScreen extends StatelessWidget {
   const LessonOrCategoryScreen({super.key});

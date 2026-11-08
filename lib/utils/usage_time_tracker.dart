@@ -10,8 +10,7 @@ class UsageTimeTracker extends ChangeNotifier with WidgetsBindingObserver {
   // Track total accrued time across past states if you need to add to an existing database baseline
   int _previouslyAccruedSeconds = -1;
 
-  UsageTimeTracker({required RepoManager repoManager})
-    : _repoManager = repoManager {
+  UsageTimeTracker({required this._repoManager}) {
     // 1. Register this class into the global system lifecycle observer registry
     WidgetsBinding.instance.addObserver(this);
     _resumeTracking();

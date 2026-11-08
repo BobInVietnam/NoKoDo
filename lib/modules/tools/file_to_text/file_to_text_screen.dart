@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nodyslexia/data/persistence.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
 import 'package:nodyslexia/device_size.dart';
@@ -13,7 +12,6 @@ import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/modules/reading/editable_reading_screen.dart';
 
-import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_viewmodel.dart';
 
 class FileToTextScreen extends StatelessWidget {
   const FileToTextScreen({super.key});

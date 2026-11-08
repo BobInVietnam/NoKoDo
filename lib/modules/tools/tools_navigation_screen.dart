@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nodyslexia/customwigdets/menu_button.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
-import 'package:nodyslexia/customwigdets/settings_button.dart';
 import 'package:nodyslexia/data/persistence.dart';
-import 'package:nodyslexia/device_size.dart';
-import 'package:nodyslexia/modules/practice/unit/practice_categories_screen.dart';
 
-import 'package:flutter/widget_previews.dart';
 import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_screen.dart';
 import 'package:nodyslexia/modules/tools/file_to_text/file_to_text_viewmodel.dart';
 import 'package:nodyslexia/modules/tools/simplifier/simplifier_screen.dart';

@@ -28,10 +28,9 @@ class StatisticsViewmodel extends ChangeNotifier {
   final UsageTimeTracker _usageTimeTracker;
 
   StatisticsViewmodel({
-    required RepoManager repoManager,
-    required UsageTimeTracker usageTimeTracker,
-  }) : _repoManager = repoManager,
-       _usageTimeTracker = usageTimeTracker {
+    required this._repoManager,
+    required this._usageTimeTracker,
+  }) {
     _loadStatistics();
     _usageTimeTracker.addListener(_onTrackerTick);
   }

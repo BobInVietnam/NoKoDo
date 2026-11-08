@@ -8,8 +8,7 @@ class TestDetailViewModel extends ChangeNotifier {
 
   RepoManager get repoManager => _repoManager;
 
-  TestDetailViewModel({required this.test, required RepoManager repoManager})
-    : _repoManager = repoManager;
+  TestDetailViewModel({required this.test, required this._repoManager});
 
   String formatTimestamp(int timestampMs) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);

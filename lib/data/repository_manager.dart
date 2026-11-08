@@ -188,7 +188,6 @@ class RepoManager extends ChangeNotifier {
       );
 
       currentStudent = Student.fromMap(studentMap);
-      if (token == null || lastActiveStr == null) return false;
 
       final now = DateTime.now().millisecondsSinceEpoch;
       if (now - lastActive > 24 * 60 * 60 * 1000) {

@@ -39,7 +39,6 @@ abstract class Question {
         correctAnswerCount++;
       }
     }
-    ;
     return 10 * correctAnswerCount / length;
   }
 }
@@ -69,7 +68,7 @@ class FillBlankQuestion extends Question {
 
   @override
   bool isAnswerCorrect(String answer) {
-    return answer == this.correctAnswer.toLowerCase();
+    return answer == correctAnswer.toLowerCase();
   }
 
   @override

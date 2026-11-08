@@ -159,7 +159,7 @@ class EditableReadingScreen extends StatelessWidget {
                                                 );
                                                 viewModel
                                                     .repoManager
-                                                    ?.trialLogger
+                                                    .trialLogger
                                                     .logEvent(
                                                       eventType:
                                                           'UNHIGHLIGHT_TEXT',
@@ -172,7 +172,7 @@ class EditableReadingScreen extends StatelessWidget {
                                                 settings.addHighlight(db, text);
                                                 viewModel
                                                     .repoManager
-                                                    ?.trialLogger
+                                                    .trialLogger
                                                     .logEvent(
                                                       eventType:
                                                           'HIGHLIGHT_TEXT',

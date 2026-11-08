@@ -1,7 +1,6 @@
 // modules/editing/editing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/repository_manager.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:nodyslexia/customwigdets/return_button.dart';
 import 'package:nodyslexia/customwigdets/settings_button.dart';

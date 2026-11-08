@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
@@ -8,11 +7,7 @@ import 'package:nodyslexia/utils/audio_recorder.dart';
 import 'package:nodyslexia/utils/tts_service.dart';
 import 'package:provider/provider.dart';
 
-import '../data/remote_database.dart';
 import '../data/repository_manager.dart';
-import '../models/test.dart';
-import 'letter_search/letter_search_screen.dart';
-import 'letter_search/letter_search_viewmodel.dart';
 
 class AScreen extends StatelessWidget {
   const AScreen({super.key});

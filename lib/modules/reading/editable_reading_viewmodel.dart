@@ -1,6 +1,5 @@
 // viewmodels/editable_reading_viewmodel.dart
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nodyslexia/data/persistence.dart';
@@ -68,13 +67,11 @@ class EditableReadingViewModel extends ChangeNotifier {
 
   EditableReadingViewModel({
     required ConvertedFile file,
-    required TtsService ttsService,
-    required LocalDatabase localDatabase,
+    required this._ttsService,
+    required this._localDatabase,
     required this.audioRecorder,
     required this.repoManager,
-  }) : _ttsService = ttsService,
-       _file = file,
-       _localDatabase = localDatabase {
+  }) : _file = file {
     _extractedText = _file.extractedText;
     _fileId = _file.id!;
     _initializeTts();

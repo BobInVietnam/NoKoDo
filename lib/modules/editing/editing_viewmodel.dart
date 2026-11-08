@@ -11,7 +11,7 @@ class EditingViewModel extends ChangeNotifier {
 
   String _fileName = ""; // Initial template file state placeholder
   int _fileId = 0;
-  bool _showRenameDialog = false;
+  final bool _showRenameDialog = false;
 
   // --- History Management State ---
   final List<String> _undoStack = [];

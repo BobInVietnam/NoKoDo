@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:nodyslexia/modules/settings/text_settings.dart';
 import 'package:provider/provider.dart';
 
